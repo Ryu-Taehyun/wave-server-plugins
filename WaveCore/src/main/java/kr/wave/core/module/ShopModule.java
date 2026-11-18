@@ -293,7 +293,7 @@ public class ShopModule extends Module {
         // 뉴비 헬퍼 패스: 계정당 1회만 (영구)
         boolean boughtPass = data(p).purchases.getOrDefault("newbie-pass", 0) >= 1;
         g.set(28, It.of(Material.PAPER).ench(Enchantment.FORTUNE, 10).name("&a&l[💡 NEWBIE] 뉴비 헬퍼 패스")
-                .lore("%nl%&7사용 시 뉴비 보호 월드에 입장할 수 있으며, 경험치 획득량이 1.5배 상승합니다.", "", "&f영구 구매 제한 : " + (boughtPass ? "&c1" : "&a0") + "&7/1",
+                .lore("%nl%&7사용 시 &a뉴비 보호 월드&7에 입장할 수 있으며, 경험치 획득량이 &a1.5배&7 상승합니다.", "", "&f영구 구매 제한 : " + (boughtPass ? "&c1" : "&a0") + "&7/1",
                         boughtPass ? "%nl%&8━━━━━━━━━━━━━━%nl%&c이미 구매했습니다." : price(3000, true)).build(), e -> {
             if (!left(e)) return;
             PlayerData pd = data(p);

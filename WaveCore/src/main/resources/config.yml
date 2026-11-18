@@ -65,6 +65,13 @@ weapons:
     nausea-seconds: 4
     knockback: 0.9
     cooldown-ms: 0
+  # 혼돈의 아포칼립스 세트 (무기 / 심연의 공포 헬멧 / 다크니스 웨이브)
+  chaos:
+    damage: 6.5                    # 무기 고정 데미지
+    skill-damage: 4.0              # 혼돈의 파열 피해 (4 = 하트 2칸, 이 피해로는 죽지 않음)
+    skill-cooldown-seconds: 45
+    helmet-chance: 0.2             # 심연의 공포: 공격자에게 어둠 + 구속 확률
+    set-damage-taken: 0.9          # 세트(무기 + 헬멧) 받는 데미지 배율
   claymore-splash:
     radius: 4.0
     damage: 3.0              # 2 = 하트 1칸

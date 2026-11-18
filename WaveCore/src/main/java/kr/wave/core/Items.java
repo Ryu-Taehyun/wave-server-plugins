@@ -49,6 +49,9 @@ public final class Items {
     public static final String N_SEALED_SWORD = "[Sealed] [Lv.✕] 얼어붙은 제왕의 검";
     public static final String N_THUNDER = "[⚡] [Lv.L] 천둥의 심판";
     public static final String N_CHAOS = "[Chaos] [Lv.✦] 혼돈의 아포칼립스";
+    /** 혼돈의 아포칼립스 세트 */
+    public static final String N_ABYSS_HELMET = "[Chaos] [Lv.✦] 심연의 공포";
+    public static final String N_DARK_WAVE = "[Chaos] [Lv.✦] 다크니스 웨이브";
     public static final String N_RUINER_SCYTHE = "[Ruiner] [Lv.✕] 파괴의 낫";
     public static final String N_RUINER_PANTS = "[Ruiner] [Lv.✕] 재앙의 서막 바지";
     public static final String N_NATURE_BOOTS = "[Natural] [Lv.✦] 대자연의 황혼";
@@ -126,7 +129,7 @@ public final class Items {
 
     public static ItemStack newbiePass() {
         return It.of(Material.PAPER).ench(Enchantment.FORTUNE, 10).name("&a&l[💡 NEWBIE] 뉴비 헬퍼 패스")
-                .lore("%nl%&7사용 시 뉴비 보호 월드에 입장할 수 있으며, 경험치 휙득량이 1.5배 상승합니다.").build();
+                .lore("%nl%&7사용 시 &a뉴비 보호 월드&7에 입장할 수 있으며, 경험치 휙득량이 &a1.5배&7 상승합니다.").build();
     }
 
     public static ItemStack crownMark() {
@@ -144,7 +147,8 @@ public final class Items {
     }
 
     public static ItemStack melon(int amount) {
-        return It.of(Material.MELON_SLICE, amount).ench(Enchantment.DEPTH_STRIDER, 1).name("&d&l최고급 수박 조각").build();
+        return It.of(Material.MELON_SLICE, amount).ench(Enchantment.DEPTH_STRIDER, 1).name("&d&l최고급 수박 조각")
+                .lore("%nl%&7먹으면 &a신속 I&7 8초 · &a재생 III&7 7초 · &e흡수 II&7 2분%nl%&7배고픔이 &f가득&7 찹니다.").build();
     }
 
     public static ItemStack newbiePackage() {
@@ -216,6 +220,9 @@ public final class Items {
             case "altar_ticket" -> altarTicket();
             case "claymore" -> claymoreSd();
             case "melon" -> melon(1);
+            case "chaos_sword", "chaos" -> chaosApocalypse();
+            case "abyss_helmet" -> abyssHelmet();
+            case "darkness_wave" -> darknessWave();
             default -> null;
         };
     }
@@ -411,7 +418,7 @@ public final class Items {
     public static ItemStack aristotlePickaxe() {
         return It.of(Material.NETHERITE_PICKAXE).unbreakable().ench(Enchantment.EFFICIENCY, 7).ench(Enchantment.FORTUNE, 5)
                 .name("<b><gradient:#2193b0:#E7F0F2><italic:false>[Philosophy] [Lv.✕] 아리스토텔레스의 이데아</gradient></b>")
-                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7곡괭이가 &f부서지지 않습니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7곡괭이가 &f부서지지 않습니다%nl%&8&l>> &7기본으로 &e효율 VII&7 · &e행운 V&7가 부여되어 있습니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack quantumSword() {
@@ -468,10 +475,30 @@ public final class Items {
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 2칸)").build();
     }
 
+    /** 혼돈의 아포칼립스 세트 설명 (세 아이템 공통) */
+    public static final String CHAOS_SET = "<gradient:#1F1F1F:#BCBCBC><italic:false><b>[세트 : 혼돈의 아포칼립스]</b></gradient>%nl%&8- 혼돈의 아포칼립스 &7(무기)%nl%&8- 심연의 공포 &7(헬멧)%nl%&8- 다크니스 웨이브 &7(스킬)%nl%&7무기를 들고 헬멧을 쓰면 &e받는 데미지 감소 &7(0.9x)";
+    private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";
+
+    /** 심연의 공포 (혼돈의 아포칼립스 세트 헬멧) */
+    public static ItemStack abyssHelmet() {
+        return It.of(Material.DIAMOND_HELMET).unbreakable().ench(Enchantment.PROTECTION, 4)
+                .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>심연의 공포</b></gradient>")
+                .lore(CHAOS_HEAD + "&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a야간 투시&7가 부여됩니다%nl%"
+                        + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 &9어둠&7 2초 + &9구속 I&7을 부여합니다%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
+    }
+
+    /** 다크니스 웨이브 (혼돈의 아포칼립스 세트 스킬 아이템, 새 시대의 각인과 같은 형태) */
+    public static ItemStack darknessWave() {
+        return It.of(Material.MUSIC_DISC_11).ench(Enchantment.UNBREAKING, 10)
+                .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
+                .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 &5어둠의 파동&7: 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 II&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
+                        + "&8&l>> &7웅크리기 + 우클릭 시 &5심연의 장막&7: &a투명화&7 + &a신속 II&7를 &f5초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
+    }
+
     public static ItemStack chaosApocalypse() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [</b><b>Lv.</b><b>✦] 혼돈의 아포칼립스</b></gradient>")
-                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7네더 월드에 있을 시 &a화염 저항&7을 부여받습니다%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다" + SEASON_KEEP).build();
+                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7네더 월드에 있을 시 &a화염 저항&7을 부여받습니다%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다%nl%&8&l>> &7우클릭 시 &5혼돈의 파열&7: 주변 &f5칸&7의 적에게 &c피해 2칸&7 + &9위더 II&7 3초, 밀쳐냅니다 &8(쿨타임 45초)%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
     }
 
     public static final String CLAYMORE_SD_NAME = "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>";

@@ -86,6 +86,11 @@ public class WeaponModule extends Module {
 
     private final Map<UUID, Long> sealedCd = new HashMap<>();
     private final Map<UUID, Long> chronosCd = new HashMap<>();
+    private final Map<UUID, Long> chaosCd = new HashMap<>();
+    private final Map<UUID, Long> waveCd1 = new HashMap<>();
+    private final Map<UUID, Long> waveCd2 = new HashMap<>();
+    /** 범위 스킬 대상 확인용 가짜 피해 이벤트 중에는 무기 효과를 건너뜀 */
+    private boolean probing;
     private final Map<UUID, Long> newCharCd1 = new HashMap<>();
     private final Map<UUID, Long> newCharCd2 = new HashMap<>();
     private final Map<UUID, Long> claymoreCd = new HashMap<>();
@@ -117,7 +122,7 @@ public class WeaponModule extends Module {
 
     @Override
     public void enable() {
-        cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse()));
+        cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.abyssHelmet(), Items.darknessWave()));
         cmd("epicitems", ADMIN, (s, l, a) -> give(s, Items.vibranium(), Items.quantumMatter(), Items.quantumSword(), Items.auroraBoots(), Items.voidChest(), Items.voidBow(),
                 Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronosBoots(), Items.chronos(0), Items.natureBoots()));
         cmd("chronoss", ADMIN, (s, l, a) -> give(s, Items.chronos(0), Items.chronos(1), Items.chronos(2), Items.chronos(3), Items.chronos(4), Items.chronos(5), Items.chronos(6),
@@ -262,6 +267,7 @@ public class WeaponModule extends Module {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
+        if (probing) return;
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
@@ -272,7 +278,7 @@ public class WeaponModule extends Module {
 
             // 고정 데미지 무기 먼저
             if (tool.contains(Items.N_CHAOS)) {
-                e.setDamage(4.5);
+                e.setDamage(plugin.getConfig().getDouble("weapons.chaos.damage", 6.5));
                 effect(victim, PotionEffectType.SLOWNESS, 2.5, 2);
                 Location mid = vl.clone().add(0, 1, 0);
                 Fx.p(mid, Particle.SOUL_FIRE_FLAME, 40, 0.8, 0.05);
@@ -465,6 +471,21 @@ public class WeaponModule extends Module {
 
         // 피격자 장비
         if (victim instanceof Player vp) {
+            boolean abyss = Msg.nameHas(vp.getInventory().getHelmet(), Items.N_ABYSS_HELMET);
+            if (abyss && Msg.nameHas(vp.getInventory().getItemInMainHand(), Items.N_CHAOS)) {
+                e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.chaos.set-damage-taken", 0.9));   // 세트 효과
+            }
+            if (abyss && chance(plugin.getConfig().getDouble("weapons.chaos.helmet-chance", 0.2))) {
+                LivingEntity src = attacker != null ? attacker : shooter;
+                if (src != null) {
+                    effect(src, PotionEffectType.DARKNESS, 2, 1);
+                    effect(src, PotionEffectType.SLOWNESS, 2, 1);
+                    // 심연의 응시: 공격자에게 검은 줄기
+                    Fx.line(vl.clone().add(0, 1.6, 0), src.getLocation().add(0, 1.4, 0), CHAOS_D, 1.1f, 0.25);
+                    Fx.p(src.getLocation().add(0, 1, 0), Particle.SQUID_INK, 16, 0.3, 0.02);
+                    Msg.soundAt(vl, "entity.warden.heartbeat", 1, 1.2f);
+                }
+            }
             if (Msg.nameHas(vp.getInventory().getBoots(), Items.N_AURORA_BOOTS) && chance(0.20)) {
                 e.setDamage(e.getDamage() * 0.8);
                 // 오로라 보호막
@@ -561,6 +582,32 @@ public class WeaponModule extends Module {
     }
 
     /* ======================= 잿불 낙인검 ======================= */
+
+    /**
+     * 범위 스킬 대상: 주변의 플레이어와 적대 몹 중 실제로 때릴 수 있는 대상만.
+     * 플레이어는 0 피해 이벤트로 확인해서 보호 구역(PVP 금지), 팀원, 크리에이티브는 제외된다.
+     */
+    private java.util.List<LivingEntity> aoeTargets(Player attacker, Location center, double radius) {
+        java.util.List<LivingEntity> out = new java.util.ArrayList<>();
+        for (org.bukkit.entity.Entity en : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
+            if (!(en instanceof LivingEntity le) || le == attacker || le.isDead()) continue;
+            if (le.getLocation().distanceSquared(center) > radius * radius) continue;
+            if (le instanceof Player t) {
+                if (t.getGameMode() == org.bukkit.GameMode.CREATIVE || t.getGameMode() == org.bukkit.GameMode.SPECTATOR) continue;
+                EntityDamageByEntityEvent probe = new EntityDamageByEntityEvent(attacker, t, org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK,
+                        org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withDirectEntity(attacker).withCausingEntity(attacker).build(), 0.0);
+                probing = true;
+                try {
+                    Bukkit.getPluginManager().callEvent(probe);
+                } finally {
+                    probing = false;
+                }
+                if (probe.isCancelled()) continue;
+            } else if (!(le instanceof org.bukkit.entity.Enemy)) continue;
+            out.add(le);
+        }
+        return out;
+    }
 
     /** 예전 영어 이름의 보조 무기를 쓰는 순간 한국어 이름/설명으로 바꿈 */
     private static void renameLegacy(Player p, ItemStack fresh) {
@@ -718,7 +765,71 @@ public class WeaponModule extends Module {
         long now = System.currentTimeMillis();
         UUID id = p.getUniqueId();
 
-        if (n.contains(Items.N_SEALED_SWORD) && (hand.getType() == Material.DIAMOND_SWORD || hand.getType() == Material.NETHERITE_SWORD)) {
+        if (n.contains(Items.N_CHAOS)) {
+            e.setCancelled(true);   // 괭이로 땅을 갈지 않음
+            if (chaosCd.getOrDefault(id, 0L) > now) {
+                Msg.send(p, "&c아직 사용 할 수 없습니다.");
+                return;
+            }
+            chaosCd.put(id, now + (long) (plugin.getConfig().getDouble("weapons.chaos.skill-cooldown-seconds", 45) * 1000));
+            Location c = p.getLocation();
+            double dmg = plugin.getConfig().getDouble("weapons.chaos.skill-damage", 4.0);
+            for (LivingEntity t : aoeTargets(p, c, 5)) {
+                if (t.getHealth() <= dmg) t.setHealth(Math.min(1, t.getHealth()));   // 스킬 피해로는 죽지 않음
+                else hurt(t, dmg);
+                effect(t, PotionEffectType.WITHER, 3, 2);
+                Vector push = t.getLocation().toVector().subtract(c.toVector()).setY(0);
+                if (push.lengthSquared() > 1e-4) t.setVelocity(push.normalize().multiply(0.9).setY(0.35));
+                Fx.line(c.clone().add(0, 1, 0), t.getLocation().add(0, 1, 0), CHAOS_L, 0.9f, 0.3);
+            }
+            // 혼돈의 파열: 어둠이 모였다가 터짐
+            Location mid = c.clone().add(0, 1, 0);
+            Fx.implode(mid, CHAOS_D, 2.6, 10);
+            later(10, () -> {
+                Fx.shockwave(c.clone().add(0, 0.1, 0), CHAOS_L, 5.0, 12);
+                Fx.p(mid, Particle.SQUID_INK, 60, 1.2, 0.05);
+                Fx.p(mid, Particle.SCULK_SOUL, 30, 1.0, 0.05);
+                Msg.soundAt(mid, "entity.warden.sonic_boom", 0.6f, 0.8f);
+            });
+            Msg.send(p, "&8&l[Chaos] &7혼돈의 파열을 사용했습니다.");
+        } else if (n.contains(Items.N_DARK_WAVE) && hand.getType() == Material.MUSIC_DISC_11) {
+            e.setCancelled(true);
+            if (!p.isSneaking()) {
+                if (waveCd1.getOrDefault(id, 0L) > now) {
+                    Msg.send(p, "&c아직 사용 할 수 없습니다.");
+                    return;
+                }
+                waveCd1.put(id, now + 60_000);
+                Location c = p.getLocation();
+                for (LivingEntity t : aoeTargets(p, c, 6)) {
+                    effect(t, PotionEffectType.DARKNESS, 4, 1);
+                    effect(t, PotionEffectType.SLOWNESS, 3, 2);
+                    Vector push = t.getLocation().toVector().subtract(c.toVector()).setY(0);
+                    if (push.lengthSquared() > 1e-4) t.setVelocity(push.normalize().multiply(1.1).setY(0.4));
+                }
+                // 어둠의 파동: 검은 고리가 세 겹으로 퍼짐
+                for (int i = 0; i < 3; i++) {
+                    final int k = i;
+                    later(i * 4L, () -> Fx.shockwave(c.clone().add(0, 0.2 + k * 0.5, 0), k % 2 == 0 ? CHAOS_D : CHAOS_L, 2.0 + k * 2.0, 8));
+                }
+                Fx.p(c.clone().add(0, 1, 0), Particle.SQUID_INK, 50, 1.0, 0.05);
+                Msg.soundAt(c, "entity.warden.roar", 0.5f, 1.4f);
+                Msg.send(p, "&8&l[Chaos] &71번 스킬 &5어둠의 파동&7을 사용했습니다.");
+            } else {
+                if (waveCd2.getOrDefault(id, 0L) > now) {
+                    Msg.send(p, "&c아직 사용 할 수 없습니다.");
+                    return;
+                }
+                waveCd2.put(id, now + 90_000);
+                effect(p, PotionEffectType.INVISIBILITY, 5, 1);
+                effect(p, PotionEffectType.SPEED, 5, 2);
+                // 심연의 장막: 검은 연기에 몸을 숨김
+                Fx.p(p.getLocation().add(0, 1, 0), Particle.LARGE_SMOKE, 60, 0.5, 0.02);
+                Fx.helix(p, CHAOS_D, CHAOS_L, 0.7, 2.2, 30);
+                Msg.sound(p, "entity.enderman.teleport", 0.8f, 0.6f);
+                Msg.send(p, "&8&l[Chaos] &72번 스킬 &5심연의 장막&7을 사용했습니다.");
+            }
+        } else if (n.contains(Items.N_SEALED_SWORD) && (hand.getType() == Material.DIAMOND_SWORD || hand.getType() == Material.NETHERITE_SWORD)) {
             if (sealedCd.getOrDefault(id, 0L) > now) {
                 Msg.send(p, "&c아직 사용 할 수 없습니다.");
                 e.setCancelled(true);
@@ -924,6 +1035,9 @@ public class WeaponModule extends Module {
                 effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             }
 
+            if (tool.contains(Items.N_CHAOS) && inWorld(p, "nether")) effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
+            if (helmet.contains(Items.N_ABYSS_HELMET)) effect(p, PotionEffectType.NIGHT_VISION, 15, 1);   // 15초: 깜빡임 없이 유지
+
             repairLore(p, hand);
 
             // 스킬 쿨타임 액션바
@@ -933,6 +1047,13 @@ public class WeaponModule extends Module {
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 String l = left(chronosCd, id, now);
                 Msg.actionBar(p, "<gradient:#BFA66E:#B2D6B6><italic:false><bold:true>[Time]</gradient> " + (l != null ? "&c&l모래 폭풍 쿨타임 : &7" + l + "초 남음" : "&e&l모래 폭풍을 사용할 수 있습니다."));
+            } else if (tool.contains(Items.N_CHAOS)) {
+                String l = left(chaosCd, id, now);
+                Msg.actionBar(p, "&8&l[Chaos] &7혼돈의 파열 : " + (l != null ? "&c" + l + "초 &7남음" : "&e사용 가능"));
+            } else if (tool.contains(Items.N_DARK_WAVE)) {
+                String l1 = left(waveCd1, id, now), l2 = left(waveCd2, id, now);
+                Msg.actionBar(p, "&8&l[Chaos] &71번 스킬 : " + (l1 != null ? "&c" + l1 + "초 &7남음" : "&e사용 가능")
+                        + " &8| &72번 스킬 : " + (l2 != null ? "&c" + l2 + "초 &7남음" : "&e사용 가능"));
             } else if (Items.isNewChar(tool)) {
                 String l1 = left(newCharCd1, id, now);
                 String l2 = left(newCharCd2, id, now);
