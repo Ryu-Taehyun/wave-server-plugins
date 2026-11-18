@@ -204,7 +204,7 @@ public class OverlordModule extends Module {
             ItemStack shown = opt.get();
             var meta = shown.getItemMeta();
             java.util.List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.lore());
-            lore.addAll(Msg.lore("", "&e클릭하여 이 무기로 교환"));
+            lore = Msg.append(lore, "&e클릭하여 이 무기로 교환");
             meta.lore(lore);
             shown.setItemMeta(meta);
             g.set(slots[i], shown, e -> {

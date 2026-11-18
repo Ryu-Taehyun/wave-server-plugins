@@ -86,7 +86,7 @@ public class MarketModule extends Module {
         ItemStack it = li.item.clone();
         ItemMeta meta = it.getItemMeta();
         List<Component> lore = meta.hasLore() && meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
-        lore.addAll(Msg.lore("%nl%&8━━━━━━━━━━━━━━", "&e가격 : &f" + Msg.num(li.price) + " Cash", "&7판매자 : &f" + li.sellerName, "", "&a좌클릭 &7구매   &c우클릭 &7내 등록 취소"));
+        lore = Msg.append(lore, "&8━━━━━━━━━━━━━━", "&e가격 : &f" + Msg.num(li.price) + " Cash", "&7판매자 : &f" + li.sellerName, "", "&a좌클릭 &7구매   &c우클릭 &7내 등록 취소");
         meta.lore(lore);
         it.setItemMeta(meta);
         return it;

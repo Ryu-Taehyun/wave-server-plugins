@@ -767,7 +767,7 @@ public class BossModule extends Module {
             it.setAmount(1);
             ItemMeta meta = it.getItemMeta();
             List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
-            lore.addAll(Msg.lore("", "&7수량 : &f" + (min == max ? min + "개" : min + " ~ " + max + "개")));
+            lore = Msg.append(lore, "&7수량 : &f" + (min == max ? min + "개" : min + " ~ " + max + "개"));
             meta.lore(lore);
             it.setItemMeta(meta);
             shown.add(it);
@@ -775,7 +775,7 @@ public class BossModule extends Module {
         ItemStack clay = Items.claymoreSd();
         ItemMeta cm = clay.getItemMeta();
         List<net.kyori.adventure.text.Component> cl = cm.lore() == null ? new ArrayList<>() : new ArrayList<>(cm.lore());
-        cl.addAll(Msg.lore("", "<gradient:#FFF200:#FFFCD4><b>✦ 희귀 전리품 ✦</b></gradient>", "&7매우 드물게 전리품에 섞여 나옵니다."));
+        cl = Msg.append(cl, "<gradient:#FFF200:#FFFCD4><b>✦ 희귀 전리품 ✦</b></gradient>", "&7매우 드물게 전리품에 섞여 나옵니다.");
         cm.lore(cl);
         clay.setItemMeta(cm);
 
@@ -1065,8 +1065,8 @@ public class BossModule extends Module {
         ItemMeta meta = it.getItemMeta();
         List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
         int min = (int) num(m.get("min"), 1), max = Math.max(min, (int) num(m.get("max"), min)), w = (int) num(m.get("weight"), 10);
-        lore.addAll(Msg.lore("", "&8━━━━━━━━━━━━━━", "&7수량 : &f" + (min == max ? min + "개" : min + " ~ " + max + "개"),
-                "&7비중 : &e" + w + " &8/ 전체 " + totalWeight, "", "&e클릭 &7: 수량 · 비중 편집"));
+        lore = Msg.append(lore, "&8━━━━━━━━━━━━━━", "&7수량 : &f" + (min == max ? min + "개" : min + " ~ " + max + "개"),
+                "&7비중 : &e" + w + " &8/ 전체 " + totalWeight, "", "&e클릭 &7: 수량 · 비중 편집");
         meta.lore(lore);
         it.setItemMeta(meta);
         return it;
@@ -1427,7 +1427,7 @@ public class BossModule extends Module {
                         add.add(v != null ? "&f" + n + " &7: &6" + v : r.passed.contains(u) ? "&8" + n + " : 포기" : "&7" + n + " : 선택 중...");
                     }
                 }
-                lore.addAll(Msg.lore(add.toArray(new String[0])));
+                lore = Msg.append(lore, add.toArray(new String[0]));
                 meta.lore(lore);
                 shown.setItemMeta(meta);
                 gui.set(i, shown);

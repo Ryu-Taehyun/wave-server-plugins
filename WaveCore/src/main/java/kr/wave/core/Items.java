@@ -26,7 +26,7 @@ public final class Items {
         org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
         java.util.List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.lore());
         for (net.kyori.adventure.text.Component c : lore) if (Msg.plain(c).contains("시즌이 지나도 유지")) return false;
-        lore.addAll(Msg.lore(SEASON_KEEP.substring("%nl%".length())));
+        lore = Msg.append(lore, SEASON_KEEP);
         meta.lore(lore);
         it.setItemMeta(meta);
         return true;
@@ -185,7 +185,7 @@ public final class Items {
 
     public static ItemStack melon(int amount) {
         return It.of(Material.MELON_SLICE, amount).ench(Enchantment.DEPTH_STRIDER, 1).name("&d&l최고급 수박 조각")
-                .lore("%nl%&7먹으면 &a신속 I&7 8초 · &a재생 III&7 7초 · &e흡수 II&7 2분%nl%&7배고픔이 &f가득&7 찹니다.").build();
+                .lore("%nl%&7먹으면 <color:#FF7A9C>신속 I</color>&7 8초 · <color:#FF7A9C>재생 III</color>&7 7초 · <color:#FF7A9C>흡수 II</color>&7 2분%nl%&7배고픔이 &f가득&7 찹니다.").build();
     }
 
     public static ItemStack newbiePackage() {
@@ -436,25 +436,25 @@ public final class Items {
     public static ItemStack voidBow() {
         return It.of(Material.BOW).unbreakable().ench(Enchantment.POWER, 7).ench(Enchantment.FLAME, 1).ench(Enchantment.INFINITY, 1)
                 .name("<b><gradient:#F9F9F9:#C2C2C2:#404247><italic:false>[Void] [Lv.✕] 공허의 속삭임</gradient></b>")
-                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연으로 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7적중 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7적중 시 일정 확률로 &c데미지의 1.5배&7를 입힙니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연으로 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7적중 시 <color:#88F4FF>구속 II</color>&7를 부여합니다%nl%&8&l>> &7적중 시 일정 확률로 &c데미지의 1.5배&7를 입힙니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack voidChest() {
         return It.of(Material.NETHERITE_CHESTPLATE).unbreakable().ench(Enchantment.PROTECTION, 5)
                 .name("<b><gradient:#F9F9F9:#C2C2C2:#404247><italic:false>[Void] [Lv.✕] 뒤틀린 차원의 갑옷</gradient></b>")
-                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연을 입고 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a힘 I&7이 부여됩니다%nl%&8&l>> &7공격받을 시 일정 확률로 &e데미지를 반사&7합니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연을 입고 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 <color:#88F4FF>힘 I</color>&7이 부여됩니다%nl%&8&l>> &7공격받을 시 일정 확률로 &e데미지를 반사&7합니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack russellHelmet() {
         return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5).ench(Enchantment.RESPIRATION, 5)
                 .name("<b><gradient:#2193b0:#E7F0F2><italic:false>[Philosophy] [Lv.✕] 러셀의 패러독스</gradient></b>")
-                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a성급함 III&7가 부여됩니다%nl%&8&l>> &7일정 확률로 &e받는 데미지를 무효화&7합니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 <color:#5CC8E6>성급함 III</color>&7가 부여됩니다%nl%&8&l>> &7일정 확률로 &e받는 데미지를 무효화&7합니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack aristotlePickaxe() {
         return It.of(Material.NETHERITE_PICKAXE).unbreakable().ench(Enchantment.EFFICIENCY, 7).ench(Enchantment.FORTUNE, 5)
                 .name("<b><gradient:#2193b0:#E7F0F2><italic:false>[Philosophy] [Lv.✕] 아리스토텔레스의 이데아</gradient></b>")
-                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7곡괭이가 &f부서지지 않습니다%nl%&8&l>> &7기본으로 &e효율 VII&7 · &e행운 V&7가 부여되어 있습니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7곡괭이가 &f부서지지 않습니다%nl%&8&l>> &7기본으로 <color:#5CC8E6>효율 VII</color>&7 · <color:#5CC8E6>행운 V</color>&7가 부여되어 있습니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack quantumSword() {
@@ -478,19 +478,19 @@ public final class Items {
     public static ItemStack natureBoots() {
         return It.of(Material.DIAMOND_BOOTS).unbreakable().ench(Enchantment.PROTECTION, 5).ench(Enchantment.FEATHER_FALLING, 5).ench(Enchantment.DEPTH_STRIDER, 5)
                 .name("<gradient:#F5E400:#95FFBE><italic:false><b>[Natural]</b><b> [Lv.✦</b><b>] 대자연의 황혼</b></gradient>")
-                .lore("%nl%&7등급 : <gradient:#F5E400:#95FFBE><italic:false><b>The Echoe</b><b>s o</b><b>f Nature</b></gradient>%nl%&7스페셜 테마 뽑기에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#F5E400:#95FFBE><italic:false><b>[드루이드의 축복]</b></gradient>%nl%&e&l>> &7방어구가 &f부서지지 않습니다%nl%&e&l>> &7장착 시 &a신속 I&7이 부여됩니다%nl%&e&l>> &7장착 시 &e배고픔이 감소하지 않습니다%nl%&e&l>> &7숲 바이옴에 있을 시 &a재생 II&7를 부여받습니다" + SEASON_KEEP).build();
+                .lore("%nl%&7등급 : <gradient:#F5E400:#95FFBE><italic:false><b>The Echoe</b><b>s o</b><b>f Nature</b></gradient>%nl%&7스페셜 테마 뽑기에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#F5E400:#95FFBE><italic:false><b>[드루이드의 축복]</b></gradient>%nl%&e&l>> &7방어구가 &f부서지지 않습니다%nl%&e&l>> &7장착 시 <color:#95FFBE>신속 I</color>&7이 부여됩니다%nl%&e&l>> &7장착 시 &e배고픔이 감소하지 않습니다%nl%&e&l>> &7숲 바이옴에 있을 시 <color:#95FFBE>재생 II</color>&7를 부여받습니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack ruinerScythe() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 파괴의 낫</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6&7으로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 I&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6&7으로 고정됩니다%nl%&8&l>> &7타격 시 <color:#E0464E>구속 I</color>&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack ruinerPants() {
         return It.of(Material.NETHERITE_LEGGINGS).unbreakable().ench(Enchantment.PROTECTION, 6)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 재앙의 서막 바지</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &e낙하 피해&7와 &e화염 피해&7가 &f50%&7 감소합니다%nl%&8&l>> &7체력이 &f30% 이하&7일 때 &a힘 II&7가 부여됩니다%nl%&8&l>> &7일정 확률로 &e죽음을 거부&7하고 체력의 &a절반&7으로 되돌아옵니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &e낙하 피해&7와 &e화염 피해&7가 &f50%&7 감소합니다%nl%&8&l>> &7체력이 &f30% 이하&7일 때 <color:#E0464E>힘 II</color>&7가 부여됩니다%nl%&8&l>> &7일정 확률로 &e죽음을 거부&7하고 체력의 &a절반&7으로 되돌아옵니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack sealedWings() {
@@ -502,7 +502,7 @@ public final class Items {
     public static ItemStack sealedSword() {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
                 .name("<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> <gradient:#D1D1D1:#DBDBDB><italic:false><bold:true>[Lv.✕]</gradient> <gradient:#DFDFDF:#919191><italic:false><bold:true>얼어붙은 제왕의 검</gradient>")
-                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7무기를 들고 있으면 &a저항 I&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 &c데미지의 1.3배&7를 입힙니다%nl%&8&l>> &7우클릭 시 &f6초&7간 타격이 주변 적에게 튀어 &c피해 1칸 &8(쿨타임 40초)" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7무기를 들고 있으면 <color:#00DDFF>저항 I</color>&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 &c데미지의 1.3배&7를 입힙니다%nl%&8&l>> &7우클릭 시 &f6초&7간 타격이 주변 적에게 튀어 &c피해 1칸 &8(쿨타임 40초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack thunderAxe() {
@@ -517,25 +517,25 @@ public final class Items {
     public static ItemStack darknessWave() {
         return It.of(Material.MUSIC_DISC_11).ench(Enchantment.UNBREAKING, 10)
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
-                .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 III&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
-                        + "&8&l>> &7웅크리기 + 우클릭 시 &f5초&7간 주변 &f3칸&7에 검은 연기가 퍼져, 들어온 적에게 &9실명&7을 부여합니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
+                .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 <color:#D6D6D6>어둠</color>&7 4초 + <color:#D6D6D6>구속 III</color>&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
+                        + "&8&l>> &7웅크리기 + 우클릭 시 &f5초&7간 주변 &f3칸&7에 검은 연기가 퍼져, 들어온 적에게 <color:#D6D6D6>실명</color>&7을 부여합니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack chaosApocalypse() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [</b><b>Lv.</b><b>✦] 혼돈의 아포칼립스</b></gradient>")
-                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다%nl%&8&l>> &7우클릭 시 주변 &f5칸&7의 적에게 &c피해 2칸&7 + &9위더 II&7 3초, 밀쳐냅니다 &8(쿨타임 45초)" + SEASON_KEEP).build();
+                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 <color:#D6D6D6>구속 II</color>&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다%nl%&8&l>> &7우클릭 시 주변 &f5칸&7의 적에게 &c피해 2칸&7 + <color:#D6D6D6>위더 II</color>&7 3초, 밀쳐냅니다 &8(쿨타임 45초)" + SEASON_KEEP).build();
     }
 
     public static final String CLAYMORE_SD_NAME = "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>";
-    public static final String CLAYMORE_SD_LORE = "%nl%&7등급 : <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>Arbiter o</b><b>f H</b><b>eaven</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[심판자의</b><obf><b> </b></obf><b>권한]</b></gradient>%nl%&e&l>> &7무기 소지 시 &a이동 속도 증가%nl%&e&l>> &7무기 소지 시 &a최대 체력 3칸 증가%nl%&e&l>> &7플레이어 타격 시 &c강력한 방어구 무시 피해&7를 입힙니다%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+    public static final String CLAYMORE_SD_LORE = "%nl%&7등급 : <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>Arbiter o</b><b>f H</b><b>eaven</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[심판자의</b><obf><b> </b></obf><b>권한]</b></gradient>%nl%&e&l>> &7무기 소지 시 <color:#FFE94D>이동 속도</color> 증가%nl%&e&l>> &7무기 소지 시 &a최대 체력 3칸 증가%nl%&e&l>> &7플레이어 타격 시 &c강력한 방어구 무시 피해&7를 입힙니다%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack claymoreSd() {
         return It.of(Material.GOLDEN_SWORD).unbreakable().ench(Enchantment.CHANNELING, 10).name(CLAYMORE_SD_NAME).lore(CLAYMORE_SD_LORE).build();
     }
 
     public static final String FROST_NAME = "<gradient:#39C7FF:#D2FFF8:#00FFFF><italic:false><b>[❆] [Lv.</b><obf><b>D</b></obf><obf><b>D</b></obf><b>] </b><b>프로스트 그레이브</b></gradient>";
-    public static final String FROST_LORE = "%nl%&7등급 : <gradient:#39C7FF:#C2FFF5:#F5DAF8><italic:false><b>Glacier S</b><b>tor</b><b>m</b></gradient>%nl%&7S6 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#39C7FF:#C2FFF5><italic:false><b>[아이스 블래스트</b><b>]</b></gradient>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 무기 소지 시 <green>최대 체력 4칸 증가</green></color></color><color:#95E1FF></color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 무기 소지 시 <yellow>받는 데미지 감소</yellow> <gray>(0.8x)</gray></color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 타격 시 <blue>구속 II</blue>, <blue>나약함 I</blue>를 부여합니다</color></color><color:#95E1FF></color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 엔티티 타격 시 일정 확률로 <red>즉시 처치</red> 발동</color>%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+    public static final String FROST_LORE = "%nl%&7등급 : <gradient:#39C7FF:#C2FFF5:#F5DAF8><italic:false><b>Glacier S</b><b>tor</b><b>m</b></gradient>%nl%&7S6 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#39C7FF:#C2FFF5><italic:false><b>[아이스 블래스트</b><b>]</b></gradient>%nl%<color:#39C7FF><b>>></b><gray> 무기 소지 시 <green>최대 체력 4칸 증가</green></gray></color>%nl%<color:#39C7FF><b>>></b><gray> 무기 소지 시 <yellow>받는 데미지 감소</yellow> <dark_gray>(0.8x)</dark_gray></gray>%nl%<color:#39C7FF><b>>></b><gray> 타격 시 <color:#6FD6FF>구속 II</color>, <color:#6FD6FF>나약함 I</color>를 부여합니다</gray></color>%nl%<color:#39C7FF><b>>></b><gray> 엔티티 타격 시 일정 확률로 <red>즉시 처치</red> 발동</gray></color>%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack frostGrave() {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 7).name(FROST_NAME).lore(FROST_LORE).build();
@@ -543,7 +543,7 @@ public final class Items {
 
     /** 초승달의 서약 (예전 The New Characteristic 과 같은 색) */
     public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> 초승달의</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> 서약</b></gradient>";
-    public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 &a힘 III&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 &a재생 V&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+    public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 <color:#F49AC1>힘 III</color>&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 <color:#F49AC1>재생 V</color>&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack newCharacteristic() {
         return It.of(Material.MUSIC_DISC_5).ench(Enchantment.UNBREAKING, 10).name(NEW_CHAR_NAME).lore(NEW_CHAR_LORE).build();
@@ -558,9 +558,9 @@ public final class Items {
             {"&8&l>> &7날카로움 5", "&8&l>> &7네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
             {"&a&l>> &f날카로움 5", "&8&l>> &7네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
             {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
-            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(&9나약함 I&7)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
-            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(&9나약함 I&7)", "&a&l>> &c날카로움 6", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
-            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(&9나약함 I&7)", "&a&l>> &c날카로움 6", "&a&l>> &4타격 이펙트 &7(확률적으로 &c추가 데미지 1.25x&7)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(<color:#B2D6B6>나약함 I</color>&7)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(<color:#B2D6B6>나약함 I</color>&7)", "&a&l>> &c날카로움 6", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(<color:#B2D6B6>나약함 I</color>&7)", "&a&l>> &c날카로움 6", "&a&l>> &4타격 이펙트 &7(확률적으로 &c추가 데미지 1.25x&7)"},
     };
 
     /** 0~5 단계 크로노스의 칼날, 6 은 이터널 크로노스 */
@@ -568,7 +568,7 @@ public final class Items {
         if (stage >= 6) {
             return It.of(Material.NETHERITE_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
                     .name("<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] [L</b><b>v.↗</b><b>] 이터널 크로노스</b></gradient> <color:#CBC1A9><b>(MAX)</b></color>")
-                    .lore("%nl%&7등급 : <gradient:#BFA66E:#B2D6B6><italic:false><b>Eternaled</b></gradient>%nl%&7크로노스의 칼날 최대 레벨 등급%nl%%nl%&7성장 진도 <color:#CBC1A9><b>(6/6)</b></color>%nl%&a&l>> &f날카로움 5%nl%&a&l>> &e네더라이트화%nl%&a&l>> &6타격 이펙트 &7(&9나약함 I&7)%nl%&a&l>> &c날카로움 6%nl%&a&l>> &4타격 이펙트 &7(확률적으로 &c추가 데미지 1.25x&7)%nl%&a&l>> <gradient:#BFA66E:#B2D6B6><italic:false><b>모래 폭풍</b></gradient>" + SEASON_KEEP)
+                    .lore("%nl%&7등급 : <gradient:#BFA66E:#B2D6B6><italic:false><b>Eternaled</b></gradient>%nl%&7크로노스의 칼날 최대 레벨 등급%nl%%nl%&7성장 진도 <color:#CBC1A9><b>(6/6)</b></color>%nl%&a&l>> &f날카로움 5%nl%&a&l>> &e네더라이트화%nl%&a&l>> &6타격 이펙트 &7(<color:#B2D6B6>나약함 I</color>&7)%nl%&a&l>> &c날카로움 6%nl%&a&l>> &4타격 이펙트 &7(확률적으로 &c추가 데미지 1.25x&7)%nl%&a&l>> <gradient:#BFA66E:#B2D6B6><italic:false><b>모래 폭풍</b></gradient>" + SEASON_KEEP)
                     .lore(extraLore).build();
         }
         Material m = stage >= 2 ? Material.NETHERITE_SWORD : Material.DIAMOND_SWORD;
@@ -601,7 +601,7 @@ public final class Items {
     public static ItemStack claymoreJs() {
         return It.of(Material.GOLDEN_SWORD).unbreakable().ench(Enchantment.CHANNELING, 10)
                 .name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어")
-                .lore("%nl%&c&l-심판의 빛이 머리 위를 스친다.%nl%%nl%&7&lS2 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%&a&l&6&l[심판자의 권한]%nl%&a&l- &7무기 장착 시 &a이동 속도 증가%nl%&a&l- &7플레이어 타격 시 &c강력한 고정 피해&7를 입힙니다%nl%&a&l- &7최대 체력 &a3칸 증가%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.").build();
+                .lore("%nl%&c&l-심판의 빛이 머리 위를 스친다.%nl%%nl%&7&lS2 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%&a&l&6&l[심판자의 권한]%nl%&a&l- &7무기 장착 시 <color:#FFE94D>이동 속도</color> 증가%nl%&a&l- &7플레이어 타격 시 &c강력한 고정 피해&7를 입힙니다%nl%&a&l- &7최대 체력 &a3칸 증가%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.").build();
     }
 
     public static ItemStack preorderTicket() {

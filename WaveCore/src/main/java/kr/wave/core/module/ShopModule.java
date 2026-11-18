@@ -160,7 +160,7 @@ public class ShopModule extends Module {
         it.setAmount(amount);
         ItemMeta meta = it.getItemMeta();
         java.util.List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.lore());
-        lore.addAll(Msg.lore("", price(price, true).replace("%nl%&f가격", "%nl%&f수량 : &e" + amount + "개" + (amount >= 10 ? " &a(할인)" : "") + "%nl%&f가격")));
+        lore = Msg.append(lore, price(price, true).replace("%nl%&f가격", "%nl%&f수량 : &e" + amount + "개" + (amount >= 10 ? " &a(할인)" : "") + "%nl%&f가격"));
         meta.lore(lore);
         it.setItemMeta(meta);
         return it;

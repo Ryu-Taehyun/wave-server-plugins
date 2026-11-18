@@ -118,6 +118,17 @@ public final class Msg {
         return out;
     }
 
+    /** 기존 설명 뒤에 덧붙이기: 사이 빈 줄은 항상 한 줄만 */
+    public static List<Component> append(List<Component> base, String... parts) {
+        List<Component> out = base == null ? new ArrayList<>() : new ArrayList<>(base);
+        while (!out.isEmpty() && plain(out.get(out.size() - 1)).isBlank()) out.remove(out.size() - 1);
+        List<Component> add = lore(parts);
+        while (!add.isEmpty() && plain(add.get(0)).isBlank()) add.remove(0);
+        if (!out.isEmpty() && !add.isEmpty()) out.add(item(""));
+        out.addAll(add);
+        return out;
+    }
+
     /** 사용자가 입력한 글자(팀 이름 등)를 태그로 해석하지 않도록 */
     public static String esc(String user) {
         return user == null ? "" : user.replace("<", "\\<");

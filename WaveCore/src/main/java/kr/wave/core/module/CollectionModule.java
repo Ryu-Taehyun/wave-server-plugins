@@ -31,7 +31,7 @@ import java.util.function.Predicate;
  */
 public class CollectionModule extends Module {
 
-    private static final String NOT_OWNED = "%nl%%nl%&7&l상태 : &c&l획득되지 않음";
+    private static final String NOT_OWNED = "&7&l상태 : &c&l획득되지 않음";
 
     public CollectionModule(WaveCore plugin) {
         super(plugin);
@@ -173,7 +173,7 @@ public class CollectionModule extends Module {
         for (int i = 0; i < n && i < slots.length; i++) {
             ItemStack shown = c.items().get(i).get();
             boolean got = d.collected.contains(itemKey(shown));
-            g.set(slots[i], withLore(shown, got ? "%nl%%nl%&7&l상태 : &a&l수집 완료" : NOT_OWNED));
+            g.set(slots[i], withLore(shown, got ? "&7&l상태 : &a&l수집 완료" : NOT_OWNED));
         }
         int have = progress(d, c);
         boolean claimed = d.collectionClaimed.contains(c.key());
@@ -210,9 +210,7 @@ public class CollectionModule extends Module {
 
     private static ItemStack withLore(ItemStack it, String extra) {
         ItemMeta meta = it.getItemMeta();
-        var lore = meta.lore() == null ? new java.util.ArrayList<net.kyori.adventure.text.Component>() : new java.util.ArrayList<>(meta.lore());
-        lore.addAll(Msg.lore(extra));
-        meta.lore(lore);
+        meta.lore(Msg.append(meta.lore(), extra));
         it.setItemMeta(meta);
         return it;
     }
@@ -378,7 +376,7 @@ public class CollectionModule extends Module {
             ItemStack show = blade.clone();
             ItemMeta m = show.getItemMeta();
             java.util.List<net.kyori.adventure.text.Component> lore = m.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(m.lore());
-            lore.addAll(Msg.lore("", "&8━━━━━━━━━━━━━━", "&f올린 칼날 : " + STAGE_LABEL[stage], "&7클릭하면 인벤토리로 돌아갑니다."));
+            lore = Msg.append(lore, "&8━━━━━━━━━━━━━━", "&f올린 칼날 : " + STAGE_LABEL[stage], "&7클릭하면 인벤토리로 돌아갑니다.");
             m.lore(lore);
             show.setItemMeta(m);
             g.set(C_INPUT, show);
@@ -416,7 +414,7 @@ public class CollectionModule extends Module {
             ItemStack res = Items.chronos(stage + 1);
             ItemMeta rm = res.getItemMeta();
             java.util.List<net.kyori.adventure.text.Component> rl = rm.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(rm.lore());
-            rl.addAll(Msg.lore("", "&8━━━━━━━━━━━━━━", "&f결과 미리보기 : " + STAGE_LABEL[stage + 1], "&f새로 얻는 능력 : " + CHRONO_NEW[stage]));
+            rl = Msg.append(rl, "&8━━━━━━━━━━━━━━", "&f결과 미리보기 : " + STAGE_LABEL[stage + 1], "&f새로 얻는 능력 : " + CHRONO_NEW[stage]);
             rm.lore(rl);
             res.setItemMeta(rm);
             g.set(C_RESULT, res);
