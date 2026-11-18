@@ -513,8 +513,6 @@ public final class Items {
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 2칸)").build();
     }
 
-    /** 혼돈의 아포칼립스 세트 설명 (세 아이템 공통) */
-    public static final String CHAOS_SET = "<gradient:#1F1F1F:#BCBCBC><italic:false><b>[세트 : 혼돈의 아포칼립스]</b></gradient>%nl%&8- 혼돈의 아포칼립스 &7(무기)%nl%&8- 심연의 공포 &7(헬멧)%nl%&8- 다크니스 웨이브 &7(스킬)";
     private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";
 
     /** 심연의 공포 (혼돈의 아포칼립스 세트 헬멧) */
@@ -522,7 +520,7 @@ public final class Items {
         return It.of(Material.DIAMOND_HELMET).unbreakable().ench(Enchantment.PROTECTION, 4)
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>심연의 공포</b></gradient>")
                 .lore(CHAOS_HEAD + "&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a야간 투시&7가 부여됩니다%nl%"
-                        + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 &9어둠&7 2초 + &9구속 I&7을 부여합니다%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
+                        + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 &9어둠&7 2초 + &9구속 I&7을 부여합니다" + SEASON_KEEP).build();
     }
 
     /** 다크니스 웨이브 (혼돈의 아포칼립스 세트 스킬 아이템, 초승달의 서약과 같은 형태) */
@@ -530,13 +528,13 @@ public final class Items {
         return It.of(Material.MUSIC_DISC_11).ench(Enchantment.UNBREAKING, 10)
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
                 .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 &5어둠의 파동&7: 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 II&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
-                        + "&8&l>> &7웅크리기 + 우클릭 시 &5심연의 장막&7: &a투명화&7 + &a신속 II&7를 &f5초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
+                        + "&8&l>> &7웅크리기 + 우클릭 시 &5심연의 장막&7: &a투명화&7 + &a신속 II&7를 &f5초&7간 부여받습니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack chaosApocalypse() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [</b><b>Lv.</b><b>✦] 혼돈의 아포칼립스</b></gradient>")
-                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7네더 월드에 있을 시 &a화염 저항&7을 부여받습니다%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다%nl%&8&l>> &7우클릭 시 &5혼돈의 파열&7: 주변 &f5칸&7의 적에게 &c피해 2칸&7 + &9위더 II&7 3초, 밀쳐냅니다 &8(쿨타임 45초)%nl%%nl%" + CHAOS_SET + SEASON_KEEP).build();
+                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7네더 월드에 있을 시 &a화염 저항&7을 부여받습니다%nl%&8&l>> &7무기 기본 데미지가 &c6.5&7로 고정됩니다%nl%&8&l>> &7타격 시 &9구속 II&7를 부여합니다%nl%&8&l>> &7타격 시 일정 확률로 &c적의 체력을 절반&7으로 만듭니다%nl%&8&l>> &7우클릭 시 &5혼돈의 파열&7: 주변 &f5칸&7의 적에게 &c피해 2칸&7 + &9위더 II&7 3초, 밀쳐냅니다 &8(쿨타임 45초)" + SEASON_KEEP).build();
     }
 
     public static final String CLAYMORE_SD_NAME = "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>";
