@@ -925,10 +925,21 @@ public class WeaponModule extends Module {
         p.getInventory().setItemInMainHand(hand);
     }
 
-    private static String left(Map<UUID, Long> cd, UUID id, long now) {
-        long ms = cd.getOrDefault(id, 0L) - now;
-        return ms > 0 ? String.valueOf((ms + 999) / 1000) : null;
+    /**
+     * 액션바 한 칸: 이름 » [■■■□□□] 12초  /  이름 » ✔ 사용 가능 (우클릭)
+     * 쿨타임이 막 끝난 순간(1초 안)에는 짧은 알림음을 낸다.
+     */
+    private static String skill(Player p, String label, Map<UUID, Long> cd, long now, long totalMs, String color, String hint, int width) {
+        long end = cd.getOrDefault(p.getUniqueId(), 0L);
+        long ms = end - now;
+        if (ms <= 0) {
+            if (end > 0 && -ms < 1000) p.playSound(p.getLocation(), "block.note_block.pling", 0.6f, 1.8f);   // 다시 사용 가능
+            return label + " &8» &a&l✔ 사용 가능 &8(" + hint + ")";
+        }
+        int filled = (int) Math.round(width * (1 - Math.min(1.0, (double) ms / Math.max(1, totalMs))));
+        return label + " &8» &8[" + color + "▮".repeat(filled) + "&8" + "▮".repeat(width - filled) + "&8] &f" + ((ms + 999) / 1000) + "초";
     }
+
 
     /* ======================= 드롭 방지 ======================= */
 
@@ -1096,29 +1107,29 @@ public class WeaponModule extends Module {
 
             repairLore(p, hand);
 
-            // 스킬 쿨타임 액션바
+            // 스킬 쿨타임 액션바: [이름] [진행 막대] 남은 시간 / 사용 가능
+            String bar = null;
             if (tool.contains(Items.N_SEALED_SWORD)) {
-                String l = left(sealedCd, id, now);
-                Msg.actionBar(p, "<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> " + (l != null ? "&c&l사용 쿨타임 : &7" + l + "초 남음" : "&e&l특수 능력을 사용할 수 있습니다."));
+                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 제왕의 질주</b></gradient>", sealedCd, now, 45_000, "&b", "우클릭", 12);
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
-                String l = left(chronosCd, id, now);
-                Msg.actionBar(p, "<gradient:#BFA66E:#B2D6B6><italic:false><bold:true>[Time]</gradient> " + (l != null ? "&c&l모래 폭풍 쿨타임 : &7" + l + "초 남음" : "&e&l모래 폭풍을 사용할 수 있습니다."));
+                long storm = sandStormUntil.getOrDefault(id, 0L) - now;
+                bar = storm > 0
+                        ? "<gradient:#BFA66E:#B2D6B6><b>⌛ 모래 폭풍</b></gradient> &8» &e&l발동 중 &f" + ((storm + 999) / 1000) + "초"
+                        : skill(p, "<gradient:#BFA66E:#B2D6B6><b>⌛ 모래 폭풍</b></gradient>", chronosCd, now, 60_000, "&6", "우클릭", 12);
             } else if (tool.contains(Items.N_CHAOS)) {
-                String l = left(chaosCd, id, now);
-                Msg.actionBar(p, "&8&l[Chaos] &7혼돈의 파열 : " + (l != null ? "&c" + l + "초 &7남음" : "&e사용 가능"));
+                bar = skill(p, "<gradient:#727272:#E0E0E0><b>✦ 혼돈의 파열</b></gradient>", chaosCd, now,
+                        (long) (plugin.getConfig().getDouble("weapons.chaos.skill-cooldown-seconds", 45) * 1000), "&7", "우클릭", 12);
             } else if (tool.contains(Items.N_DARK_WAVE)) {
-                String l1 = left(waveCd1, id, now), l2 = left(waveCd2, id, now);
-                Msg.actionBar(p, "&8&l[Chaos] &71번 스킬 : " + (l1 != null ? "&c" + l1 + "초 &7남음" : "&e사용 가능")
-                        + " &8| &72번 스킬 : " + (l2 != null ? "&c" + l2 + "초 &7남음" : "&e사용 가능"));
+                bar = skill(p, "<gradient:#727272:#E0E0E0><b>✦ 어둠의 파동</b></gradient>", waveCd1, now, 60_000, "&7", "우클릭", 6)
+                        + "  &8│  " + skill(p, "<gradient:#E0E0E0:#727272><b>심연의 장막</b></gradient>", waveCd2, now, 90_000, "&7", "웅크리기+우클릭", 6);
             } else if (Items.isNewChar(tool)) {
-                String l1 = left(newCharCd1, id, now);
-                String l2 = left(newCharCd2, id, now);
-                Msg.actionBar(p, "&5&l[🌙] &71번 스킬 : " + (l1 != null ? "&c" + l1 + "초 &7남음" : "&e사용 가능")
-                        + " &8| &72번 스킬 : " + (l2 != null ? "&c" + l2 + "초 &7남음" : "&e사용 가능"));
+                bar = skill(p, "<gradient:#1E2586:#C8B0B0><b>🌙 월광의 힘</b></gradient>", newCharCd1, now, 90_000, "&9", "우클릭", 6)
+                        + "  &8│  " + skill(p, "<gradient:#FAD4D4:#C8B0B0><b>달빛 치유</b></gradient>", newCharCd2, now, 90_000, "&d", "웅크리기+우클릭", 6);
             } else if (tool.contains(Items.N_CLAYMORE_SD)) {
-                String l = left(claymoreCd, id, now);
-                Msg.actionBar(p, "&6&l[&a&l⚡&6&l] " + (l != null ? "&c&l심판의 빛 쿨타임 : &7" + l + "초 남음" : "&e&l심판의 빛을 사용할 수 있습니다."));
+                bar = skill(p, "<gradient:#FFF200:#FFFCD4><b>⚡ 심판의 빛</b></gradient>", claymoreCd, now,
+                        (long) (plugin.getConfig().getDouble("weapons.claymore.judgment-cooldown-seconds", 30) * 1000), "&e", "타격 시 발동", 12);
             }
+            if (bar != null) Msg.actionBar(p, bar);
 
             // 최대 체력 / 이동 속도 (기본 하트 5칸, 특수 무기 소지 시 +5칸)
             boolean claymore = hasClaymore(p);
