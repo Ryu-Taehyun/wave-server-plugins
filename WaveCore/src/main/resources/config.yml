@@ -130,6 +130,17 @@ special-shop:
     crate: "TheEchoesOfNatural"   # plugins/WaveCore/crates/ 의 파일 이름
     price-1: 5000
     price-10: 45000
+  chaos-voucher:
+    crate: "CatastropheOfChaos"
+    price-1: 5000
+    price-10: 45000
+
+# 아이템 뽑기 메뉴: 아래 상자들은 '스페셜 테마 뽑기' 칸 안에 따로 모아 보여줍니다
+crate-menu:
+  special-theme:
+    - "TheEchoesOfNatural"
+    - "CatastropheOfChaos"
+  special-theme-slot: 13   # 아이템 뽑기 메뉴에서 '스페셜 테마 뽑기' 버튼 칸
 
 # 프리미엄 패스 (PremiumPass 연동, 유료 캐시 상점)
 premium-pass:

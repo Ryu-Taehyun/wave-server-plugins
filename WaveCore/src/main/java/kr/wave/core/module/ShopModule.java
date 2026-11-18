@@ -146,10 +146,16 @@ public class ShopModule extends Module {
         g.set(11, offer(Items.altarTicket(), 10, t10), e -> {
             if (left(e)) buy(p, t10, true, () -> It.give(p, Items.altarTicket(), 10), "§a[💰] &7천공의 제단 이동권 10개를 " + Msg.num(t10) + " 유료 캐시에 구매했습니다.");
         });
-        // The Echoes of Natural 상자 교환권
+        // 스페셜 테마 상자 교환권: The Echoes of Natural / Catastrophe of Chaos
+        long c1 = cfg.getLong("special-shop.chaos-voucher.price-1", 5000), c10 = cfg.getLong("special-shop.chaos-voucher.price-10", 45000);
+        CrateModule.Crate chaos = crates == null ? null : crates.crate(cfg.getString("special-shop.chaos-voucher.crate", "CatastropheOfChaos"));
         if (echoes != null) {
-            keyOffer(g, p, 15, echoes.id(), 1, e1, true);
-            keyOffer(g, p, 16, echoes.id(), 10, e10, true);
+            keyOffer(g, p, 13, echoes.id(), 1, e1, true);
+            keyOffer(g, p, 14, echoes.id(), 10, e10, true);
+        }
+        if (chaos != null) {
+            keyOffer(g, p, 15, chaos.id(), 1, c1, true);
+            keyOffer(g, p, 16, chaos.id(), 10, c10, true);
         }
         finish(g, p);
     }
@@ -290,6 +296,8 @@ public class ShopModule extends Module {
         keyOffer(g, p, 22, "TheRuiner", 1, 5000, true);
         String echoesId = plugin.getConfig().getString("special-shop.echoes-voucher.crate", "TheEchoesOfNatural");
         keyOffer(g, p, 23, echoesId, 1, plugin.getConfig().getLong("special-shop.echoes-voucher.price-1", 5000), true);
+        keyOffer(g, p, 24, plugin.getConfig().getString("special-shop.chaos-voucher.crate", "CatastropheOfChaos"), 1,
+                plugin.getConfig().getLong("special-shop.chaos-voucher.price-1", 5000), true);
         // 뉴비 헬퍼 패스: 계정당 1회만 (영구)
         boolean boughtPass = data(p).purchases.getOrDefault("newbie-pass", 0) >= 1;
         g.set(28, It.of(Material.PAPER).ench(Enchantment.FORTUNE, 10).name("&a&l[💡 NEWBIE] 뉴비 헬퍼 패스")

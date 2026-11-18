@@ -1,0 +1,85 @@
+Crate:
+  # WaveCore 상자 (CrazyCrates 형식과 같은 항목을 사용합니다)
+  CrateType: Wheel
+  StartingKeys: 0
+  RequiredKeys: 1
+  InGUI: true
+  # 스페셜 테마 상자(config.yml crate-menu.special-theme)는 스페셜 테마 뽑기 메뉴 안에 자동으로 배치되어 Slot 을 쓰지 않습니다
+  Slot: 14
+  OpeningBroadCast: true
+  Item: crying_obsidian
+  Glowing: true
+  Name: <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrophe</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> of Chaos</b></gradient>
+  Lore:
+  - '<gray>오픈 가능한 상자 : <yellow>%keys%'
+  - <gray>우클릭하여 상자 구성품을 확인할 수 있습니다
+  - ''
+  - <gray>좌클릭 시 즉시 오픈됩니다.
+  Preview:
+    Name: 상자 구성품
+    Toggle: true
+  Animation:
+    Name: Catastrophe of Chaos
+  sound:
+    cycle-sound:
+      toggle: true
+      value: block.note_block.bass
+      volume: 1.0
+      pitch: 0.8
+    stop-sound:
+      toggle: true
+      value: entity.wither.spawn
+      volume: 0.6
+      pitch: 1.2
+  # (WaveCore) 상점에서 '키' 대신 표시할 이름
+  Key-Label: 상자 교환권
+  PhysicalKey:
+    Name: <b><gradient:#1F1F1F:#BCBCBC:#727272>[Chaos] • Catastrophe of Chaos 상자 교환권 •</gradient></b>
+    Lore:
+    - ''
+    - <gray>Catastrophe of Chaos 상자를 1회 오픈할 수 있습니다.
+    - <gray>/상자 또는 우클릭하여 상자 메뉴를 열 수 있습니다.
+    Item: black_dye
+    Glowing: true
+  # Items 대신 Special 을 쓰면 서버 아이템을 지급합니다 (chaos, darkness_wave, time_shard, quantum_matter, vibranium ...)
+  Prizes:
+    '1':
+      Special: chaos
+      DisplayItem: netherite_hoe
+      Weight: 2.0
+    '2':
+      Special: darkness_wave
+      DisplayItem: music_disc_11
+      Weight: 2.0
+    '3':
+      DisplayItem: netherite_scrap
+      DisplayAmount: 4
+      Weight: 6.0
+    '4':
+      DisplayItem: enchanted_golden_apple
+      DisplayAmount: 1
+      Weight: 4.0
+    '5':
+      DisplayItem: golden_apple
+      DisplayAmount: 8
+      Weight: 10.0
+    '6':
+      DisplayItem: crying_obsidian
+      DisplayAmount: 32
+      Weight: 10.0
+    '7':
+      DisplayItem: diamond
+      DisplayAmount: 8
+      Weight: 8.0
+    '8':
+      DisplayItem: experience_bottle
+      DisplayAmount: 32
+      Weight: 12.0
+    '9':
+      DisplayItem: ender_pearl
+      DisplayAmount: 16
+      Weight: 12.0
+    '10':
+      DisplayItem: coal_block
+      DisplayAmount: 32
+      Weight: 12.0

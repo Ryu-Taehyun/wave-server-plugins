@@ -604,9 +604,11 @@ public class CoreModule extends Module {
     }
 
     /** 크라운 처치 알림 (한 줄) */
+    private static final String CROWN = "<gradient:#FFF176:#FFB732><b>👑</b></gradient>";
+
     private void crownKillBroadcast(Component killer, Component victim, Component item, String pos) {
         // 한 줄: 👑 처치자 » 상대 ( 무기 ) (좌표) - 좌표까지 금빛
-        Msg.broadcastFill("<gradient:#FFF176:#FFB732><b>👑</b></gradient> %killer% <color:#FFB732><b>»</b></color> %victim% &6( %item% &6) <gradient:#FFF176:#FFB732>(" + pos + ")</gradient>",
+        Msg.broadcastFill(CROWN + " %killer% <color:#FFB732><b>»</b></color> %victim% &6( %item% &6) <gradient:#FFF176:#FFB732>(" + pos + ")</gradient>",
                 "%killer%", killer, "%victim%", victim, "%item%", item);
         for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.bell.use", 0.5f, 0.7f);
     }
@@ -690,16 +692,18 @@ public class CoreModule extends Module {
             String plain = Msg.name(tool);
             Component k = nameTag(killer, nickName(kd.nickColor, killer.getName(), "&7"));
             Component v = nameTag(victim, "&7" + victim.getName());
+            // 크라운 표식: 특수 킬로그에도 👑 와 금빛 화살표
+            String crown = kd.crownKill ? CROWN + " " : "", arrow = kd.crownKill ? "<color:#FFB732><b>»</b></color>" : "&8»";
             if (plain.equals(Items.N_CLAYMORE_SD)) {
                 Msg.broadcast(" ");
-                Msg.broadcastFill("<gold><obf>D</obf></gold> %killer% &8» %victim% <gold><obf>D</obf></gold>", "%killer%", k, "%victim%", v);
+                Msg.broadcastFill(crown + "<gold><obf>D</obf></gold> %killer% " + arrow + " %victim% <gold><obf>D</obf></gold>", "%killer%", k, "%victim%", v);
                 Msg.broadcastItem("<gold><obf>D</obf></gold> " + Msg.ITEM + " " + posText(kd, pos) + " <gold><obf>D</obf></gold>", Msg.hoverItem(tool,
                         "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>"));
                 Msg.broadcast(" ");
                 if (kd.crownKill) crownFx(killer, victim.getLocation());   // 크라운 표식: 무기와 관계없이 왕관 연출
             } else if (plain.equals(Items.N_FROST)) {
                 Msg.broadcast(" ");
-                Msg.broadcastFill("<color:#B0E4F8><obf>D</obf></color> %killer% &8» %victim% <color:#B0E4F8><obf>D</obf></color>", "%killer%", k, "%victim%", v);
+                Msg.broadcastFill(crown + "<color:#B0E4F8><obf>D</obf></color> %killer% " + arrow + " %victim% <color:#B0E4F8><obf>D</obf></color>", "%killer%", k, "%victim%", v);
                 Msg.broadcastItem("<color:#B0E4F8><obf>D</obf></color> " + Msg.ITEM + " " + posText(kd, pos) + " <color:#B0E4F8><obf>D</obf></color>", Msg.hoverItem(tool,
                         "<gradient:#39C7FF:#D2FFF8:#00FFFF><italic:false><b>[❆] [Lv.</b><obf><b>D</b></obf><obf><b>D</b></obf><b>] </b><b>프로스트 그레이브</b></gradient>"));
                 Msg.broadcast(" ");

@@ -107,6 +107,9 @@ public class CrateModule extends Module {
     private final Set<UUID> opening = new HashSet<>();
     private NamespacedKey keyTag;
 
+    /** 이미 운영 중인 서버에도 한 번 만들어 줄 새 기본 상자 */
+    private static final java.util.Set<String> NEW_DEFAULTS = java.util.Set.of("CatastropheOfChaos");
+
     public CrateModule(WaveCore plugin) {
         super(plugin);
     }
@@ -127,13 +130,15 @@ public class CrateModule extends Module {
     public void load() {
         crates.clear();
         File dir = folder();
-        if (!dir.exists()) {
-            dir.mkdirs();
-            for (String n : new String[]{"Sealedp", "TheRuiner", "chronos", "TheEchoesOfNatural", "combat", "enderpearl"}) {
-                try {
-                    plugin.saveResource("crates/" + n + ".yml", false);
-                } catch (IllegalArgumentException ignored) {
-                }
+        boolean fresh = !dir.exists();
+        if (fresh) dir.mkdirs();
+        for (String n : new String[]{"Sealedp", "TheRuiner", "chronos", "TheEchoesOfNatural", "combat", "enderpearl", "CatastropheOfChaos"}) {
+            // 처음 설치 때는 전부, 이후에는 새로 추가된 상자(혼돈 상자 등)만 만들어 줌. 지운 상자를 되살리지 않도록 새 상자만
+            if (!fresh && !NEW_DEFAULTS.contains(n)) continue;
+            if (new File(dir, n + ".yml").exists()) continue;
+            try {
+                plugin.saveResource("crates/" + n + ".yml", false);
+            } catch (IllegalArgumentException ignored) {
             }
         }
         File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
@@ -381,9 +386,10 @@ public class CrateModule extends Module {
     public void onKeyUse(PlayerInteractEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (keyOf(e.getPlayer().getInventory().getItemInMainHand()) == null) return;
+        Crate c = keyOf(e.getPlayer().getInventory().getItemInMainHand());
+        if (c == null) return;
         e.setCancelled(true);
-        openMenu(e.getPlayer());
+        back(e.getPlayer(), c);   // 스페셜 테마 상자 교환권은 스페셜 테마 뽑기로 바로
     }
 
     @EventHandler
@@ -412,9 +418,62 @@ public class CrateModule extends Module {
         g.set(4, It.of(Material.PLAYER_HEAD).skull(p).name("&e" + p.getName()).lore("", "&7좌클릭 &f상자 1회 열기", "&7Shift + 좌클릭 &f상자 10회 열기",
                 "&7우클릭 &f구성품 보기", "", "&8키는 상점의 룰렛 키 상점 / 유료 캐시 상점에서", "&8구매할 수 있습니다.").build());
         int auto = 10;
+        java.util.List<Crate> theme = specialTheme();
+        if (!theme.isEmpty()) {
+            int keysAll = 0;
+            for (Crate c : theme) keysAll += keys(p, c);
+            It t = It.of(Material.BEACON).name(SPECIAL_THEME_NAME)
+                    .lore("", "&7기간 한정 테마 상자를 모아 둔 곳입니다.", "");
+            for (Crate c : theme) t.lore("&8- " + c.name + " &7(" + keys(p, c) + "개)");
+            t.lore("", "&8&l↳ &7&l클릭 시 이동됩니다.");
+            if (keysAll > 0) t.ench(Enchantment.UNBREAKING, 1);
+            g.set(plugin.getConfig().getInt("crate-menu.special-theme-slot", 13), t.hide().build(), e -> later(1, () -> openTheme(p)));
+        }
         for (Crate c : crates.values()) {
-            if (!c.inGui) continue;
+            if (!c.inGui || theme.contains(c)) continue;
             int slot = c.slot >= 0 && c.slot < 36 ? c.slot : auto++;
+            crateButton(g, p, c, slot);
+        }
+        g.nav(p, () -> plugin.module(ShopModule.class).openMain(p));
+        border(g);
+        g.open(p);
+    }
+
+    static final String SPECIAL_THEME_NAME = "<b><gradient:#F5E400:#95FFBE:#BCBCBC><italic:false>스페셜 테마 뽑기</gradient></b>";
+
+    /** config.yml crate-menu.special-theme 에 적힌 상자 (적힌 순서대로) */
+    private java.util.List<Crate> specialTheme() {
+        java.util.List<Crate> out = new java.util.ArrayList<>();
+        java.util.List<String> ids = plugin.getConfig().isList("crate-menu.special-theme")
+                ? plugin.getConfig().getStringList("crate-menu.special-theme") : java.util.List.of("TheEchoesOfNatural", "CatastropheOfChaos");
+        for (String id : ids) {
+            Crate c = crate(id);
+            if (c != null && c.inGui && !out.contains(c)) out.add(c);
+        }
+        return out;
+    }
+
+    public boolean isSpecialTheme(Crate c) {
+        return specialTheme().contains(c);
+    }
+
+    /** 스페셜 테마 뽑기: 테마 상자만 가운데 줄에 모아서 */
+    public void openTheme(Player p) {
+        absorbPhysical(p);
+        java.util.List<Crate> theme = specialTheme();
+        Gui g = new Gui(4, "&8&l스페셜 테마 뽑기");
+        g.set(4, It.of(Material.PLAYER_HEAD).skull(p).name("&e" + p.getName()).lore("", "&7좌클릭 &f상자 1회 열기", "&7Shift + 좌클릭 &f상자 10회 열기",
+                "&7우클릭 &f구성품 보기", "", "&8상자 교환권은 상점의 스페셜 상점 / 유료 캐시 상점에서", "&8구매할 수 있습니다.").build());
+        int n = Math.min(7, theme.size());
+        int start = 13 - (n - 1);   // 1개: 13, 2개: 12 14, 3개: 11 13 15 ...
+        for (int i = 0; i < n; i++) crateButton(g, p, theme.get(i), n <= 4 ? start + i * 2 : 10 + i);
+        g.nav(p, () -> openMenu(p));
+        border(g);
+        g.open(p);
+    }
+
+    private void crateButton(Gui g, Player p, Crate c, int slot) {
+        {
             int keys = keys(p, c);
             It b = It.of(c.icon).name(c.name);
             for (String l : c.lore) b.lore(l.replace("%keys%", String.valueOf(keys)).replace("%Keys%", String.valueOf(keys)));
@@ -432,9 +491,12 @@ public class CrateModule extends Module {
                 }
             });
         }
-        g.nav(p, () -> plugin.module(ShopModule.class).openMain(p));
-        border(g);
-        g.open(p);
+    }
+
+    /** 상자를 열었던 메뉴로 돌아가기 */
+    private void back(Player p, Crate c) {
+        if (c != null && isSpecialTheme(c)) openTheme(p);
+        else openMenu(p);
     }
 
     private void preview(Player p, Crate c) {
@@ -446,7 +508,7 @@ public class CrateModule extends Module {
         for (int row = 1; row < rows - 1; row++) {
             for (int col = 1; col <= 7 && idx < c.prizes.size(); col++) g.set(row * 9 + col, c.prizes.get(idx++).display.clone());
         }
-        g.nav(p, () -> openMenu(p));
+        g.nav(p, () -> back(p, c));
         border(g);
         g.open(p);
     }
@@ -614,7 +676,7 @@ public class CrateModule extends Module {
         }
         // 결과 창: 스킵 버튼 -> 상자 메뉴로
         int btn = s.wins.size() == 1 ? 22 : 31;
-        s.gui.set(btn, It.of(Material.LIME_DYE).name("&a&l완료").lore("&7클릭하면 상자 메뉴로 돌아갑니다.").build(), e -> later(1, () -> openMenu(p)));
+        s.gui.set(btn, It.of(Material.LIME_DYE).name("&a&l완료").lore("&7클릭하면 상자 메뉴로 돌아갑니다.").build(), e -> later(1, () -> back(p, c)));
         if (!p.isOnline()) return;
         if (c.stopSound != null) Msg.sound(p, c.stopSound, 1, 1);
         Fx.burst(p.getLocation().add(0, 1.2, 0), Particle.TOTEM_OF_UNDYING, s.wins.size() > 1 ? 80 : 40, 0.4);

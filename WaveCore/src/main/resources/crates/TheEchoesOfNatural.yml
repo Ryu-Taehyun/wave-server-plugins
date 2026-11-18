@@ -4,8 +4,8 @@ Crate:
   StartingKeys: 0
   RequiredKeys: 1
   InGUI: true
-  # /상자 메뉴에서의 칸 번호
-  Slot: 13
+  # 스페셜 테마 상자(config.yml crate-menu.special-theme)는 스페셜 테마 뽑기 메뉴 안에 자동으로 배치되어 Slot 을 쓰지 않습니다
+  Slot: 12
   OpeningBroadCast: true
   Item: moss_block
   Glowing: true
