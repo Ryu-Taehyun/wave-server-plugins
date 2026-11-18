@@ -62,11 +62,13 @@ public final class Items {
     public static final String N_NEW_CHAR = "[🌙] [Lv.DD] The New Characteristic";
     public static final String N_CLAYMORE_SD = "[⚡] [Lv.sd] 천공의 심판자 클레이모어";
     public static final String N_FROST = "[❆] [Lv.DD] 프로스트 그레이브";
-    public static final String N_TIME_WIND = "[✦] Time piecer Wind";
-    /** Echo Bell (보조 무기: Time piecer Wind 와 같은 포지션) */
-    public static final String N_BELL = "[✦] Echo Bell";
-    /** Umbral Chain (보조 무기: Time piecer Wind 와 같은 포지션) */
-    public static final String N_SHADE = "[✦] Umbral Chain";
+    /** 보조 무기 3종 (한국어 이름). 예전 영어 이름의 아이템도 같은 무기로 인식하고, 쓰는 순간 새 이름으로 바뀜 */
+    public static final String N_TIME_WIND = "[✦] 시간을 가르는 바람";
+    public static final String N_TIME_WIND_OLD = "Time piecer Wind";
+    public static final String N_BELL = "[✦] 메아리 종";
+    public static final String N_BELL_OLD = "Echo Bell";
+    public static final String N_SHADE = "[✦] 그림자 사슬";
+    public static final String N_SHADE_OLD = "Umbral Chain";
     /** 잿불 낙인검 (일반 상점 판매) */
     public static final String N_EMBER = "잿불 낙인검";
 /** 망령 수확자 (예전 Soul Splitter 를 완전히 바꾼 무기). 이름에 이 글자가 있으면 같은 무기 */
@@ -260,14 +262,13 @@ public final class Items {
 
     public static final String EMBER_NAME = "<b><gradient:#FF3D00:#FF7A18:#FFD36E><italic:false>[Ember] [Lv.✹] 잿불 낙인검</gradient></b>";
 
-    /** 잿불 낙인검: 같은 대상을 4초 안에 3번 맞히면 낙인 폭발 (추가 피해 + 화염) */
+    /** 잿불 낙인검: 같은 대상에게 낙인이 4~7개(무작위) 쌓이면 낙인 폭발 (추가 피해 + 화염) */
     public static ItemStack emberBrand(String... extraLore) {
         ItemStack it = It.of(Material.DIAMOND_SWORD).name(EMBER_NAME)
-                .lore("%nl%&7등급 : <gradient:#FF7A18:#FFD36E><bold:true>Epic</gradient>%nl%%nl%"
-                        + "<b><gradient:#FF3D00:#FFD36E><italic:false>꺼지지 않는 잿불은, 세 번째 일격에 비로소 타오른다.</gradient></b>%nl%%nl%"
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%"
                         + "<b><gradient:#FF7A18:#FFD36E><italic:false>[Lv.Ember 특성]</gradient></b>%nl%"
                         + "&8&l>> &7적중할 때마다 대상에게 &6잿불 낙인&7을 새깁니다 &8(4초 유지)%nl%"
-                        + "&8&l>> &7낙인 3개가 모이면 폭발하여 &c추가 피해 2칸&7과 &6화염&7을 입힙니다")
+                        + "&8&l>> &7낙인이 &f4~7개&7 모이면 폭발하여 &c추가 피해 2칸&7과 &6화염&7을 입힙니다")
                 .lore(extraLore).build();
         var m = it.getItemMeta();
         m.setEnchantmentGlintOverride(true);
@@ -275,11 +276,11 @@ public final class Items {
         return it;
     }
 
-    public static final String SHADE_NAME = "<reset><italic:false><gradient:#4A6FA5:#9FB4C7:#E8F1F8>[✦] Umbral Chain</gradient>";
+    public static final String SHADE_NAME = "<reset><italic:false><gradient:#4A6FA5:#9FB4C7:#E8F1F8>[✦] 그림자 사슬</gradient>";
 
-    public static final String BELL_NAME = "<reset><italic:false><gradient:#FFD86B:#FFF6D5:#8A6BFF>[✦] Echo Bell</gradient>";
+    public static final String BELL_NAME = "<reset><italic:false><gradient:#FFD86B:#FFF6D5:#8A6BFF>[✦] 메아리 종</gradient>";
 
-    /** Echo Bell: 일정 확률로 종을 울려 대상을 어둠과 멀미에 빠뜨리고 밀쳐냄 */
+    /** 메아리 종: 일정 확률로 종을 울려 대상을 어둠과 멀미에 빠뜨리고 밀쳐냄 */
     public static ItemStack echoBell(String... extraLore) {
         return It.of(Material.BELL).ench(Enchantment.UNBREAKING, 10).name(BELL_NAME)
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%&7메아리치는 종을 울려 일정 확률로 플레이어의 시야와 감각을 빼앗습니다.").lore(extraLore).build();
@@ -292,15 +293,17 @@ public final class Items {
         return m != null ? m : Material.IRON_BARS;
     }
 
-    /** Umbral Chain: 일정 확률로 그림자 사슬을 걸어 적을 끌어당기고 묶음 (Time piecer Wind 와 같은 보조 무기) */
+    /** 그림자 사슬: 일정 확률로 그림자 사슬을 걸어 적을 끌어당기고 묶음 (시간을 가르는 바람 와 같은 보조 무기) */
     public static ItemStack umbralChain(String... extraLore) {
         return It.of(chainMaterial()).ench(Enchantment.UNBREAKING, 10).name(SHADE_NAME)
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%&7그림자 사슬을 던져 일정 확률로 플레이어를 끌어당기고 묶어버립니다.").lore(extraLore).build();
     }
 
+    public static final String TIME_WIND_NAME = "<reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] 시간을 가르는 바람</gradient>";
+
     public static ItemStack timePiecerWind(String... extraLore) {
         return It.of(Material.BREEZE_ROD).ench(Enchantment.UNBREAKING, 10)
-                .name("<reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] Time piecer Wind</gradient>")
+                .name(TIME_WIND_NAME)
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%&7시간을 조각하여 일정 확률로 플레이어를 하늘로 날려버립니다.").lore(extraLore).build();
     }
 
@@ -311,16 +314,33 @@ public final class Items {
     private static final String[] SOUL_STEP_NAME = {"<color:#8A5CFF>첫 번째 각성</color>", "<color:#7FA8FF>두 번째 각성</color>", "<color:#5FFBF1>마지막 각성</color>"};
     private static final String[] SOUL_STEP_TEXT = {"날카로움 IV", "날카로움 V · 약탈 IV", "날카로움 VI · 약탈 V"};
 
+    /**
+     * 망령 수확자 고유 번호. 아이템 태그(soul_id) → 예전 커스텀 모델 데이터 순서로 찾고,
+     * 둘 다 없으면(상자 보상 등으로 받은 칼) 새 번호를 붙여 태그에 저장한다. meta 는 호출한 쪽에서 setItemMeta 할 것.
+     */
+    public static int soulId(WaveCore plugin, org.bukkit.inventory.meta.ItemMeta meta) {
+        org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(plugin, "soul_id");
+        var pdc = meta.getPersistentDataContainer();
+        Integer id = pdc.get(key, org.bukkit.persistence.PersistentDataType.INTEGER);
+        if (id == null && meta.hasCustomModelData()) id = meta.getCustomModelData();
+        if (id == null) {
+            do id = ThreadLocalRandom.current().nextInt(100000, 1000000);
+            while (plugin.store().global().swordKills.containsKey(id));
+            plugin.store().global().swordKills.put(id, 0);
+        }
+        pdc.set(key, org.bukkit.persistence.PersistentDataType.INTEGER, id);
+        return id;
+    }
+
     public static boolean isSoulSplitter(ItemStack it) {
         return Msg.nameHas(it, N_SOUL_SPLITTER) || Msg.nameHas(it, N_SOUL_SPLITTER_OLD);
     }
 
     /** 망령 수확자 설명: 각성 단계 달성 표시, 다음 단계까지 진행 막대 */
     public static String soulSplitterLore(int kills) {
-        StringBuilder b = new StringBuilder("%nl%&7등급 : <gradient:#8A5CFF:#5FFBF1><bold:true>Harvest</gradient>%nl%%nl%")
-                .append("<b><gradient:#3A0CA3:#8A5CFF:#5FFBF1><italic:false>쓰러진 자의 망령은 칼날에 깃들어, 다음 사냥을 부른다.</gradient></b>%nl%%nl%")
+        StringBuilder b = new StringBuilder("%nl%&7등급 : &dEpic%nl%%nl%")
                 .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[Lv.Harvest 특성]</gradient></b>%nl%")
-                .append("&8&l>> &7적을 처치할 때마다 망령을 거두어 칼날에 깃듭니다%nl%")
+                .append("&8&l>> &7플레이어나 몬스터를 처치할 때마다 망령을 거두어 칼날에 깃듭니다%nl%")
                 .append("&8&l>> &7망령이 쌓이면 칼날이 각성합니다%nl%%nl%")
                 .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[각성]</gradient></b>%nl%");
         for (int i = 0; i < SOUL_STEPS.length; i++) {
@@ -353,6 +373,7 @@ public final class Items {
         plugin.store().global().swordKills.put(id, kills);
         plugin.store().saveGlobal();
         It b = It.of(Material.NETHERITE_SWORD).cmd(id).name(SOUL_SPLITTER_NAME).lore(soulSplitterLore(kills)).lore(extraLore);
+        b.pdcInt(new org.bukkit.NamespacedKey(plugin, "soul_id"), id);
         if (kills >= 250) b.ench(Enchantment.SHARPNESS, 6).ench(Enchantment.LOOTING, 5);
         else if (kills >= 100) b.ench(Enchantment.SHARPNESS, 5).ench(Enchantment.LOOTING, 4);
         else if (kills >= 50) b.ench(Enchantment.SHARPNESS, 4);

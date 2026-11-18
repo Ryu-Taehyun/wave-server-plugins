@@ -48,7 +48,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * randombox.sk / sealed.sk / 시즌무기.sk / 장터.sk 의 특수 아이템 능력
  * - 공격/피격 효과, 우클릭 스킬과 쿨타임 액션바, 장착 효과, 드롭 방지, 최대 체력/이동 속도
- * - 망령 수확자(예전 Soul Splitter) 처치 카운터, Time piecer Wind
+ * - 망령 수확자(예전 Soul Splitter) 처치 카운터, 시간을 가르는 바람(예전 Time piecer Wind)
  * - 아이템 지급 관리자 명령어
  */
 public class WeaponModule extends Module {
@@ -416,11 +416,13 @@ public class WeaponModule extends Module {
                 }
             }
             if (tool.contains(Items.N_EMBER)) ember(attacker, victim, e);
-            if (tool.contains(Items.N_SHADE) && e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK)
-                shade(attacker, victim);
-            if (tool.contains(Items.N_BELL) && e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK)
-                bell(attacker, victim);
-            if (tool.contains(Items.N_TIME_WIND) && chance(0.275)) {
+            boolean melee = e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK;
+            if (tool.contains("[✦] " + Items.N_SHADE_OLD)) renameLegacy(attacker, Items.umbralChain());
+            if (tool.contains("[✦] " + Items.N_BELL_OLD)) renameLegacy(attacker, Items.echoBell());
+            if (tool.contains("[✦] " + Items.N_TIME_WIND_OLD)) renameLegacy(attacker, Items.timePiecerWind());
+            if ((tool.contains(Items.N_SHADE) || tool.contains("[✦] " + Items.N_SHADE_OLD)) && melee) shade(attacker, victim);
+            if ((tool.contains(Items.N_BELL) || tool.contains("[✦] " + Items.N_BELL_OLD)) && melee) bell(attacker, victim);
+            if ((tool.contains(Items.N_TIME_WIND) || tool.contains("[✦] " + Items.N_TIME_WIND_OLD)) && chance(0.275)) {
                 for (Player near : victim.getWorld().getPlayers()) {
                     if (near.getLocation().distanceSquared(vl) <= 100) near.playSound(vl, "entity.wither.shoot", 1, 1);
                 }
@@ -520,12 +522,12 @@ public class WeaponModule extends Module {
     public void onKill(EntityDeathEvent e) {
         Player killer = e.getEntity().getKiller();
         if (killer == null) return;
-        if (!(e.getEntity() instanceof Player) && !(e.getEntity() instanceof org.bukkit.entity.Monster)) return;
+        // 플레이어 또는 적대 몹 (좀비/스켈레톤뿐 아니라 슬라임, 가스트, 팬텀, 셜커 등 포함)
+        if (!(e.getEntity() instanceof Player) && !(e.getEntity() instanceof org.bukkit.entity.Enemy)) return;
         ItemStack tool = killer.getInventory().getItemInMainHand();
         if (!Items.isSoulSplitter(tool)) return;
         ItemMeta meta = tool.getItemMeta();
-        if (!meta.hasCustomModelData()) return;
-        int id = meta.getCustomModelData();
+        int id = Items.soulId(plugin, meta);
         int k = global().swordKills.merge(id, 1, Integer::sum);
         plugin.store().saveGlobal();
         meta.displayName(Msg.item(Items.SOUL_SPLITTER_NAME));   // 예전 Soul Splitter 도 망령 수확자로
@@ -560,6 +562,16 @@ public class WeaponModule extends Module {
 
     /* ======================= 잿불 낙인검 ======================= */
 
+    /** 예전 영어 이름의 보조 무기를 쓰는 순간 한국어 이름/설명으로 바꿈 */
+    private static void renameLegacy(Player p, ItemStack fresh) {
+        ItemStack hand = p.getInventory().getItemInMainHand();
+        ItemMeta m = hand.getItemMeta(), f = fresh.getItemMeta();
+        if (m == null || f == null) return;
+        m.displayName(f.displayName());
+        m.lore(f.lore());
+        hand.setItemMeta(m);
+    }
+
     private void ember(Player attacker, LivingEntity victim, EntityDamageByEntityEvent e) {
         long now = System.currentTimeMillis();
         long window = (long) (plugin.getConfig().getDouble("weapons.ember.window-seconds", 4) * 1000);
@@ -567,11 +579,14 @@ public class WeaponModule extends Module {
         long[] b = brands.get(key);
         // 연타 방지: 검 공격 속도(약 0.6초)보다 빨리 들어온 적중은 낙인을 쌓지 않음
         if (b != null && now - b[1] < plugin.getConfig().getLong("weapons.ember.min-interval-ms", 450)) return;
-        if (b == null || now - b[1] > window) b = new long[]{0, now};
+        if (b == null || now - b[1] > window) {
+            int lo = plugin.getConfig().getInt("weapons.ember.min-stacks", 4), hi = Math.max(lo, plugin.getConfig().getInt("weapons.ember.max-stacks", 7));
+            b = new long[]{0, now, ThreadLocalRandom.current().nextInt(lo, hi + 1)};
+        }
         b[0]++;
         b[1] = now;
         Location mid = victim.getLocation().add(0, 1, 0);
-        if (b[0] >= 3) {
+        if (b[0] >= b[2]) {
             brands.remove(key);
             double extra = plugin.getConfig().getDouble("weapons.ember.burst-damage", 4.0);
             e.setDamage(e.getDamage() + extra);
@@ -587,15 +602,15 @@ public class WeaponModule extends Module {
             Msg.actionBar(attacker, "<gradient:#FF3D00:#FFD36E><b>✹ 낙인 폭발!</b></gradient>");
         } else {
             brands.put(key, b);
-            Fx.p(mid, Particle.SMALL_FLAME, 8 * (int) b[0], 0.35, 0.02);
-            Fx.ring(mid.clone().add(0, 0.9, 0), 0.35, 8 + 4 * (int) b[0], EMBER, 0.8f);
+            Fx.p(mid, Particle.SMALL_FLAME, 6 * (int) b[0], 0.35, 0.02);
+            Fx.ring(mid.clone().add(0, 0.9, 0), 0.35, 8 + 3 * (int) b[0], EMBER, 0.8f);
             Msg.soundAt(mid, "item.firecharge.use", 0.4f, 1.2f + 0.3f * b[0]);
-            Msg.actionBar(attacker, "&6잿불 낙인 " + "&6●".repeat((int) b[0]) + "&8○".repeat((int) (3 - b[0])));
+            Msg.actionBar(attacker, "&6잿불 낙인 " + "&6●".repeat((int) b[0]) + " &8(" + b[0] + " · 4~7개에서 폭발)");
         }
         if (brands.size() > 500) brands.values().removeIf(x -> now - x[1] > window);
     }
 
-    /* ======================= Echo Bell (보조 무기) ======================= */
+    /* ======================= 메아리 종 (보조 무기, 예전 Echo Bell) ======================= */
 
     private final java.util.Map<UUID, Long> bellCd = new java.util.HashMap<>();
     private static final org.bukkit.Color BELL = Fx.rgb(0xFFD86B), BELL_V = Fx.rgb(0x8A6BFF);
@@ -631,12 +646,12 @@ public class WeaponModule extends Module {
         }
     }
 
-    /* ======================= Umbral Chain (보조 무기) ======================= */
+    /* ======================= 그림자 사슬 (보조 무기, 예전 Umbral Chain) ======================= */
 
     private final java.util.Map<UUID, Long> shadeCd = new java.util.HashMap<>();
     private static final org.bukkit.Color SHADE = Fx.rgb(0x4A6FA5), SHADE_L = Fx.rgb(0xE8F1F8);
 
-    /** 그림자 사슬: 대상을 공격자 쪽으로 끌어당기고 잠시 묶음 (Time piecer Wind 는 띄워 올림, 이건 끌어당김) */
+    /** 그림자 사슬: 대상을 공격자 쪽으로 끌어당기고 잠시 묶음 (시간을 가르는 바람은 띄워 올림, 이건 끌어당김) */
     private void shade(Player attacker, LivingEntity victim) {
         long now = System.currentTimeMillis();
         Long last = shadeCd.get(attacker.getUniqueId());

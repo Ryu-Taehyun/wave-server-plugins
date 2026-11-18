@@ -43,20 +43,22 @@ weapons:
     # 심판의 빛 (번개 + 실명/구속) 추가 고정 피해와 쿨타임. 이 피해로는 죽지 않습니다
     judgment-damage: 6.0
     judgment-cooldown-seconds: 30
-  # 잿불 낙인검 (무기 상점): 같은 대상을 window 초 안에 3번 맞히면 낙인 폭발
+  # 잿불 낙인검 (무기 상점): 같은 대상에게 낙인이 min~max 개(무작위) 쌓이면 낙인 폭발
   ember:
-    window-seconds: 4
+    min-stacks: 4
+    max-stacks: 7
+    window-seconds: 4        # 마지막 적중 후 이 시간이 지나면 낙인이 사라지고 개수를 새로 뽑음
     min-interval-ms: 450     # 이보다 빠른 연타는 낙인이 쌓이지 않음
     burst-damage: 4.0        # 폭발 추가 피해 (4 = 하트 2칸)
     fire-seconds: 3
-  # Umbral Chain (보조 무기): 들고 때리면 확률적으로 대상을 끌어당기고 묶음
+  # 그림자 사슬 (보조 무기, 예전 Umbral Chain): 들고 때리면 확률적으로 대상을 끌어당기고 묶음
   shade:
-    chance: 0.275            # Time piecer Wind 와 같은 확률
+    chance: 0.275            # 시간을 가르는 바람과 같은 확률
     pull-strength: 1.1       # 끌어당기는 힘 (거리에 따라 줄어듦)
     bind-seconds: 1.5        # 묶임 (구속) 시간
     slow-level: 3            # 구속 단계
     cooldown-ms: 0           # 0 = 재사용 대기 없음 (확률만)
-  # Echo Bell (보조 무기): 들고 때리면 확률적으로 어둠 + 멀미 + 밀쳐내기
+  # 메아리 종 (보조 무기, 예전 Echo Bell): 들고 때리면 확률적으로 어둠 + 멀미 + 밀쳐내기
   bell:
     chance: 0.275
     darkness-seconds: 2.5

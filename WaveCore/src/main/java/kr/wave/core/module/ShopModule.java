@@ -280,7 +280,7 @@ public class ShopModule extends Module {
         });
         g.set(13, Items.timePiecerWind("", price(10000, true)), e -> {
             if (left(e)) buy(p, 10000, true, () -> It.give(p, Items.timePiecerWind()),
-                    "§a[💰] <reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] Time piecer Wind</gradient>&7를 10,000 유료 캐시에 구매했습니다.");
+                    "§a[💰] " + Items.TIME_WIND_NAME + "&7를 10,000 유료 캐시에 구매했습니다.");
         });
         ItemStack box1 = global().saved.get("box1");
         if (box1 != null) g.set(14, box1.clone());
@@ -453,7 +453,7 @@ public class ShopModule extends Module {
         });
         g.set(11, Items.timePiecerWind("", price(62500, false)), e -> {
             if (left(e)) buy(p, 62500, false, () -> It.give(p, Items.timePiecerWind()),
-                    "§a[💰] <reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] Time piecer Wind</gradient>&7를 62,500 캐시에 구매했습니다.");
+                    "§a[💰] " + Items.TIME_WIND_NAME + "&7를 62,500 캐시에 구매했습니다.");
         });
         g.set(12, Items.emberBrand("", price(70000, false)), e -> {
             if (left(e)) buy(p, 70000, false, () -> It.give(p, Items.emberBrand()),

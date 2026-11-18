@@ -59,6 +59,11 @@ public final class It {
         return this;
     }
 
+    public It pdcInt(org.bukkit.NamespacedKey key, int value) {
+        meta.getPersistentDataContainer().set(key, org.bukkit.persistence.PersistentDataType.INTEGER, value);
+        return this;
+    }
+
     public It cmd(int id) {
         meta.setCustomModelData(id);
         return this;
