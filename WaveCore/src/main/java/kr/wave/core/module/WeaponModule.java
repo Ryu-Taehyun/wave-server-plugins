@@ -867,7 +867,7 @@ public class WeaponModule extends Module {
             });
         } else if (Items.isNewChar(n) && hand.getType() == Material.MUSIC_DISC_5) {
             e.setCancelled(true);
-            if (n.contains(Items.N_NEW_CHAR_OLD)) {   // 예전 이름 -> 새 이름/설명
+            if (!n.contains(Items.N_NEW_CHAR)) {   // 예전 이름 -> 새 이름/설명
                 ItemMeta nm = hand.getItemMeta(), fm = Items.newCharacteristic().getItemMeta();
                 nm.displayName(fm.displayName());
                 nm.lore(fm.lore());
