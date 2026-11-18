@@ -88,10 +88,10 @@ public class WeaponModule extends Module {
     private final Map<UUID, Long> sealedCd = new HashMap<>();
     private final Map<UUID, Long> chronosCd = new HashMap<>();
     private final Map<UUID, Long> chaosCd = new HashMap<>();
-    /** 얼어붙은 제왕의 검 서리 균열: 대상 -> 사라지는 시각 */
-    private final Map<UUID, Long> crackedUntil = new HashMap<>();
-    /** 공격자가 마지막으로 남긴 서리 균열이 사라지는 시각 (액션바 표시용) */
-    private final Map<UUID, Long> crackShown = new HashMap<>();
+    /** 혹한의 연쇄 발동이 끝나는 시각 */
+    private final Map<UUID, Long> chainBoostUntil = new HashMap<>();
+    /** 연쇄 피해 중 (연쇄가 또 연쇄를 일으키지 않게) */
+    private boolean chaining;
     private final Map<UUID, Long> waveCd1 = new HashMap<>();
     private final Map<UUID, Long> waveCd2 = new HashMap<>();
     /** 범위 스킬 대상 확인용 가짜 피해 이벤트 중에는 무기 효과를 건너뜀 */
@@ -277,8 +277,6 @@ public class WeaponModule extends Module {
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
         Location vl = victim.getLocation();
-        // 서리 균열이 생긴 대상 (이번 타격 전부터)
-        boolean cracked = crackedUntil.getOrDefault(victim.getUniqueId(), 0L) > System.currentTimeMillis();
 
         if (attacker != null) {
             String tool = Msg.name(attacker.getInventory().getItemInMainHand());
@@ -330,20 +328,12 @@ public class WeaponModule extends Module {
                 Fx.p(mid, Particle.ENCHANT, 30, 0.5, 0.6);
                 Msg.soundAt(mid, "block.amethyst_block.resonate", 1, 1.6f);
             }
-            if (tool.contains(Items.N_SEALED_SWORD) && !cracked
-                    && chance(plugin.getConfig().getDouble("weapons.sealed.crack-chance", 0.20))) {
-                // 서리 균열: 일정 시간 받는 피해 증가 (움직임은 막지 않음)
+            if (tool.contains(Items.N_SEALED_SWORD) && !chaining) {
                 long nowMs = System.currentTimeMillis();
-                if (crackedUntil.size() > 300) crackedUntil.values().removeIf(t -> t < nowMs);
-                long until = nowMs + (long) (plugin.getConfig().getDouble("weapons.sealed.crack-seconds", 4) * 1000);
-                crackedUntil.put(victim.getUniqueId(), until);
-                crackShown.put(attacker.getUniqueId(), until);
-                Location mid = vl.clone().add(0, 1, 0);
-                Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 40, 0.4);
-                Fx.burst(mid, Particle.SNOWFLAKE, 30, 0.15);
-                Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
-                Msg.soundAt(mid, "block.glass.break", 0.9f, 1.4f);
-                Msg.actionBar(attacker, sealedBar(attacker, nowMs));
+                boolean boost = chainBoostUntil.getOrDefault(attacker.getUniqueId(), 0L) > nowMs;
+                if (boost || chance(plugin.getConfig().getDouble("weapons.sealed.chain-chance", 0.20))) {
+                    chainFrost(attacker, victim, boost ? plugin.getConfig().getInt("weapons.sealed.boost-max", 5) : plugin.getConfig().getInt("weapons.sealed.chain-max", 3));
+                }
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
@@ -471,12 +461,6 @@ public class WeaponModule extends Module {
                     Fx.ring(mid, 1.4, 30, VOID_C, 1.2f);
                 });
             }
-        }
-
-        // 서리 균열: 받는 피해 증가
-        if (cracked) {
-            e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.crack-damage-taken", 1.15));
-            Fx.block(vl.clone().add(0, 1, 0), Particle.BLOCK, Material.ICE.createBlockData(), 10, 0.3);
         }
 
         // 피격자 장비
@@ -834,39 +818,20 @@ public class WeaponModule extends Module {
                 Msg.send(p, "&8&l[Chaos] &72번 스킬 &5어둠의 장막&7을 사용했습니다.");
             }
         } else if (n.contains(Items.N_SEALED_SWORD) && (hand.getType() == Material.DIAMOND_SWORD || hand.getType() == Material.NETHERITE_SWORD)) {
+            e.setCancelled(true);
             if (sealedCd.getOrDefault(id, 0L) > now) {
                 Msg.send(p, "&c아직 사용 할 수 없습니다.");
-                e.setCancelled(true);
                 return;
             }
-            e.setCancelled(true);
-            sealedCd.put(id, now + (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000));
-            // 돌진: 바라보는 방향으로 돌진, 지나간 길에 얼음 자국, 경로의 적 구속
-            Vector dir = p.getLocation().getDirection().setY(0);
-            if (dir.lengthSquared() < 1e-4) dir = new Vector(1, 0, 0);
-            dir.normalize();
-            double dist = plugin.getConfig().getDouble("weapons.sealed.dash-distance", 6);
-            p.setVelocity(dir.clone().multiply(Math.min(3.0, 0.42 * dist)).setY(0.2));
-            Msg.sound(p, "entity.player.attack.sweep", 1, 0.6f);
-            Msg.soundAt(p.getLocation(), "block.powder_snow.break", 1, 0.8f);
-            java.util.Set<UUID> hit = new java.util.HashSet<>();
-            for (int t = 0; t <= 8; t++) {
-                later(t, () -> {
-                    if (!p.isOnline()) return;
-                    Location at = p.getLocation();
-                    Fx.block(at.clone().add(0, 0.1, 0), Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 12, 0.4);
-                    Fx.p(at.clone().add(0, 0.6, 0), Particle.SNOWFLAKE, 6, 0.3, 0.02);
-                    for (LivingEntity tg : aoeTargets(p, at, 1.8)) {
-                        if (!hit.add(tg.getUniqueId())) continue;
-                        effect(tg, PotionEffectType.SLOWNESS, plugin.getConfig().getDouble("weapons.sealed.dash-slow-seconds", 2), 2);
-                        Fx.ring(tg.getLocation().add(0, 0.2, 0), 0.7, 16, ICE, 1.1f);
-                    }
-                });
-            }
-            later(9, () -> {
-                if (p.isOnline()) Fx.shockwave(p.getLocation().add(0, 0.1, 0), ICE, 2.5, 8);
-            });
-            Msg.send(p, "<gradient:#00DDFF:#FFFFFF><b>[❄ Sealed]</b></gradient> &7돌진을 사용했습니다.");
+            sealedCd.put(id, now + (long) (plugin.getConfig().getDouble("weapons.sealed.boost-cooldown-seconds", 40) * 1000));
+            chainBoostUntil.put(id, now + (long) (plugin.getConfig().getDouble("weapons.sealed.boost-seconds", 6) * 1000));
+            // 혹한의 연쇄: 몸에 냉기가 휘감김
+            Fx.helix(p, ICE, ICE_L, 0.9, 2.5, 30);
+            Fx.burst(p.getLocation().add(0, 1, 0), Particle.SNOWFLAKE, 60, 0.18);
+            Fx.shockwave(p.getLocation().add(0, 0.1, 0), ICE, 3.0, 10);
+            Msg.soundAt(p.getLocation(), "block.amethyst_block.resonate", 1, 0.6f);
+            Msg.soundAt(p.getLocation(), "entity.player.hurt_freeze", 1, 0.8f);
+            Msg.send(p, "<gradient:#00DDFF:#FFFFFF><b>[❄ Sealed]</b></gradient> &7혹한의 연쇄를 사용했습니다.");
         } else if (n.contains(Items.N_ETERNAL_CHRONOS)) {
             if (chronosCd.getOrDefault(id, 0L) > now) {
                 Msg.send(p, "&c아직 사용 할 수 없습니다.");
@@ -949,14 +914,51 @@ public class WeaponModule extends Module {
         p.getInventory().setItemInMainHand(hand);
     }
 
-    /** 얼어붙은 제왕의 검 액션바: 돌진 쿨타임 + (서리 균열이 걸려 있으면) 오른쪽에 균열 남은 시간 */
+    /** 얼어붙은 제왕의 검 액션바: 혹한의 연쇄 (발동 중이면 남은 시간) */
     private String sealedBar(Player p, long now) {
-        String bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 돌진</b></gradient>", sealedCd, now,
-                (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000), "&b", "우클릭", 12);
-        long crack = crackShown.getOrDefault(p.getUniqueId(), 0L) - now;
-        if (crack > 0) bar += "  &8│  <gradient:#9FE8FF:#FFFFFF><b>서리 균열</b></gradient> &8» &b" + ((crack + 999) / 1000) + "초";
-        else crackShown.remove(p.getUniqueId());
-        return bar;
+        long boost = chainBoostUntil.getOrDefault(p.getUniqueId(), 0L) - now;
+        if (boost > 0) return "<gradient:#00DDFF:#FFFFFF><b>❄ 혹한의 연쇄</b></gradient> &8» &b&l발동 중 &f" + ((boost + 999) / 1000) + "초";
+        return skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 혹한의 연쇄</b></gradient>", sealedCd, now,
+                (long) (plugin.getConfig().getDouble("weapons.sealed.boost-cooldown-seconds", 40) * 1000), "&b", "우클릭", 12);
+    }
+
+    /** 냉기 연쇄: 맞은 대상에서 가까운 다른 적에게 차례로 튀며 피해 (최대 max 명) */
+    private void chainFrost(Player attacker, LivingEntity first, int max) {
+        double radius = plugin.getConfig().getDouble("weapons.sealed.chain-radius", 4);
+        double dmg = plugin.getConfig().getDouble("weapons.sealed.chain-damage", 2.0);
+        java.util.Set<UUID> hit = new java.util.HashSet<>();
+        hit.add(first.getUniqueId());
+        LivingEntity from = first;
+        for (int i = 0; i < max; i++) {
+            LivingEntity next = null;
+            double best = Double.MAX_VALUE;
+            for (LivingEntity t : aoeTargets(attacker, from.getLocation(), radius)) {
+                if (hit.contains(t.getUniqueId())) continue;
+                double d = t.getLocation().distanceSquared(from.getLocation());
+                if (d < best) {
+                    best = d;
+                    next = t;
+                }
+            }
+            if (next == null) break;
+            hit.add(next.getUniqueId());
+            final LivingEntity a = from, b = next;
+            final int step = i;
+            later(i * 2L + 1, () -> {   // 한 칸씩 이어지는 연출
+                if (b.isDead()) return;
+                Fx.line(a.getLocation().add(0, 1.1, 0), b.getLocation().add(0, 1.1, 0), ICE_L, 1.0f, 0.2);
+                Fx.block(b.getLocation().add(0, 1, 0), Particle.BLOCK, Material.ICE.createBlockData(), 14, 0.3);
+                Msg.soundAt(b.getLocation(), "block.amethyst_block.chime", 1, 1.2f + step * 0.15f);
+                chaining = true;
+                try {
+                    b.damage(dmg, attacker);
+                } finally {
+                    chaining = false;
+                }
+            });
+            from = next;
+        }
+        if (hit.size() > 1) Fx.burst(first.getLocation().add(0, 1, 0), Particle.SNOWFLAKE, 20, 0.12);
     }
 
     /**
@@ -1136,14 +1138,6 @@ public class WeaponModule extends Module {
         double frostBonus = plugin.getConfig().getDouble("health.frost-bonus", legacy);
         float fastWalk = (float) plugin.getConfig().getDouble("health.claymore-walk-speed", 0.24);
 
-        crackedUntil.entrySet().removeIf(en -> {
-            if (en.getValue() < now) return true;
-            org.bukkit.entity.Entity ent = Bukkit.getEntity(en.getKey());
-            if (ent == null || ent.isDead()) return true;
-            Fx.ring(ent.getLocation().add(0, 1.1, 0), 0.6, 10, ICE_L, 0.9f);
-            Fx.block(ent.getLocation().add(0, 1, 0), Particle.BLOCK, Material.ICE.createBlockData(), 4, 0.3);
-            return false;
-        });
         for (Player p : Bukkit.getOnlinePlayers()) {
             UUID id = p.getUniqueId();
             ItemStack hand = p.getInventory().getItemInMainHand();

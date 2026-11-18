@@ -502,7 +502,7 @@ public final class Items {
     public static ItemStack sealedSword() {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
                 .name("<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> <gradient:#D1D1D1:#DBDBDB><italic:false><bold:true>[Lv.✕]</gradient> <gradient:#DFDFDF:#919191><italic:false><bold:true>얼어붙은 제왕의 검</gradient>")
-                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7무기를 들고 있으면 &a저항 I&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 대상에게 &b서리 균열&7을 남깁니다 &8(4초)%nl%&8&l>> &7서리 균열이 생긴 대상은 &c받는 피해가 15%&7 증가합니다%nl%&8&l>> &7우클릭 시 앞으로 &f6칸&7 돌진하며 지나간 적에게 &9구속 II&7 2초 &8(쿨타임 30초)" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7무기를 들고 있으면 &a저항 I&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 냉기가 근처 다른 적에게 튀어 &c피해 1칸&7을 입힙니다 &8(최대 3명)%nl%&8&l>> &7우클릭 시 &f6초&7간 냉기가 &b반드시&7 튀고, 최대 &f5명&7까지 이어집니다 &8(쿨타임 40초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack thunderAxe() {
