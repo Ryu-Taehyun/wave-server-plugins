@@ -43,46 +43,47 @@ Crate:
     Glowing: true
   # Items 대신 Special 을 쓰면 서버 아이템을 지급합니다 (nature_boots, time_shard, quantum_matter, vibranium, altar_ticket)
   # Items 도 Special 도 없으면 DisplayItem / DisplayAmount / DisplayEnchantments 로 만든 아이템을 지급합니다.
+  # Weight 합계 100 = 각 Weight 가 곧 확률(%) 입니다
   Prizes:
     '1':
       Special: nature_boots
       DisplayItem: diamond_boots
-      Weight: 2.0
+      Weight: 1.5
     '2':
       Special: time_shard
       DisplayItem: glowstone_dust
       DisplayAmount: 2
-      Weight: 8.0
+      Weight: 9.5
     '3':
       Special: quantum_matter
       DisplayItem: yellow_dye
       DisplayAmount: 1
-      Weight: 6.0
+      Weight: 7
     '4':
       DisplayItem: enchanted_golden_apple
       DisplayAmount: 1
-      Weight: 4.0
+      Weight: 5
     '5':
       DisplayItem: golden_apple
       DisplayAmount: 8
-      Weight: 10.0
+      Weight: 12
     '6':
       DisplayItem: emerald_block
       DisplayAmount: 8
-      Weight: 10.0
+      Weight: 12
     '7':
       DisplayItem: diamond
       DisplayAmount: 8
-      Weight: 8.0
+      Weight: 9
     '8':
       DisplayItem: experience_bottle
       DisplayAmount: 32
-      Weight: 12.0
+      Weight: 14.5
     '9':
       DisplayItem: golden_carrot
       DisplayAmount: 64
-      Weight: 12.0
+      Weight: 14.5
     '10':
       DisplayItem: bone_meal
       DisplayAmount: 64
-      Weight: 12.0
+      Weight: 15

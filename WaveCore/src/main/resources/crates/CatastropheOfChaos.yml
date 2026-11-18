@@ -42,44 +42,45 @@ Crate:
     Item: black_dye
     Glowing: true
   # Items 대신 Special 을 쓰면 서버 아이템을 지급합니다 (chaos, darkness_wave, time_shard, quantum_matter, vibranium ...)
+  # Weight 합계 100 = 각 Weight 가 곧 확률(%) 입니다
   Prizes:
     '1':
       Special: chaos
       DisplayItem: netherite_hoe
-      Weight: 2.0
+      Weight: 1.5
     '2':
       Special: darkness_wave
       DisplayItem: music_disc_11
-      Weight: 2.0
+      Weight: 1.5
     '3':
       DisplayItem: netherite_scrap
       DisplayAmount: 4
-      Weight: 6.0
+      Weight: 7
     '4':
       DisplayItem: enchanted_golden_apple
       DisplayAmount: 1
-      Weight: 4.0
+      Weight: 5
     '5':
       DisplayItem: golden_apple
       DisplayAmount: 8
-      Weight: 10.0
+      Weight: 13
     '6':
       DisplayItem: crying_obsidian
       DisplayAmount: 32
-      Weight: 10.0
+      Weight: 13
     '7':
       DisplayItem: diamond
       DisplayAmount: 8
-      Weight: 8.0
+      Weight: 10
     '8':
       DisplayItem: experience_bottle
       DisplayAmount: 32
-      Weight: 12.0
+      Weight: 16.5
     '9':
       DisplayItem: ender_pearl
       DisplayAmount: 16
-      Weight: 12.0
+      Weight: 16
     '10':
       DisplayItem: coal_block
       DisplayAmount: 32
-      Weight: 12.0
+      Weight: 16.5
