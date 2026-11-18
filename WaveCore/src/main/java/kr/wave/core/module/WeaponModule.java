@@ -330,6 +330,14 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_SEALED_SWORD) && !chaining) {
                 long nowMs = System.currentTimeMillis();
+                if (chance(plugin.getConfig().getDouble("weapons.sealed.crit-chance", 0.20))) {
+                    // 제왕의 일격: 데미지 1.3배 + 얼음 파편
+                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.crit-multiplier", 1.3));
+                    Location mid = vl.clone().add(0, 1, 0);
+                    Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 30, 0.4);
+                    Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
+                    Msg.soundAt(mid, "block.glass.break", 0.8f, 1.6f);
+                }
                 boolean boost = chainBoostUntil.getOrDefault(attacker.getUniqueId(), 0L) > nowMs;
                 if (boost || chance(plugin.getConfig().getDouble("weapons.sealed.chain-chance", 0.20))) {
                     chainFrost(attacker, victim, boost ? plugin.getConfig().getInt("weapons.sealed.boost-max", 5) : plugin.getConfig().getInt("weapons.sealed.chain-max", 3));

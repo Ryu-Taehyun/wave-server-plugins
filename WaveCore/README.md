@@ -401,5 +401,5 @@ mvn package
 ## 얼어붙은 제왕의 검: 냉기 연쇄 (서리 균열 / 돌진 대체)
 - 타격 시 20% 확률로 냉기가 근처 4칸 안의 다른 적에게 차례로 튀며 피해 1칸 (최대 3명, 보호 구역/팀원 제외)
 - 우클릭 혹한의 연쇄 (쿨타임 40초): 6초간 냉기가 반드시 튀고 최대 5명까지
-- 들고 있으면 저항 I 은 그대로
+- 들고 있으면 저항 I 은 그대로, 타격 시 20% 확률로 데미지 1.3배 (`crit-chance`, `crit-multiplier`)
 - 수치는 config `weapons.sealed` (chain-chance, chain-damage, chain-radius, chain-max, boost-seconds, boost-max, boost-cooldown-seconds)

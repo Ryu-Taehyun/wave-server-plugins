@@ -67,6 +67,8 @@ weapons:
     cooldown-ms: 0
   # 얼어붙은 제왕의 검: 냉기 연쇄
   sealed:
+    crit-chance: 0.20              # 타격 시 데미지 배율이 붙을 확률
+    crit-multiplier: 1.3           # 그때 데미지 배율
     chain-chance: 0.20             # 타격 시 냉기가 튈 확률
     chain-damage: 2.0              # 튈 때마다 피해 (2 = 하트 1칸)
     chain-radius: 4                # 다음 대상을 찾는 거리 (칸)
