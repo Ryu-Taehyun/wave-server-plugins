@@ -1189,7 +1189,6 @@ public class WeaponModule extends Module {
             }
 
             if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 들고 있으면 저항 I
-            if (tool.contains(Items.N_CHAOS) && inWorld(p, "nether")) effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             if (helmet.contains(Items.N_ABYSS_HELMET)) effect(p, PotionEffectType.NIGHT_VISION, 15, 1);   // 15초: 깜빡임 없이 유지
 
             repairLore(p, hand);
