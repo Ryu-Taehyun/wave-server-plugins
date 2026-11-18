@@ -127,7 +127,7 @@ public class WeaponModule extends Module {
 
     @Override
     public void enable() {
-        cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.abyssHelmet(), Items.darknessWave()));
+        cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.darknessWave()));
         cmd("epicitems", ADMIN, (s, l, a) -> give(s, Items.vibranium(), Items.quantumMatter(), Items.quantumSword(), Items.auroraBoots(), Items.voidChest(), Items.voidBow(),
                 Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronosBoots(), Items.chronos(0), Items.natureBoots()));
         cmd("chronoss", ADMIN, (s, l, a) -> give(s, Items.chronos(0), Items.chronos(1), Items.chronos(2), Items.chronos(3), Items.chronos(4), Items.chronos(5), Items.chronos(6),
@@ -481,18 +481,6 @@ public class WeaponModule extends Module {
 
         // 피격자 장비
         if (victim instanceof Player vp) {
-            boolean abyss = Msg.nameHas(vp.getInventory().getHelmet(), Items.N_ABYSS_HELMET);
-            if (abyss && chance(plugin.getConfig().getDouble("weapons.chaos.helmet-chance", 0.2))) {
-                LivingEntity src = attacker != null ? attacker : shooter;
-                if (src != null) {
-                    effect(src, PotionEffectType.DARKNESS, 2, 1);
-                    effect(src, PotionEffectType.SLOWNESS, 2, 1);
-                    // 심연의 응시: 공격자에게 검은 줄기
-                    Fx.line(vl.clone().add(0, 1.6, 0), src.getLocation().add(0, 1.4, 0), CHAOS_D, 1.1f, 0.25);
-                    Fx.p(src.getLocation().add(0, 1, 0), Particle.SQUID_INK, 16, 0.3, 0.02);
-                    Msg.soundAt(vl, "entity.warden.heartbeat", 1, 1.2f);
-                }
-            }
             if (Msg.nameHas(vp.getInventory().getBoots(), Items.N_AURORA_BOOTS) && chance(0.20)) {
                 e.setDamage(e.getDamage() * 0.8);
                 // 오로라 보호막
@@ -810,7 +798,7 @@ public class WeaponModule extends Module {
                 Location c = p.getLocation();
                 for (LivingEntity t : aoeTargets(p, c, 6)) {
                     effect(t, PotionEffectType.DARKNESS, 4, 1);
-                    effect(t, PotionEffectType.SLOWNESS, 3, 2);
+                    effect(t, PotionEffectType.SLOWNESS, 3, 3);
                     Vector push = t.getLocation().toVector().subtract(c.toVector()).setY(0);
                     if (push.lengthSquared() > 1e-4) t.setVelocity(push.normalize().multiply(1.1).setY(0.4));
                 }
@@ -1189,7 +1177,6 @@ public class WeaponModule extends Module {
             }
 
             if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 들고 있으면 저항 I
-            if (helmet.contains(Items.N_ABYSS_HELMET)) effect(p, PotionEffectType.NIGHT_VISION, 15, 1);   // 15초: 깜빡임 없이 유지
 
             repairLore(p, hand);
 

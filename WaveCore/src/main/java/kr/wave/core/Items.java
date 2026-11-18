@@ -50,7 +50,6 @@ public final class Items {
     public static final String N_THUNDER = "[⚡] [Lv.L] 천둥의 심판";
     public static final String N_CHAOS = "[Chaos] [Lv.✦] 혼돈의 아포칼립스";
     /** 혼돈의 아포칼립스 세트 */
-    public static final String N_ABYSS_HELMET = "[Chaos] [Lv.✦] 심연의 공포";
     public static final String N_DARK_WAVE = "[Chaos] [Lv.✦] 다크니스 웨이브";
     public static final String N_RUINER_SCYTHE = "[Ruiner] [Lv.✕] 파괴의 낫";
     public static final String N_RUINER_PANTS = "[Ruiner] [Lv.✕] 재앙의 서막 바지";
@@ -79,7 +78,7 @@ public final class Items {
             java.util.Map<String, java.util.function.Supplier<ItemStack>> m = new java.util.HashMap<>();
             java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(java.util.List.of(
                     Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
-                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::abyssHelmet, Items::darknessWave,
+                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave,
                     Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
                     Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
                     Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
@@ -259,7 +258,6 @@ public final class Items {
             case "claymore" -> claymoreSd();
             case "melon" -> melon(1);
             case "chaos_sword", "chaos" -> chaosApocalypse();
-            case "abyss_helmet" -> abyssHelmet();
             case "darkness_wave" -> darknessWave();
             default -> null;
         };
@@ -515,19 +513,11 @@ public final class Items {
 
     private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";
 
-    /** 심연의 공포 (혼돈의 아포칼립스 세트 헬멧) */
-    public static ItemStack abyssHelmet() {
-        return It.of(Material.DIAMOND_HELMET).unbreakable().ench(Enchantment.PROTECTION, 4)
-                .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>심연의 공포</b></gradient>")
-                .lore(CHAOS_HEAD + "&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a야간 투시&7가 부여됩니다%nl%"
-                        + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 &9어둠&7 2초 + &9구속 I&7을 부여합니다" + SEASON_KEEP).build();
-    }
-
     /** 다크니스 웨이브 (혼돈의 아포칼립스 세트 스킬 아이템, 초승달의 서약과 같은 형태) */
     public static ItemStack darknessWave() {
         return It.of(Material.MUSIC_DISC_11).ench(Enchantment.UNBREAKING, 10)
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
-                .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 II&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
+                .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 III&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
                         + "&8&l>> &7웅크리기 + 우클릭 시 &a투명화&7 + &a신속 II&7를 &f5초&7간 부여받습니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
     }
 

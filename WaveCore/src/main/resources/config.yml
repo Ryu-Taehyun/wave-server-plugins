@@ -78,12 +78,11 @@ weapons:
     fall-fire-multiplier: 0.5      # 낙하 / 화염 피해 배율 (0.5 = 50% 감소)
     low-health: 0.3                # 체력이 이 비율 이하이면 힘 II
     deny-death-chance: 0.2         # 치명상 시 죽음을 거부하고 체력 절반으로 돌아올 확률
-  # 혼돈의 아포칼립스 세트 (무기 / 심연의 공포 헬멧 / 다크니스 웨이브)
+  # 혼돈의 아포칼립스 / 다크니스 웨이브
   chaos:
     damage: 6.5                    # 무기 고정 데미지
     skill-damage: 4.0              # 혼돈의 파열 피해 (4 = 하트 2칸, 이 피해로는 죽지 않음)
     skill-cooldown-seconds: 45
-    helmet-chance: 0.2             # 심연의 공포: 공격자에게 어둠 + 구속 확률
   claymore-splash:
     radius: 4.0
     damage: 3.0              # 2 = 하트 1칸
