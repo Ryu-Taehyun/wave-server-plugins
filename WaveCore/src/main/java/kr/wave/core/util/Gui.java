@@ -107,14 +107,14 @@ public class Gui implements InventoryHolder {
         return this;
     }
 
-    /** 맨 아래 줄 양 끝: ◀ 이전 페이지 / 다음 페이지 ▶ */
+    /** 맨 아래 줄 양 끝: « 이전 페이지 / 다음 페이지 » */
     public Gui pages(Player p, int page, int pages, java.util.function.IntConsumer go) {
         int l = last();
-        if (page > 1) set(l, It.of(Material.ARROW).name("&e◀ 이전 페이지").lore("&7" + (page - 1) + " / " + pages).build(), e -> {
+        if (page > 1) set(l, It.of(Material.ARROW).name("&e« 이전 페이지").lore("&7" + (page - 1) + " / " + pages).build(), e -> {
             pageSound(p);
             go.accept(page - 1);
         }).quiet(l);
-        if (page < pages) set(l + 8, It.of(Material.ARROW).name("&e다음 페이지 ▶").lore("&7" + (page + 1) + " / " + pages).build(), e -> {
+        if (page < pages) set(l + 8, It.of(Material.ARROW).name("&e다음 페이지 »").lore("&7" + (page + 1) + " / " + pages).build(), e -> {
             pageSound(p);
             go.accept(page + 1);
         }).quiet(l + 8);

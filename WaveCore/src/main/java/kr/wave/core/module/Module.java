@@ -46,6 +46,10 @@ public abstract class Module implements Listener {
         Cmd.register(name, permission, permMessage, exec, aliases);
     }
 
+    protected void cmd(String name, String permission, Cmd.Exec exec, Cmd.Tab tab, String... aliases) {
+        Cmd.register(name, permission, null, exec, tab, aliases);
+    }
+
     protected static final String ADMIN = "wave.admin";
 
     protected String world(String key) {

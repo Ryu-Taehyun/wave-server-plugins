@@ -83,7 +83,7 @@ public class ShopModule extends Module {
 
     /** 가격 표시 통일: 구분선 / 가격 / 클릭 안내 */
     private static String price(long price, boolean paid) {
-        return "&8━━━━━━━━━━━━━━%nl%" + priceLine(price, paid) + "%nl%&e▶ 좌클릭 &f구매";
+        return "&8━━━━━━━━━━━━━━%nl%" + priceLine(price, paid) + "%nl%&e» 좌클릭 &f구매";
     }
 
     private static String priceLine(long price, boolean paid) {
@@ -177,7 +177,7 @@ public class ShopModule extends Module {
         CrateModule cm = plugin.module(CrateModule.class);
         CrateModule.Crate c = cm == null ? null : cm.crate(crateId);
         if (c == null) return;
-        g.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e▶ 좌클릭 &f구매"), e -> {
+        g.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e» 좌클릭 &f구매"), e -> {
             if (!left(e)) return;
             if (!plugin.module(EconomyModule.class).take(p, price, paid)) {
                 Msg.send(p, paid ? "§c[❌] 유료 캐시가 부족합니다!" : "§c[❌] 캐시가 부족합니다! (현재 캐시: " + Msg.num(data(p).money) + "원)");
@@ -191,7 +191,7 @@ public class ShopModule extends Module {
             refreshHead(p);
             later(1, () -> {
                 var top = p.getOpenInventory().getTopInventory();
-                if (top != null && top.getHolder() instanceof Gui gg) gg.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e▶ 좌클릭 &f구매"));
+                if (top != null && top.getHolder() instanceof Gui gg) gg.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e» 좌클릭 &f구매"));
             });
         });
     }
@@ -270,12 +270,12 @@ public class ShopModule extends Module {
 
     private void paidShop(Player p) {
         Gui g = new Gui(5, "&8&l유료 캐시 상점");
-        g.set(10, Items.packHigh(price(45000, true) + "%nl%&e▶ 우클릭 &f구성품 보기"), e -> {
+        g.set(10, Items.packHigh(price(45000, true) + "%nl%&e» 우클릭 &f구성품 보기"), e -> {
             if (left(e)) buy(p, 45000, true, () -> It.give(p, Items.packHigh("&7우클릭 시 아이템 구성품을 확인할 수 있습니다.")),
                     "§a[💰] &c&l[PVP] &e&l고급 전투 패키지&7를 45,000 유료 캐시에 구매했습니다.");
             else if (right(e)) run(p, "combatpackage1");
         });
-        g.set(11, Items.packMid(price(30000, true) + "%nl%&e▶ 우클릭 &f구성품 보기"), e -> {
+        g.set(11, Items.packMid(price(30000, true) + "%nl%&e» 우클릭 &f구성품 보기"), e -> {
             if (left(e)) buy(p, 30000, true, () -> It.give(p, Items.packMid("&7우클릭 시 아이템 구성품을 확인할 수 있습니다.")),
                     "§a[💰] &c&l[PVP] &6&l중급 전투 패키지&7를 30,000 유료 캐시에 구매했습니다.");
             else if (right(e)) run(p, "combatpackage2");
@@ -356,7 +356,7 @@ public class ShopModule extends Module {
             ItemStack icon = It.of(n > 0 ? Material.LIME_DYE : Material.GRAY_DYE, Math.max(1, o[1])).name("&a&l+" + o[1] + " 레벨")
                     .lore(n > 0
                             ? new String[]{"", "&f레벨 : &e" + level + " &7→ &e" + (level + n) + (n < o[1] ? " &8(최대 레벨까지 " + n + "레벨만)" : ""),
-                                    "&8━━━━━━━━━━━━━━", "&f가격 : &6" + Msg.num(cost) + " 유료 캐시", "&e▶ 좌클릭 &f구매"}
+                                    "&8━━━━━━━━━━━━━━", "&f가격 : &6" + Msg.num(cost) + " 유료 캐시", "&e» 좌클릭 &f구매"}
                             : new String[]{"", "&c이미 최대 레벨입니다."}).build();
             g.set(o[0], icon, e -> {
                 int can = Math.min(o[1], Math.max(0, kr.wave.core.util.PassBridge.maxLevel() - kr.wave.core.util.PassBridge.level(p)));
@@ -401,7 +401,7 @@ public class ShopModule extends Module {
             Material m = (Material) o[1];
             long price = (long) o[2];
             String name = (String) o[3];
-            g.set(slot, It.of(m).lore("", "&8━━━━━━━━━━━━━━", "&f판매 가격 : &a" + Msg.num(price) + " 캐시 &7(1개)", "&e▶ 우클릭 &f1개 판매", "&e▶ Shift + 우클릭 &f전부 판매").build(), e -> {
+            g.set(slot, It.of(m).lore("", "&8━━━━━━━━━━━━━━", "&f판매 가격 : &a" + Msg.num(price) + " 캐시 &7(1개)", "&e» 우클릭 &f1개 판매", "&e» Shift + 우클릭 &f전부 판매").build(), e -> {
                 boolean all = e.getClick() == ClickType.SHIFT_RIGHT;
                 if (!right(e) && !all) return;
                 int have = 0;
@@ -421,7 +421,7 @@ public class ShopModule extends Module {
                 refreshHead(p);
             });
         }
-        g.set(16, It.of(Material.HOPPER).name("&c&l광물 전부 판매").lore("", "&7인벤토리에 있는 위 광물을 한 번에 판매합니다.", "", "&e▶ 클릭 &f전부 판매").build(), e -> {
+        g.set(16, It.of(Material.HOPPER).name("&c&l광물 전부 판매").lore("", "&7인벤토리에 있는 위 광물을 한 번에 판매합니다.", "", "&e» 클릭 &f전부 판매").build(), e -> {
             long total = 0;
             for (Object[] o : ORES) {
                 Material m = (Material) o[1];

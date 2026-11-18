@@ -77,18 +77,7 @@ public final class Items {
     public static java.util.function.Supplier<ItemStack> template(String plain) {
         if (templates == null) {
             java.util.Map<String, java.util.function.Supplier<ItemStack>> m = new java.util.HashMap<>();
-            java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(java.util.List.of(
-                    Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
-                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave, Items::chaosHelmet,
-                    Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
-                    Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
-                    Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
-                    () -> melon(1), Items::newbiePass, Items::legendVoucher, Items::mythicVoucher, Items::altarTicket,
-                    Items::timeShard, Items::quantumMatter, Items::vibranium, Items::ruinerEssence));
-            for (int i = 0; i <= 6; i++) {
-                final int st = i;
-                all.add(() -> chronos(st));
-            }
+            java.util.List<java.util.function.Supplier<ItemStack>> all = specialItems();
             for (var sup : all) m.put(Msg.name(sup.get()), sup);
             // 예전 이름
             m.put("[✦] " + N_TIME_WIND_OLD, Items::timePiecerWind);
@@ -102,6 +91,24 @@ public final class Items {
             templates = m;
         }
         return templates.get(plain);
+    }
+
+    /** 서버 특수 아이템 전체 (접속 시 설명 갱신, /아이템 지급에 같이 씀) */
+    public static java.util.List<java.util.function.Supplier<ItemStack>> specialItems() {
+        java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(java.util.List.of(
+                Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
+                Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave, Items::chaosHelmet,
+                Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
+                Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
+                Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
+                () -> melon(1), Items::newbiePass, Items::legendVoucher, Items::mythicVoucher, Items::altarTicket,
+                Items::timeShard, Items::quantumMatter, Items::vibranium, Items::ruinerEssence));
+        for (int i = 0; i <= 6; i++) {
+            final int st = i;
+            all.add(() -> chronos(st));
+        }
+        all.add(Items::crownMark);
+        return all;
     }
 
     public static boolean isNewChar(String plainName) {
@@ -486,7 +493,7 @@ public final class Items {
     public static ItemStack ruinerScythe() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 파괴의 낫</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6&7으로 고정됩니다%nl%&8&l>> &7타격 시 <color:#E0464E>구속 I</color>&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c4&7로 고정됩니다%nl%&8&l>> &7타격 시 <color:#E0464E>구속 I</color>&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack ruinerPants() {
@@ -510,7 +517,7 @@ public final class Items {
     public static ItemStack thunderAxe() {
         return It.of(Material.IRON_AXE).unbreakable().ench(Enchantment.CHANNELING, 5)
                 .name("<gradient:#C2D93F:#AFEEF8><italic:false><b>[⚡] [Lv.L</b><b>] 천</b><b>둥의 심판</b></gradient>")
-                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 2칸)").build();
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 1칸)").build();
     }
 
     private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";
@@ -556,7 +563,7 @@ public final class Items {
 
     /** 초승달의 서약 (예전 The New Characteristic 과 같은 색) */
     public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> 초승달의</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> 서약</b></gradient>";
-    public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 <color:#F49AC1>힘 III</color>&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 <color:#F49AC1>재생 V</color>&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+    public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[초승달의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 <color:#F49AC1>힘 III</color>&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 <color:#F49AC1>재생 V</color>&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack newCharacteristic() {
         return It.of(Material.MUSIC_DISC_5).ench(Enchantment.UNBREAKING, 10).name(NEW_CHAR_NAME).lore(NEW_CHAR_LORE).build();
@@ -630,10 +637,17 @@ public final class Items {
             {"destroy", "<b><gradient:#FF0000:#530427>[✦] 파멸의 지배자</gradient></b>", "\"<b><gradient:#FF0000:#530427>[✦] 파멸의 지배자</gradient></b>\""},
             {"void", "<b><gradient:#C2C2C2:#404247>[✦] 공허의 방랑자</gradient></b>", "\"<b><gradient:#C2C2C2:#404247>[✦] 공허의 방랑자</gradient></b>\""},
             {"philosopher", "<b><gradient:#2193b0:#E7F0F2>[✦] 사유의 현자</gradient></b>", "\"<b><gradient:#2193b0:#E7F0F2>[✦] 사유의 현자</gradient></b>\""},
-            {"inscribed", "<b><gradient:#1E2586:#FAD4D4>[🌙] 새 시대의 각인자</gradient></b>", "\"<b><gradient:#1E2586:#FAD4D4>[🌙] 새 시대의 각인자</gradient></b>\""},
+            {"inscribed", "<b><gradient:#1E2586:#FAD4D4>[🌙] 초승달의 서약자</gradient></b>", "\"<b><gradient:#1E2586:#FAD4D4>[🌙] 초승달의 서약자</gradient></b>\""},
             {"arbiter", "<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>", "\"<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>\""},
             {"glacier", "<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>", "\"<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>\""},
     };
+
+    /** 이름이 바뀐 칭호: 적용 중인 플레이어는 접속 시 새 접두사로 다시 적용. 바뀐 게 아니면 null */
+    public static String renamedTitle(String key) {
+        if (!"inscribed".equals(key)) return null;
+        for (String[] t : COLLECTION_TITLES) if (t[0].equals(key)) return t[2];
+        return null;
+    }
 
     /** 컬렉션 보상 칭호북 (우클릭 시 칭호 획득 + 적용) */
     public static ItemStack collectionTitleBook(String key, String collectionName) {

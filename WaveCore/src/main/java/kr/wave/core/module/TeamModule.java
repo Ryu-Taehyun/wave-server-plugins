@@ -274,7 +274,7 @@ public class TeamModule extends Module {
         g.set(11, It.of(Material.WRITABLE_BOOK).name("&a&l팀 만들기")
                 .lore("", "&7새 팀을 만들고 마스터가 됩니다.", "&7이름은 채팅으로 입력합니다.", "&8━━━━━━━━━━━━━━",
                         "&f가격 : &a" + Msg.num(CREATE_COST) + " 캐시",
-                        money >= CREATE_COST ? "&e▶ 좌클릭 &f이름 정하기" : "&8▶ 좌클릭 캐시 부족 &7(보유 " + Msg.num(money) + ")").build(), e -> {
+                        money >= CREATE_COST ? "&e» 좌클릭 &f이름 정하기" : "&8» 좌클릭 캐시 부족 &7(보유 " + Msg.num(money) + ")").build(), e -> {
             if (data(p).money < CREATE_COST) {
                 Gui.denySound(p);
                 Msg.send(p, "&c팀을 만들려면 " + Msg.num(CREATE_COST) + " 캐시가 필요합니다.");
@@ -287,7 +287,7 @@ public class TeamModule extends Module {
         GlobalData.Team it = inv == null ? null : global().teams.get(inv);
         if (it != null) {
             g.set(15, It.of(Material.PAPER).name("&e&l받은 초대").lore("", "&f팀 : " + Msg.esc(it.display), "&f팀원 : &e" + it.members.size() + "명",
-                    "&8━━━━━━━━━━━━━━", "&e▶ 좌클릭 &f수락", "&e▶ 우클릭 &f거절").ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1).hide().build(), e -> {
+                    "&8━━━━━━━━━━━━━━", "&e» 좌클릭 &f수락", "&e» 우클릭 &f거절").ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1).hide().build(), e -> {
                 if (e.getClick() == ClickType.LEFT) accept(p);
                 else if (e.getClick() == ClickType.RIGHT) decline(p);
                 else return;
@@ -315,11 +315,11 @@ public class TeamModule extends Module {
                 "&8 부마스터 " + counts[1] + " · 엘리트 " + counts[2] + " · 팀원 " + counts[3],
                 "&f내 역할 : " + roleTag(myRole), "", "&8팀원끼리는 서로 공격할 수 없습니다.", "&8명령어: /팀 도움말").hide().build());
         g.set(10, It.of(Material.SPYGLASS).name("&a&l접속 중인 팀원 &7(" + online + "명)")
-                .lore("", "&7지금 접속한 팀원의 위치와 상태를 봅니다.", "&8━━━━━━━━━━━━━━", "&e▶ 좌클릭 &f열기").build(), e -> later(1, () -> onlineGui(p, t)));
-        g.set(11, It.of(Material.CHEST).name("&6&l팀 창고").lore("", "&7팀원이 함께 쓰는 6줄 창고입니다.", "&8━━━━━━━━━━━━━━", "&e▶ 좌클릭 &f열기").build(), e -> later(1, () -> storage(p)));
+                .lore("", "&7지금 접속한 팀원의 위치와 상태를 봅니다.", "&8━━━━━━━━━━━━━━", "&e» 좌클릭 &f열기").build(), e -> later(1, () -> onlineGui(p, t)));
+        g.set(11, It.of(Material.CHEST).name("&6&l팀 창고").lore("", "&7팀원이 함께 쓰는 6줄 창고입니다.", "&8━━━━━━━━━━━━━━", "&e» 좌클릭 &f열기").build(), e -> later(1, () -> storage(p)));
         boolean inv = canInvite(t, p.getUniqueId());
         g.set(12, It.of(inv ? Material.PLAYER_HEAD : Material.GRAY_DYE).name((inv ? "&a&l" : "&7") + "팀원 초대")
-                .lore("", "&7접속 중인 플레이어를 골라 초대합니다.", "&8━━━━━━━━━━━━━━", inv ? "&e▶ 좌클릭 &f플레이어 고르기" : "&8엘리트 이상만 초대할 수 있습니다.").build(), e -> {
+                .lore("", "&7접속 중인 플레이어를 골라 초대합니다.", "&8━━━━━━━━━━━━━━", inv ? "&e» 좌클릭 &f플레이어 고르기" : "&8엘리트 이상만 초대할 수 있습니다.").build(), e -> {
             if (!canInvite(t, p.getUniqueId())) {
                 Gui.denySound(p);
                 return;
@@ -329,13 +329,13 @@ public class TeamModule extends Module {
         boolean teamChat = "team".equals(data(p).channel);
         g.set(13, It.of(teamChat ? Material.LIME_DYE : Material.GRAY_DYE).name("&c&l팀 채팅")
                 .lore("", "&f현재 채널 : " + (teamChat ? "&cTEAM" : "&b" + ("local".equals(data(p).channel) ? "Local" : "Global")),
-                        "&7켜면 채팅이 팀원에게만 보입니다.", "&8━━━━━━━━━━━━━━", teamChat ? "&e▶ 좌클릭 &f끄기 (Global)" : "&e▶ 좌클릭 &f켜기").build(), e -> {
+                        "&7켜면 채팅이 팀원에게만 보입니다.", "&8━━━━━━━━━━━━━━", teamChat ? "&e» 좌클릭 &f끄기 (Global)" : "&e» 좌클릭 &f켜기").build(), e -> {
             toggleChat(p);
             later(1, () -> open(p));
         });
         boolean master = rank(myRole) == 0;
         g.set(16, It.of(Material.IRON_DOOR).name("&c&l팀 탈퇴").lore("", master && t.members.size() > 1 ? "&7마스터는 가장 높은 역할의 팀원에게 넘어갑니다." : t.members.size() <= 1 ? "&7마지막 팀원이 나가면 팀이 사라집니다." : "&7팀에서 나갑니다.",
-                "&8━━━━━━━━━━━━━━", "&c▶ Shift + 우클릭 &f탈퇴").build(), e -> {
+                "&8━━━━━━━━━━━━━━", "&c» Shift + 우클릭 &f탈퇴").build(), e -> {
             if (e.getClick() != ClickType.SHIFT_RIGHT) {
                 Msg.send(p, "&7탈퇴하려면 &cShift + 우클릭 &7하세요.");
                 return;
@@ -357,7 +357,7 @@ public class TeamModule extends Module {
             List<String> lore = new ArrayList<>(List.of("", "&f역할 : " + roleTag(list.get(i).getValue()), "&f상태 : " + (on ? "&a● 접속 중" : "&8○ 오프라인")));
             if (manage) {
                 lore.add("&8━━━━━━━━━━━━━━");
-                lore.add("&e▶ 좌클릭 &f팀원 관리");
+                lore.add("&e» 좌클릭 &f팀원 관리");
             }
             ItemStack head = It.of(Material.PLAYER_HEAD).skull(op).name(rankColor(list.get(i).getValue()) + op.getName()).lore(lore.toArray(new String[0])).build();
             g.set(MEMBER_SLOTS[i], head, manage ? e -> later(1, () -> memberGui(p, t, id)) : null);
@@ -405,7 +405,7 @@ public class TeamModule extends Module {
         boolean canDown = down != null && canSetRole(t, p.getUniqueId(), id, down);
         g.set(10, It.of(canUp ? Material.LIME_DYE : Material.GRAY_DYE).name((canUp ? "&a&l" : "&7") + "승급")
                 .lore("", up == null ? "&8더 올릴 수 없습니다. &7(마스터는 넘기기)" : "&f" + Msg.plainOf(roleTag(cur)) + " &7→ " + roleTag(up), "&8━━━━━━━━━━━━━━",
-                        canUp ? "&e▶ 좌클릭 &f승급" : "&8권한이 없습니다.").build(), e -> {
+                        canUp ? "&e» 좌클릭 &f승급" : "&8권한이 없습니다.").build(), e -> {
             if (!canUp) {
                 Gui.denySound(p);
                 return;
@@ -415,7 +415,7 @@ public class TeamModule extends Module {
         });
         g.set(12, It.of(canDown ? Material.ORANGE_DYE : Material.GRAY_DYE).name((canDown ? "&6&l" : "&7") + "강등")
                 .lore("", down == null ? "&8더 내릴 수 없습니다." : "&f" + Msg.plainOf(roleTag(cur)) + " &7→ " + roleTag(down), "&8━━━━━━━━━━━━━━",
-                        canDown ? "&e▶ 좌클릭 &f강등" : "&8권한이 없습니다.").build(), e -> {
+                        canDown ? "&e» 좌클릭 &f강등" : "&8권한이 없습니다.").build(), e -> {
             if (!canDown) {
                 Gui.denySound(p);
                 return;
@@ -425,7 +425,7 @@ public class TeamModule extends Module {
         });
         boolean master = rank(role(t, p.getUniqueId())) == 0;
         g.set(14, It.of(master ? Material.GOLDEN_HELMET : Material.GRAY_DYE).name((master ? "&6&l" : "&7") + "마스터 넘기기")
-                .lore("", "&7이 팀원이 마스터가 되고,", "&7나는 부마스터가 됩니다.", "&8━━━━━━━━━━━━━━", master ? "&e▶ Shift + 좌클릭 &f넘기기" : "&8마스터만 할 수 있습니다.").hide().build(), e -> {
+                .lore("", "&7이 팀원이 마스터가 되고,", "&7나는 부마스터가 됩니다.", "&8━━━━━━━━━━━━━━", master ? "&e» Shift + 좌클릭 &f넘기기" : "&8마스터만 할 수 있습니다.").hide().build(), e -> {
             if (!master) {
                 Gui.denySound(p);
                 return;
@@ -439,7 +439,7 @@ public class TeamModule extends Module {
         });
         boolean kick = canKick(t, p.getUniqueId(), id);
         g.set(16, It.of(kick ? Material.IRON_DOOR : Material.GRAY_DYE).name((kick ? "&c&l" : "&7") + "추방")
-                .lore("", "&7팀에서 내보냅니다.", "&8━━━━━━━━━━━━━━", kick ? "&c▶ Shift + 우클릭 &f추방" : "&8자기보다 낮은 역할만 추방할 수 있습니다.").build(), e -> {
+                .lore("", "&7팀에서 내보냅니다.", "&8━━━━━━━━━━━━━━", kick ? "&c» Shift + 우클릭 &f추방" : "&8자기보다 낮은 역할만 추방할 수 있습니다.").build(), e -> {
             if (!kick) {
                 Gui.denySound(p);
                 return;
@@ -510,7 +510,7 @@ public class TeamModule extends Module {
             Player o = cand.get((pg - 1) * per + i);
             boolean sent = mine.id.equals(invites.get(o.getUniqueId()));
             g.set(i, It.of(Material.PLAYER_HEAD).skull(o).name("&f" + o.getName())
-                    .lore("", sent ? "&a초대를 보냈습니다." : "&7팀이 없는 플레이어입니다.", "&8━━━━━━━━━━━━━━", "&e▶ 좌클릭 &f" + (sent ? "다시 초대" : "초대 보내기")).build(), e -> {
+                    .lore("", sent ? "&a초대를 보냈습니다." : "&7팀이 없는 플레이어입니다.", "&8━━━━━━━━━━━━━━", "&e» 좌클릭 &f" + (sent ? "다시 초대" : "초대 보내기")).build(), e -> {
                 if (!o.isOnline()) {
                     Msg.send(p, "&c이미 접속을 종료한 플레이어입니다.");
                     return;

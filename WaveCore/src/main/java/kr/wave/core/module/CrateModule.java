@@ -504,13 +504,26 @@ public class CrateModule extends Module {
         int rows = Math.min(6, Math.max(1, (c.prizes.size() + 6) / 7) + 2);
         Gui g = new Gui(rows, "&8&l" + Msg.plainOf(c.previewName.isEmpty() ? "상자 구성품" : c.previewName) + " &7- " + Msg.plainOf(c.name));
         g.set(4, It.of(c.icon).name(c.name).lore("", "&7등장할 수 있는 아이템 목록입니다.").build());
+        double total = 0;
+        for (Prize pz : c.prizes) total += pz.weight;
         int idx = 0;
         for (int row = 1; row < rows - 1; row++) {
-            for (int col = 1; col <= 7 && idx < c.prizes.size(); col++) g.set(row * 9 + col, c.prizes.get(idx++).display.clone());
+            for (int col = 1; col <= 7 && idx < c.prizes.size(); col++) g.set(row * 9 + col, withChance(c.prizes.get(idx++), total));
         }
         g.nav(p, () -> back(p, c));
         border(g);
         g.open(p);
+    }
+
+    /** 구성품 미리보기: 설명 끝에 확률 한 줄 */
+    private static ItemStack withChance(Prize pz, double total) {
+        ItemStack it = pz.display.clone();
+        if (total <= 0) return it;
+        String txt = java.math.BigDecimal.valueOf(pz.weight / total * 100).setScale(2, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+        ItemMeta meta = it.getItemMeta();
+        meta.lore(Msg.append(meta.lore(), "&7확률 : &e" + txt + "%"));
+        it.setItemMeta(meta);
+        return it;
     }
 
     /* ======================= 열기 ======================= */

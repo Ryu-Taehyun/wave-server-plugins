@@ -402,7 +402,7 @@ public class CollectionModule extends Module {
             int start = 22 - (mats.size() - 1);
             for (int i = 0; i < mats.size(); i++) g.set(start + i * 2, mats.get(i));
             g.put("ok", ok);
-            g.set(C_BUTTON, It.of(Material.ANVIL).name(ok ? "&a&l▶ 강화하기" : "&c&l재료가 부족합니다")
+            g.set(C_BUTTON, It.of(Material.ANVIL).name(ok ? "&a&l» 강화하기" : "&c&l재료가 부족합니다")
                     .lore("", "&f" + Msg.plainOf(STAGE_LABEL[stage]) + " &7→ " + STAGE_LABEL[stage + 1],
                             "", ok ? "&e클릭하여 강화" : "&7아래 줄의 &c✘ &7재료를 모아 주세요.").build());
             if (ok) {

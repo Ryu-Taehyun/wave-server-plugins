@@ -28,8 +28,27 @@ public final class Cmd {
     private Cmd() {
     }
 
+    /** 자동완성: 지금까지 입력한 인자를 받아 후보 목록 */
+    public interface Tab {
+        java.util.List<String> complete(CommandSender s, String[] a);
+    }
+
     public static void register(String name, String permission, String permMessage, Exec exec, String... aliases) {
+        register(name, permission, permMessage, exec, null, aliases);
+    }
+
+    public static void register(String name, String permission, String permMessage, Exec exec, Tab tab, String... aliases) {
         BukkitCommand cmd = new BukkitCommand(name, "", "/" + name, Arrays.asList(aliases)) {
+            @Override
+            public @NotNull java.util.List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
+                if (tab == null) return super.tabComplete(sender, alias, args);
+                if (permission != null && !sender.hasPermission(permission)) return java.util.List.of();
+                String cur = args.length == 0 ? "" : args[args.length - 1].toLowerCase();
+                java.util.List<String> out = new java.util.ArrayList<>();
+                for (String c : tab.complete(sender, args)) if (c.toLowerCase().startsWith(cur)) out.add(c);
+                return out;
+            }
+
             @Override
             public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
                 if (permission != null && !sender.hasPermission(permission)) {

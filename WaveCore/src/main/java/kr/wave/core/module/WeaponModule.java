@@ -54,7 +54,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class WeaponModule extends Module {
 
     private static final Attribute MAX_HEALTH = resolve("max_health", "generic.max_health");
-    private static final Attribute KNOCKBACK = resolve("knockback_resistance", "generic.knockback_resistance");
     private static final Set<Biome> FORESTS = new HashSet<>();
 
     static {
@@ -127,6 +126,9 @@ public class WeaponModule extends Module {
 
     @Override
     public void enable() {
+        cmd("아이템", ADMIN, this::giveCommand, (snd, a) -> a.length <= 1 ? new java.util.ArrayList<>(giveIds().keySet())
+                : a.length == 2 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList()
+                : a.length == 3 ? java.util.List.of("1", "5", "10", "64") : java.util.List.<String>of(), "특수아이템", "wgive");
         cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.darknessWave(), Items.chaosHelmet()));
         cmd("epicitems", ADMIN, (s, l, a) -> give(s, Items.vibranium(), Items.quantumMatter(), Items.quantumSword(), Items.auroraBoots(), Items.voidChest(), Items.voidBow(),
                 Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronosBoots(), Items.chronos(0), Items.natureBoots()));
@@ -266,13 +268,101 @@ public class WeaponModule extends Module {
         }
     }
 
+    /* ======================= /아이템 <이름> [플레이어] [개수] ======================= */
+
+    private java.util.LinkedHashMap<String, java.util.function.Supplier<ItemStack>> giveIdCache;
+
+    /** 지급 이름: 아이템 이름에서 [..] 머리표를 뗀 뒤 띄어쓰기를 없앤 것 (예: 혼돈의아포칼립스) */
+    private java.util.LinkedHashMap<String, java.util.function.Supplier<ItemStack>> giveIds() {
+        if (giveIdCache != null) return giveIdCache;
+        java.util.LinkedHashMap<String, java.util.function.Supplier<ItemStack>> m = new java.util.LinkedHashMap<>();
+        java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(Items.specialItems());
+        all.add(() -> Items.soulSplitter(plugin, 0));
+        for (var sup : all) {
+            String id = giveId(Msg.name(sup.get()));
+            if (id.isEmpty()) continue;
+            String key = id;
+            if (m.containsKey(key)) {   // 같은 이름의 다른 버전: [Lv.xx] 표시를 붙임 (예: 천공의심판자클레이모어(js))
+                java.util.regex.Matcher lv = java.util.regex.Pattern.compile("\\[Lv\\.([^\\]]+)\\]").matcher(Msg.name(sup.get()));
+                if (lv.find()) key = id + "(" + lv.group(1) + ")";
+            }
+            for (int i = 2; m.containsKey(key); i++) key = id + i;
+            m.put(key, sup);
+        }
+        return giveIdCache = m;
+    }
+
+    static String giveId(String plain) {
+        String n = plain.replaceAll("^(\\s*\\[[^\\]]*\\])+\\s*", "").replace("•", "").replace(" ", "");
+        return n.isEmpty() ? plain.replace(" ", "") : n;
+    }
+
+    private void giveCommand(org.bukkit.command.CommandSender s, String l, String[] a) {
+        if (a.length == 0) {
+            Msg.send(s, "&e/" + l + " <이름> [플레이어] [개수] &7- 특수 아이템 지급 (Tab 으로 이름 자동완성)");
+            Msg.send(s, "&7" + String.join("&8, &7", giveIds().keySet()));
+            return;
+        }
+        java.util.function.Supplier<ItemStack> sup = giveIds().get(a[0]);
+        if (sup == null) for (var en : giveIds().entrySet()) if (en.getKey().equalsIgnoreCase(a[0])) sup = en.getValue();
+        if (sup == null) {
+            Msg.send(s, "&c알 수 없는 아이템입니다: &f" + a[0] + " &7(Tab 으로 이름을 확인하세요)");
+            return;
+        }
+        Player target = a.length >= 2 ? Bukkit.getPlayerExact(a[1]) : s instanceof Player sp ? sp : null;
+        if (target == null) {
+            Msg.send(s, a.length >= 2 ? "&c접속 중인 플레이어가 아닙니다: &f" + a[1] : "&c콘솔에서는 플레이어 이름을 적어 주세요.");
+            return;
+        }
+        int count = 1;
+        if (a.length >= 3) {
+            try {
+                count = Math.max(1, Math.min(2304, Integer.parseInt(a[2])));
+            } catch (NumberFormatException ex) {
+                Msg.send(s, "&c개수는 숫자로 적어 주세요.");
+                return;
+            }
+        }
+        ItemStack sample = sup.get();
+        if (sample.getMaxStackSize() > 1) {
+            sample.setAmount(1);
+            It.give(target, sample, count);
+        } else for (int i = 0; i < count; i++) It.give(target, sup.get());
+        Msg.send(s, "&a[!] &f" + target.getName() + "&7에게 " + Items.describeShort(sample) + " &7x " + count + " 지급했습니다.");
+    }
+
     private static void hurt(LivingEntity e, double amount) {
         e.setHealth(Math.max(0, e.getHealth() - amount));
     }
 
+    /** 처치 마무리 중 (이 타격으로는 무기 효과를 다시 쓰지 않음) */
+    private boolean finishing;
+
+    /**
+     * 타격에 얹는 추가 피해 (방어구 무시). 이 피해로 죽게 되면 체력을 거의 0으로 만들고
+     * 지금 들어가는 타격이 마무리하게 해서 처치자 · 킬 알림 · 처치 수 · 죽음 거부가 정상으로 처리되게 함
+     */
+    private void extraHit(LivingEntity victim, Player attacker, double amount) {
+        if (victim.getHealth() > amount) {
+            hurt(victim, amount);
+            return;
+        }
+        victim.setHealth(Math.min(victim.getHealth(), 0.01));
+        // 방패 등으로 본 타격이 0이 되면 다음 틱에 공격자 이름으로 마무리
+        later(1, () -> {
+            if (!victim.isValid() || victim.isDead() || victim.getHealth() > 0.02 || !attacker.isOnline()) return;
+            finishing = true;
+            try {
+                victim.damage(1.0, attacker);
+            } finally {
+                finishing = false;
+            }
+        });
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
-        if (probing) return;
+        if (probing || finishing) return;
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
@@ -310,7 +400,7 @@ public class WeaponModule extends Module {
                 Fx.p(mid, Particle.LAVA, 8, 0.5, 0.05);
                 Fx.p(mid, Particle.SWEEP_ATTACK, 2, 0.3, 0);
                 if (chance(0.20)) {
-                    hurt(victim, 2.5);
+                    extraHit(victim, attacker, 2.5);
                     attacker.setHealth(Math.min(maxHealth(attacker), attacker.getHealth() + 5));
                     // 생명 흡수
                     Fx.p(mid, Particle.DAMAGE_INDICATOR, 10, 0.3, 0.1);
@@ -345,7 +435,7 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
-                hurt(victim, 2);
+                extraHit(victim, attacker, 2);
                 // 천둥의 심판: 번개 기둥 + 전기 스파크
                 Fx.pillar(vl, 6, THUNDER, Particle.ELECTRIC_SPARK);
                 Fx.burst(vl.clone().add(0, 1, 0), Particle.ELECTRIC_SPARK, 40, 0.4);
@@ -878,7 +968,7 @@ public class WeaponModule extends Module {
                 effect(p, PotionEffectType.STRENGTH, 20, 3);
                 Msg.sound(p, "block.portal.trigger", 1, 1.3f);
                 Fx.p(p.getLocation(), Particle.WITCH, 300, 0.5, 1, 0.5, 0.1);
-                // 새로운 시대의 각인: 등 뒤의 초승달 + 남색 나선
+                // 초승달의 서약: 등 뒤의 초승달 + 남색 나선
                 Fx.crescent(p.getEyeLocation(), MOON, MOON_P);
                 later(5, () -> Fx.crescent(p.getEyeLocation(), MOON, MOON_P));
                 later(10, () -> Fx.crescent(p.getEyeLocation(), MOON, MOON_P));
@@ -1157,7 +1247,14 @@ public class WeaponModule extends Module {
             // 배낭 / 우편함 / 사망 보관 아이템 (같은 객체를 고치므로 목록에 그대로 반영됨)
             int c = refreshAll(d.backpack) + refreshAll(d.mailbox.toArray(new ItemStack[0])) + refreshAll(d.respawnItems.toArray(new ItemStack[0]));
             if (c > 0) plugin.store().save(d);
-            int n = a + b + c;
+            // 팀 창고 (팀원 누구든 접속하면 갱신)
+            kr.wave.core.data.GlobalData.Team team = global().teamOf(p.getUniqueId());
+            int t = team == null ? 0 : refreshAll(team.storage);
+            if (t > 0) plugin.store().saveGlobal();
+            // 이름이 바뀐 칭호를 쓰고 있으면 새 이름으로 다시 적용
+            String newPrefix = Items.renamedTitle(d.activeTitle);
+            if (newPrefix != null) plugin.module(CoreModule.class).applyTitle(p, newPrefix);
+            int n = a + b + c + t;
             if (n > 0) Msg.actionBar(p, "&7보유 중인 특수 아이템 &f" + n + "개&7의 이름과 설명이 최신으로 바뀌었습니다.");
         });
     }
@@ -1208,8 +1305,6 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_NATURE_BOOTS) && Items.ensureSeasonKeep(hand)) p.getInventory().setItemInMainHand(hand);
             boolean ruinerLegs = legs.contains(Items.N_RUINER_PANTS);
-            // 예전 버전의 넉백 저항(기본값 0.5)을 원래대로 되돌림
-            if (KNOCKBACK != null && p.getAttribute(KNOCKBACK) != null && p.getAttribute(KNOCKBACK).getBaseValue() == 0.5) p.getAttribute(KNOCKBACK).setBaseValue(0);
             if (ruinerLegs && p.getHealth() <= maxHealth(p) * plugin.getConfig().getDouble("weapons.ruiner-pants.low-health", 0.3)) {
                 effect(p, PotionEffectType.STRENGTH, 1.5, 2);
                 Fx.p(p.getLocation().add(0, 1, 0), Particle.DAMAGE_INDICATOR, 2, 0.3, 0.02);

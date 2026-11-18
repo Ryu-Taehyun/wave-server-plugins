@@ -323,7 +323,7 @@ public class MenuModule extends Module {
                 {15, "7days", "&7[칭호] &e&l[💦] 파수꾼", "%nl%&7획득 방법 :%nl%&77일 연속 출석하기", "\"&e&l[💦] 파수꾼\""},
                 {21, "void", "<b><gradient:#C2C2C2:#404247><italic:false>[✦] 공허의 방랑자</gradient></b>", "&7획득 방법 :%nl%&7Whisper of the Void 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#C2C2C2:#404247>[✦] 공허의 방랑자</gradient></b>\""},
                 {22, "philosopher", "<b><gradient:#2193b0:#E7F0F2><italic:false>[✦] 사유의 현자</gradient></b>", "&7획득 방법 :%nl%&7The Philosopher's Literature 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#2193b0:#E7F0F2>[✦] 사유의 현자</gradient></b>\""},
-                {23, "inscribed", "<b><gradient:#1E2586:#FAD4D4><italic:false>[🌙] 새 시대의 각인자</gradient></b>", "&7획득 방법 :%nl%&7Prologue of Inscribed 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#1E2586:#FAD4D4>[🌙] 새 시대의 각인자</gradient></b>\""},
+                {23, "inscribed", "<b><gradient:#1E2586:#FAD4D4><italic:false>[🌙] 초승달의 서약자</gradient></b>", "&7획득 방법 :%nl%&7Prologue of Inscribed 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#1E2586:#FAD4D4>[🌙] 초승달의 서약자</gradient></b>\""},
                 {24, "arbiter", "<b><gradient:#FFF200:#FFFCD4><italic:false>[⚡] 천공의 심판자</gradient></b>", "&7획득 방법 :%nl%&7Arbiter of Heaven 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>\""},
                 {25, "glacier", "<b><gradient:#39C7FF:#C2FFF5><italic:false>[❆] 빙하의 군주</gradient></b>", "&7획득 방법 :%nl%&7Glacier Storm 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>\""},
         };
