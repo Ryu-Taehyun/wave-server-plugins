@@ -375,3 +375,4 @@ mvn package
   - 예전 영어 이름(Time piecer Wind, Umbral Chain, Echo Bell, The New Characteristic, [Over Lord] 교환권)도 새 이름으로
   - 바뀐 아이템이 있으면 액션바로 개수를 알려줌
 - The New Characteristic / 새 시대의 각인 / 신월의 기록 → `[🌙] [Lv.DD] 초승달의 서약` (색은 예전 그대로, 예전 이름의 아이템도 작동하고 접속 시 새 이름으로 바뀜)
+- 보조 무기 3종(시간을 가르는 바람, 그림자 사슬, 메아리 종) 이름 볼드체 (가지고 있는 아이템도 접속 시 반영)

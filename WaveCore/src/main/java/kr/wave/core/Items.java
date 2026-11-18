@@ -327,9 +327,9 @@ public final class Items {
         return it;
     }
 
-    public static final String SHADE_NAME = "<reset><italic:false><gradient:#4A6FA5:#9FB4C7:#E8F1F8>[✦] 그림자 사슬</gradient>";
+    public static final String SHADE_NAME = "<reset><italic:false><b><gradient:#4A6FA5:#9FB4C7:#E8F1F8>[✦] 그림자 사슬</gradient></b>";
 
-    public static final String BELL_NAME = "<reset><italic:false><gradient:#FFD86B:#FFF6D5:#8A6BFF>[✦] 메아리 종</gradient>";
+    public static final String BELL_NAME = "<reset><italic:false><b><gradient:#FFD86B:#FFF6D5:#8A6BFF>[✦] 메아리 종</gradient></b>";
 
     /** 메아리 종: 일정 확률로 종을 울려 대상을 어둠과 멀미에 빠뜨리고 밀쳐냄 */
     public static ItemStack echoBell(String... extraLore) {
@@ -350,7 +350,7 @@ public final class Items {
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%&7그림자 사슬을 던져 일정 확률로 플레이어를 &9끌어당기고 묶어버립니다&7.").lore(extraLore).build();
     }
 
-    public static final String TIME_WIND_NAME = "<reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] 시간을 가르는 바람</gradient>";
+    public static final String TIME_WIND_NAME = "<reset><italic:false><b><gradient:#00FF7C:#FFAFCA>[✦] 시간을 가르는 바람</gradient></b>";
 
     public static ItemStack timePiecerWind(String... extraLore) {
         return It.of(Material.BREEZE_ROD).ench(Enchantment.UNBREAKING, 10)
