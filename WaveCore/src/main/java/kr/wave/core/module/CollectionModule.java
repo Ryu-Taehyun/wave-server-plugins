@@ -280,13 +280,13 @@ public class CollectionModule extends Module {
             switch (kind) {
                 case 0 -> {
                     Msg.send(p, " ");
-                    Msg.send(p, "<yellow><obf>D</obf></yellow> &7" + p.getName() + " &8▶ &7Test <yellow><obf>D</obf></yellow>");
+                    Msg.send(p, "<yellow><obf>D</obf></yellow> &7" + p.getName() + " &8» &7Test <yellow><obf>D</obf></yellow>");
                     Msg.send(p, "<yellow><obf>D</obf></yellow> &6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient> &7(x y z) <yellow><obf>D</obf></yellow>");
                     Msg.send(p, " ");
                 }
                 case 1 -> {
                     Msg.send(p, " ");
-                    Msg.send(p, "<color:#B0E4F8><obf>D</obf></color> &7" + p.getName() + " &8▶ &7Test <color:#B0E4F8><obf>D</obf></color>");
+                    Msg.send(p, "<color:#B0E4F8><obf>D</obf></color> &7" + p.getName() + " &8» &7Test <color:#B0E4F8><obf>D</obf></color>");
                     Msg.send(p, "<color:#B0E4F8><obf>D</obf></color> <gradient:#39C7FF:#D2FFF8:#00FFFF><italic:false><b>[❆] [Lv.</b><obf><b>D</b></obf><obf><b>D</b></obf><b>] </b><b>프로스트 그레이브</b></gradient> &7(x y z) <color:#B0E4F8><obf>D</obf></color>");
                     Msg.send(p, " ");
                 }
