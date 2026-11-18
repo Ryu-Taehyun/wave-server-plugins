@@ -90,6 +90,8 @@ public class WeaponModule extends Module {
     private final Map<UUID, Long> chaosCd = new HashMap<>();
     /** 얼어붙은 제왕의 검 서리 균열: 대상 -> 사라지는 시각 */
     private final Map<UUID, Long> crackedUntil = new HashMap<>();
+    /** 공격자가 마지막으로 남긴 서리 균열이 사라지는 시각 (액션바 표시용) */
+    private final Map<UUID, Long> crackShown = new HashMap<>();
     private final Map<UUID, Long> waveCd1 = new HashMap<>();
     private final Map<UUID, Long> waveCd2 = new HashMap<>();
     /** 범위 스킬 대상 확인용 가짜 피해 이벤트 중에는 무기 효과를 건너뜀 */
@@ -333,13 +335,15 @@ public class WeaponModule extends Module {
                 // 서리 균열: 일정 시간 받는 피해 증가 (움직임은 막지 않음)
                 long nowMs = System.currentTimeMillis();
                 if (crackedUntil.size() > 300) crackedUntil.values().removeIf(t -> t < nowMs);
-                crackedUntil.put(victim.getUniqueId(), nowMs + (long) (plugin.getConfig().getDouble("weapons.sealed.crack-seconds", 4) * 1000));
+                long until = nowMs + (long) (plugin.getConfig().getDouble("weapons.sealed.crack-seconds", 4) * 1000);
+                crackedUntil.put(victim.getUniqueId(), until);
+                crackShown.put(attacker.getUniqueId(), until);
                 Location mid = vl.clone().add(0, 1, 0);
                 Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 40, 0.4);
                 Fx.burst(mid, Particle.SNOWFLAKE, 30, 0.15);
                 Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
                 Msg.soundAt(mid, "block.glass.break", 0.9f, 1.4f);
-                Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 서리 균열</b></gradient> &7- 대상이 받는 피해 증가");
+                Msg.actionBar(attacker, sealedBar(attacker, nowMs));
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
@@ -948,6 +952,16 @@ public class WeaponModule extends Module {
         p.getInventory().setItemInMainHand(hand);
     }
 
+    /** 얼어붙은 제왕의 검 액션바: 돌진 쿨타임 + (서리 균열이 걸려 있으면) 오른쪽에 균열 남은 시간 */
+    private String sealedBar(Player p, long now) {
+        String bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 돌진</b></gradient>", sealedCd, now,
+                (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000), "&b", "우클릭", 12);
+        long crack = crackShown.getOrDefault(p.getUniqueId(), 0L) - now;
+        if (crack > 0) bar += "  &8│  <gradient:#9FE8FF:#FFFFFF><b>서리 균열</b></gradient> &8» &b" + ((crack + 999) / 1000) + "초";
+        else crackShown.remove(p.getUniqueId());
+        return bar;
+    }
+
     /**
      * 액션바 한 칸: 이름 » [■■■□□□] 12초  /  이름 » 사용 가능 (우클릭)
      * 쿨타임이 막 끝난 순간(1초 안)에는 짧은 알림음을 낸다.
@@ -1183,8 +1197,7 @@ public class WeaponModule extends Module {
             // 스킬 쿨타임 액션바: [이름] [진행 막대] 남은 시간 / 사용 가능
             String bar = null;
             if (tool.contains(Items.N_SEALED_SWORD)) {
-                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 돌진</b></gradient>", sealedCd, now,
-                        (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000), "&b", "우클릭", 12);
+                bar = sealedBar(p, now);
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 long storm = sandStormUntil.getOrDefault(id, 0L) - now;
                 bar = storm > 0
