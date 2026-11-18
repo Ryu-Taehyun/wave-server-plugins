@@ -51,6 +51,7 @@ public final class Items {
     public static final String N_CHAOS = "[Chaos] [Lv.✦] 혼돈의 아포칼립스";
     /** 혼돈의 아포칼립스 세트 */
     public static final String N_DARK_WAVE = "[Chaos] [Lv.✦] 다크니스 웨이브";
+    public static final String N_CHAOS_HELM = "[Chaos] [Lv.✦] 종말의 투구";
     public static final String N_RUINER_SCYTHE = "[Ruiner] [Lv.✕] 파괴의 낫";
     public static final String N_RUINER_PANTS = "[Ruiner] [Lv.✕] 재앙의 서막 바지";
     public static final String N_NATURE_BOOTS = "[Natural] [Lv.✦] 대자연의 황혼";
@@ -78,7 +79,7 @@ public final class Items {
             java.util.Map<String, java.util.function.Supplier<ItemStack>> m = new java.util.HashMap<>();
             java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(java.util.List.of(
                     Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
-                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave,
+                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave, Items::chaosHelmet,
                     Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
                     Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
                     Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
@@ -259,6 +260,7 @@ public final class Items {
             case "melon" -> melon(1);
             case "chaos_sword", "chaos" -> chaosApocalypse();
             case "darkness_wave" -> darknessWave();
+            case "chaos_helmet" -> chaosHelmet();
             default -> null;
         };
     }
@@ -519,6 +521,16 @@ public final class Items {
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
                 .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 <color:#D6D6D6>어둠</color>&7 4초 + <color:#D6D6D6>구속 III</color>&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
                         + "&8&l>> &7웅크리기 + 우클릭 시 &f5초&7간 주변 &f3칸&7에 검은 연기가 퍼져, 들어온 적에게 <color:#D6D6D6>실명</color>&7을 부여합니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
+    }
+
+    /** 종말의 투구 (혼돈의 아포칼립스 세트 헬멧) */
+    public static ItemStack chaosHelmet() {
+        return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5)
+                .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [Lv.✦] 종말의 투구</b></gradient>")
+                .lore(CHAOS_HEAD + "&8&l>> &7장착 시 <color:#D6D6D6>어둠</color>&7과 <color:#D6D6D6>실명</color>&7에 걸리지 않습니다%nl%"
+                        + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 <color:#D6D6D6>위더 I</color>&7를 부여합니다%nl%"
+                        + "&8&l>> &7체력이 &f40% 이하&7로 떨어지면 주변 적에게 <color:#D6D6D6>구속 II</color>&7 · <color:#D6D6D6>나약함 I</color>&7를 부여합니다 &8(쿨타임 1분)"
+                        + SEASON_KEEP).build();
     }
 
     public static ItemStack chaosApocalypse() {

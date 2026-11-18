@@ -89,6 +89,13 @@ weapons:
     damage: 6.5                    # 무기 고정 데미지
     skill-damage: 4.0              # 혼돈의 파열 피해 (4 = 하트 2칸, 이 피해로는 죽지 않음)
     skill-cooldown-seconds: 45
+  chaos-helmet:                    # 종말의 투구
+    wither-chance: 0.15            # 공격받을 시 공격자에게 위더 I 확률
+    wither-seconds: 3
+    low-health: 0.4                # 이 비율 아래로 떨어지는 순간 발동
+    radius: 4
+    debuff-seconds: 3              # 구속 II · 나약함 I 시간
+    cooldown-seconds: 60
   claymore-splash:
     radius: 4.0
     damage: 3.0              # 2 = 하트 1칸
