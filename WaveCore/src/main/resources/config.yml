@@ -1,0 +1,194 @@
+# ==========================================
+#        WaveCore (Wave Online) 설정
+# ==========================================
+
+# 월드 이름 (Skript 에 하드코딩되어 있던 값)
+worlds:
+  spawn: "spawn-world"      # 스폰 (신속 V, /spawn, 리스폰)
+  wild: "world"             # 야생 (/보호구역, /랜덤스폰)
+  nether: "world_nether"
+  end: "world_the_end"
+  duel: "1v1"               # 1대1 대전 월드
+  newbie: "newbie"          # 뉴비 보호 월드
+
+# /spawn, /보호구역 도착 위치는 '/wave setwarp spawn|protect' 로 지정할 수 있습니다.
+# 지정하지 않으면 각각 spawn / wild 월드의 스폰으로 이동합니다.
+
+# 1대1 대전 시작 위치 (duel 월드 기준 x, y, z)
+duel:
+  pos1: [-44.55, -50.0, 32.54]   # 수락한 사람
+  pos2: [-44.55, -50.0, 100.0]   # 신청한 사람
+
+# 최대 체력 (20 = 하트 10칸)
+health:
+  base: 20.0
+  # 천공의 심판자 클레이모어 소지 시 추가 체력 (2 = 하트 1칸)
+  claymore-bonus: 6.0
+  # 프로스트 그레이브 소지 시 추가 체력 (2 = 하트 1칸)
+  frost-bonus: 8.0
+  # 두 무기를 모두 가지고 있으면 더 큰 값 하나만 적용됩니다. (예: 20 + 8 = 28)
+  # 천공의 심판자 클레이모어 소지 시 걷기 속도 (기본 0.2, 0.25 = 25% 증가)
+  claymore-walk-speed: 0.25
+
+# 천공의 심판자 클레이모어 '심판의 빛' (타격 시, 쿨타임 30초)
+# 황금 충격파 범위 안의 다른 대상에게 실명 + 구속 + 약간의 피해 (범위 피해로는 죽지 않음, 팀원 제외)
+weapons:
+  # 천공의 심판자 클레이모어
+  claymore:
+    # 플레이어 타격: 방어구 무시 피해 (20 = 하트 10칸). 남은 체력이 이보다 적으면 min-health 만 남김
+    true-damage: 20.0
+    min-health: 2.0          # 2 = 하트 1칸. 이미 이 이하라면 일반 공격 데미지로 처치 가능
+    # 몬스터 타격 데미지 (0 = 바닐라 금 검 데미지)
+    hit-damage: 0
+    # 심판의 빛 (번개 + 실명/구속) 추가 고정 피해와 쿨타임. 이 피해로는 죽지 않습니다
+    judgment-damage: 6.0
+    judgment-cooldown-seconds: 30
+  # 잿불 낙인검 (무기 상점): 같은 대상을 window 초 안에 3번 맞히면 낙인 폭발
+  ember:
+    window-seconds: 4
+    min-interval-ms: 450     # 이보다 빠른 연타는 낙인이 쌓이지 않음
+    burst-damage: 4.0        # 폭발 추가 피해 (4 = 하트 2칸)
+    fire-seconds: 3
+  # 그림자 송곳 (보조 무기): 왼손에 들고 주 무기로 적중 시 확률적으로 추가 피해
+  shade:
+    chance: 0.20
+    damage: 3.0              # 3 = 하트 1.5칸
+    slow-seconds: 1
+    cooldown-ms: 1000
+  claymore-splash:
+    radius: 4.0
+    damage: 3.0              # 2 = 하트 1칸
+    blindness-seconds: 2.0
+    slowness-seconds: 3.0
+    slowness-level: 3
+
+# 전투 태그 시간 (초)
+combat-time: 12
+# 전투 중 진입할 수 없는 WorldGuard 구역 이름
+protect-region: "protect"
+
+# / 를 눌렀을 때 일반 플레이어에게 숨길 명령어 (권한이 없는 명령어와 "플러그인:명령어" 는 자동으로 숨김)
+hidden-commands: []
+
+# ---- 아래 값들은 실제 서버 값을 private.yml 에 넣습니다 (공개 저장소에 올리지 않음) ----
+# private.example.yml 을 private.yml 로 복사해서 채우세요. private.yml 이 config.yml 보다 우선합니다.
+
+# 이 닉네임은 지정한 IP 로만 접속 가능 ("닉네임:IP")
+ip-lock: []
+
+# /report 신고를 받을 관리자 닉네임 (wave.report.receive 권한자도 받습니다)
+report-receivers: []
+
+# 밴 화면의 문의처
+ban-contact: ""
+
+links:
+  minelist: ""
+  mineboard: ""
+  discord: ""
+
+# 스페셜 상점 (유료 캐시). price-1: 1개, price-10: 10개 묶음
+special-shop:
+  altar-ticket:
+    price-1: 5000
+    price-10: 45000
+  echoes-voucher:
+    crate: "TheEchoesOfNatural"   # plugins/WaveCore/crates/ 의 파일 이름
+    price-1: 5000
+    price-10: 45000
+
+# 프리미엄 패스 (PremiumPass 연동, 유료 캐시 상점)
+premium-pass:
+  voucher-price: 25000     # 프리미엄 패스권 1장
+  level-price: 1750        # 패스 레벨 1당
+
+# 오버 로드: Peerless 랭크 달성 후, 누적 유료 캐시가 start 를 넘은 만큼 per-insignia 마다 휘장 1개 (최대 10)
+overlord:
+  start: 200000
+  per-insignia: 75000
+
+# 튜토리얼 (첫 접속 플레이어에게 자동 시작, /튜토리얼)
+tutorial:
+  enabled: true
+  reward-cash: 30000
+  reward-newbie-package: true
+  reward-altar-tickets: 0
+
+# 주기 공지 (돌아가며 하나씩, 클릭 버튼 포함). /공지테스트 로 바로 다음 공지를 보낼 수 있습니다.
+announcements:
+  enabled: true
+  interval-minutes: 15
+  sound: true
+  # 순서와 사용 여부: menu, boss, pass, dailyshop, rules, vote, discord (빼면 안 나옴)
+  order: [menu, boss, pass, dailyshop, rules, vote, discord]
+  # 직접 추가하는 공지 (order 다음에 나옴)
+  # - {tag: "&b&l[ 이벤트 ]", title: "&f주말 이벤트 진행 중!", lines: ["&7토~일 경험치 2배"], button: "[자세히]", command: "/도움말"}
+  custom: []
+
+# 스폰 경험치 구역 (20초 머물면 경험치 10~50)
+xp-zone:
+  enabled: true
+  world: "spawn-world"
+  min: [-109, 107, -137]
+  max: [-100, 113, -127]
+  seconds: 20
+  min-xp: 10
+  max-xp: 50
+
+# 보스 '천공의 심판자' (천공의 제단 sky_altar.schem 에서만 스폰)
+boss:
+  enabled: true
+  # 제단 위치: 붙여넣은 제단 중앙에 서서 /wave boss setcenter 로 자동 설정
+  world: ""
+  center: []
+  # 보스가 제단 중심에서 벗어날 수 있는 거리 (넘으면 중심으로 귀환)
+  radius: 22
+  # 처치(또는 시간 초과) 후 다음 강림까지 (분). 시간이 되면 플레이어가 없어도 강림
+  respawn-minutes: 30
+  health: 400.0
+  damage: 12.0
+  judgment-damage: 8.0     # 심판의 빛 (예고 1.5초 후 번개)
+  wave-damage: 4.0         # 천공의 파동 (넉백)
+  exp: 500
+  # 이동권 도착 지점: 서서 /wave boss setentry. 비워두면 제단 남쪽 입구
+  entry: []
+  # 이동은 이동권 우클릭 -> 천공의 제단 메뉴 -> 이동 클릭 으로만 가능 (1회용, 관리자도 소모)
+  # /천공의제단 은 메뉴만 엽니다. 보스가 강림한 동안에만 이동할 수 있습니다.
+  # 이동권 지급: /wave boss ticket <플레이어> [개수]
+  # 보스 전투 제한 시간 (분). 지나면 보스가 사라지고 제단 안 플레이어는 이전 위치로 이동
+  fight-minutes: 5
+  # 주사위 분배 제한 시간 (초). 분배가 끝날 때까지 전리품 창은 닫을 수 없습니다.
+  roll-seconds: 30
+  # 처치 후 이 시간(초)이 지나면 자동으로 이전 위치(제단에 오기 전 위치, 없으면 스폰)로 이동
+  return-seconds: 60
+  # 주사위를 모두 돌렸으면 이 시간(초) 뒤 이동
+  return-after-roll-seconds: 10
+  # 천공 월드: 이 월드에서는 채팅을 제외한 모든 명령어가 항상 막히고 (관리자 제외),
+  # 월드 전체가 제단 구역으로 취급됩니다 (귀환 대상, 이동 제한)
+  lock-world: "sky"
+  # (제단을 다른 월드에 붙여넣은 경우) 이 범위(제단 중심 기준) 안에서는 전투/분배 중 명령어와 텔레포트가 막힙니다 (관리자 제외)
+  arena-radius: 48
+  # 그래도 허용할 명령어 (/루팅 은 항상 허용)
+  allowed-commands: []
+  # 처치할 때마다 3줄(27칸) 창에 전리품이 무작위 위치로 나옵니다.
+  # 아이템마다 좌클릭 = 주사위(0~100), 우클릭 = 포기. 혼자면 좌클릭 즉시 획득.
+  loot:
+    items: 5
+    # 천공의 심판자 클레이모어가 전리품에 섞일 확률 (%)
+    claymore-chance: 0.5
+    # material: 아이템 / special: quantum_matter, vibranium, time_shard, mending_book, altar_ticket
+    # min~max: 개수, weight: 뽑힐 비중 (클수록 자주)
+    pool:
+      - {material: DIAMOND, min: 4, max: 10, weight: 20}
+      - {material: GOLD_BLOCK, min: 4, max: 8, weight: 20}
+      - {material: EXPERIENCE_BOTTLE, min: 16, max: 48, weight: 20}
+      - {material: EMERALD_BLOCK, min: 2, max: 5, weight: 15}
+      - {material: GOLDEN_APPLE, min: 3, max: 6, weight: 15}
+      - {material: NETHERITE_SCRAP, min: 1, max: 3, weight: 10}
+      - {material: ANCIENT_DEBRIS, min: 1, max: 2, weight: 8}
+      - {material: TOTEM_OF_UNDYING, min: 1, max: 1, weight: 6}
+      - {special: quantum_matter, min: 1, max: 3, weight: 8}
+      - {special: time_shard, min: 2, max: 5, weight: 8}
+      - {material: ENCHANTED_GOLDEN_APPLE, min: 1, max: 1, weight: 4}
+      - {special: mending_book, min: 1, max: 1, weight: 4}
+      - {material: NETHERITE_INGOT, min: 1, max: 1, weight: 2}

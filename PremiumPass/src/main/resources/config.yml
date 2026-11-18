@@ -1,0 +1,75 @@
+# ==========================================
+#        프리미엄 패스 (PremiumPass) 설정
+# ==========================================
+# 색 코드는 & 를 사용합니다.
+
+prefix: "&6[프리미엄 패스] &f"
+
+season:
+  # 시즌 번호. /passadmin season next 로 올리면 모든 플레이어의
+  # 레벨/보상 수령 기록/시즌 퀘스트/상점 구매 횟수가 초기화됩니다.
+  id: 1
+  name: "시즌 1"
+  # 새 시즌이 시작돼도 프리미엄 패스 포인트를 유지할지 여부
+  keep-points: true
+
+premium:
+  # 프리미엄 패스 활성화 방법
+  #  1) 프리미엄 패스권 아이템 우클릭 (/passadmin voucher <플레이어> [개수] 로 지급)
+  #  2) /passadmin premium <플레이어> on  (콘솔에서도 가능 -> 후원 플러그인 연동)
+  #  3) premiumpass.premium 권한 보유 (LuckPerms 등급 연동)
+  # 새 시즌이 시작돼도 프리미엄 패스를 유지할지 (false = 시즌마다 새로 구매)
+  keep-on-new-season: false
+  # 프리미엄 패스 보유자의 퀘스트 보상 보너스 (%)
+  quest-xp-bonus: 0
+  quest-point-bonus: 50
+  # 프리미엄 패스 활성화 시 전체 공지
+  broadcast-activation: true
+  voucher:
+    material: PAPER
+    name: "&6&l프리미엄 패스권"
+    lore:
+      - "&7우클릭하면 이번 시즌"
+      - "&6프리미엄 패스&7가 활성화됩니다."
+      - ""
+      - "&8- 모든 레벨의 프리미엄 보상 수령"
+      - "&8- 퀘스트 포인트 보상 +50%"
+      - "&8- 프리미엄 전용 상점 아이템 구매"
+  # 프리미엄 패스가 없는 플레이어에게 메뉴에서 보여줄 구매 안내
+  purchase-info:
+    - "&7후원 상점에서 &6프리미엄 패스권&7을"
+    - "&7구매할 수 있습니다."
+
+level:
+  # 레벨 상한선
+  max: 100
+  # 1레벨 -> 2레벨에 필요한 패스 XP
+  base-xp: 1000
+  # 레벨이 오를 때마다 필요 XP 증가량 (0 = 모든 레벨 동일)
+  increase-per-level: 0
+
+overflow:
+  # 최대 레벨 달성 후 얻는 패스 XP 는 프리미엄 패스 포인트로 전환됩니다.
+  # 몇 XP 당 1 포인트로 바꿀지 설정합니다. (기본: 100 XP = 1 포인트)
+  xp-per-point: 100
+
+daily:
+  # 하루에 배정되는 일일 퀘스트 개수 (quests.yml 의 daily 목록에서 무작위)
+  count: 5
+  timezone: "Asia/Seoul"
+  # 일일 퀘스트 초기화 시각 (0~23시)
+  reset-hour: 0
+
+quests:
+  # 크리에이티브 모드에서의 행동을 퀘스트에 반영할지
+  count-creative: false
+  # 스포너에서 나온 몹 처치를 퀘스트에 반영할지 (몹 농장 악용 방지)
+  count-spawner-mobs: false
+  # 퀘스트 진행 상황을 액션바에 표시
+  actionbar-progress: true
+
+# 최대 레벨 달성 시 전체 공지
+broadcast-max-level: true
+
+# 자동 저장 주기 (분)
+autosave-minutes: 5

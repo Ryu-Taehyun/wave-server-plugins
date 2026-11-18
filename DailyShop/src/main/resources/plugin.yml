@@ -1,0 +1,19 @@
+name: DailyShop
+version: '1.0.0'
+main: com.dailyshop.DailyShop
+api-version: '1.21'
+description: 매일 상품이 바뀌는 일일 상점
+softdepend: [PremiumPass, Vault, WaveCore]
+commands:
+  dailyshop:
+    description: 일일 상점을 엽니다.
+    usage: /dailyshop
+    aliases: [일일상점]
+    permission: dailyshop.use
+permissions:
+  dailyshop.use:
+    description: 일일 상점 이용
+    default: true
+  dailyshop.admin:
+    description: 일일 상점 관리
+    default: op

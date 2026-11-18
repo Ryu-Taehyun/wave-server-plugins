@@ -1,0 +1,16 @@
+name: WaveCore
+version: '1.0.0'
+main: kr.wave.core.WaveCore
+api-version: '1.21'
+description: Wave Online 서버 Skript 기능을 옮긴 플러그인
+softdepend: [Skript, Vault, LuckPerms, WorldGuard, Multiverse-Core, TAB, CrazyCrates, Essentials, BetterRTP]
+permissions:
+  wave.admin:
+    description: "관리자 명령어 (Skript 의 permission op)"
+    default: op
+  wave.maintenance.bypass:
+    description: 점검 모드 중에도 접속 가능
+    default: op
+  wave.report.receive:
+    description: /report 신고 알림 받기
+    default: op

@@ -1,0 +1,34 @@
+# ==========================================
+#          일일 상점 (DailyShop) 설정
+# ==========================================
+prefix: "&e[일일 상점] &f"
+
+# 매일 진열되는 상품 개수 (shop.yml 목록에서 가중치에 따라 무작위)
+count: 6
+
+# 상품이 바뀌는 시각
+timezone: "Asia/Seoul"
+reset-hour: 0
+
+# 갱신 시 접속자에게 알림
+broadcast-refresh: true
+
+currency:
+  # 결제 수단
+  #  PREMIUMPASS : 프리미엄 패스 포인트 (PremiumPass 플러그인 필요)
+  #  VAULT       : 서버 돈 (Vault + EssentialsX 등 경제 플러그인 필요)
+  #  ITEM        : 아이템 (아래 item 의 아이템으로 결제)
+  # 설정한 수단을 쓸 수 없으면 ITEM 으로 대신 동작합니다.
+  type: PREMIUMPASS
+  # 가격 뒤에 붙는 이름 (예: 포인트, 원, 에메랄드)
+  display-name: "포인트"
+  item: EMERALD
+
+# PremiumPass 프리미엄 패스 보유자 할인율 (%) - PremiumPass 가 있을 때만 적용
+premium-discount: 10
+
+# WaveCore 캐시로도 구매 (상품을 우클릭). 캐시 가격 = 포인트 가격 x per-point
+cash:
+  enabled: true
+  per-point: 40
+  display-name: "캐시"

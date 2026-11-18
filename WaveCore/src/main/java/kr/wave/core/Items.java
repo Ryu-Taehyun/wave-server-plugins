@@ -1,0 +1,561 @@
+package kr.wave.core;
+
+import kr.wave.core.util.It;
+import kr.wave.core.util.Msg;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * 스크립트에 나오는 모든 커스텀 아이템.
+ * 기존 Skript 가 만든 아이템도 이름(색상 제외)으로 인식하므로, 이름 문자열은 원본과 똑같이 유지한다.
+ */
+public final class Items {
+
+    private Items() {
+    }
+
+    private static final String LEGENDARY = "%nl%&7등급 : <gradient:#29FF00:#EEEEEE><bold:true>Legendary</gradient>%nl%%nl%";
+    private static final String SEASON_KEEP = "%nl%%nl%&c&l해당 아이템은 시즌이 지나도 유지됩니다.";
+
+    /** 이미 지급된 아이템에도 '시즌이 지나도 유지됩니다' 문구를 붙임. 바뀌었으면 true */
+    public static boolean ensureSeasonKeep(ItemStack it) {
+        if (it == null || !it.hasItemMeta()) return false;
+        org.bukkit.inventory.meta.ItemMeta meta = it.getItemMeta();
+        java.util.List<net.kyori.adventure.text.Component> lore = meta.lore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.lore());
+        for (net.kyori.adventure.text.Component c : lore) if (Msg.plain(c).contains("시즌이 지나도 유지")) return false;
+        lore.addAll(Msg.lore(SEASON_KEEP.substring("%nl%".length())));
+        meta.lore(lore);
+        it.setItemMeta(meta);
+        return true;
+    }
+
+    /* ======================= 이름 (색상 제외 비교용) ======================= */
+
+    public static final String N_NEWBIE_PASS = "[💡 NEWBIE] 뉴비 헬퍼 패스";
+    public static final String N_CROWN = "[👑] [⭐8] 크라운 처치 알림 표식";
+    public static final String N_QUANTUM_SWORD = "[Quantum] [Lv.A] 앱솔루트 퀀텀";
+    public static final String N_AURORA_BOOTS = "[Quantum] [Lv.A] 오로라 퀸트라늄";
+    public static final String N_PACK_HIGH = "[PVP] 고급 전투 패키지";
+    public static final String N_PACK_MID = "[PVP] 중급 전투 패키지";
+    public static final String N_PACK_ENCHANT = "[Magic] • 인챈트 패키지 •";
+    public static final String N_MELON = "최고급 수박 조각";
+    public static final String N_NEWBIE_PACKAGE = "[Newbie] 뉴비 지원 패키지";
+    public static final String N_MINERAL_PACK = "[Newbie] 광물 팩";
+    public static final String N_PREORDER_ROULETTE = "[Pre-Order] • 시작의 룰렛 •";
+    public static final String N_CHECK = "[🪙] 캐시 수표";
+    public static final String N_SEALED_SWORD = "[Sealed] [Lv.✕] 얼어붙은 제왕의 검";
+    public static final String N_THUNDER = "[⚡] [Lv.L] 천둥의 심판";
+    public static final String N_CHAOS = "[Chaos] [Lv.✦] 혼돈의 아포칼립스";
+    public static final String N_RUINER_SCYTHE = "[Ruiner] [Lv.✕] 파괴의 낫";
+    public static final String N_RUINER_PANTS = "[Ruiner] [Lv.✕] 재앙의 서막 바지";
+    public static final String N_NATURE_BOOTS = "[Natural] [Lv.✦] 대자연의 황혼";
+    public static final String N_VOID_CHEST = "[Void] [Lv.✕] 뒤틀린 차원의 갑옷";
+    public static final String N_VOID_BOW = "[Void] [Lv.✕] 공허의 속삭임";
+    public static final String N_RUSSELL = "[Lv.✕] 러셀의 패러독스";
+    public static final String N_ETERNAL_CHRONOS = "[Time] [Lv.↗] 이터널 크로노스 (MAX)";
+    public static final String N_CHRONOS = "[Time] [Lv.↗] 크로노스의 칼날";
+    public static final String N_TIME_SHARD = "[Time] 시간의 파편";
+    public static final String N_RUINER_ESSENCE = "[✦] 파멸자의 봉인된 정수";
+    public static final String N_NEW_CHAR = "[🌙] [Lv.DD] The New Characteristic";
+    public static final String N_CLAYMORE_SD = "[⚡] [Lv.sd] 천공의 심판자 클레이모어";
+    public static final String N_FROST = "[❆] [Lv.DD] 프로스트 그레이브";
+    public static final String N_TIME_WIND = "[✦] Time piecer Wind";
+    /** 그림자 송곳 (보조 무기, 왼손) */
+    public static final String N_SHADE = "그림자 송곳";
+    /** 잿불 낙인검 (일반 상점 판매) */
+    public static final String N_EMBER = "잿불 낙인검";
+/** 망령 수확자 (예전 Soul Splitter 를 완전히 바꾼 무기). 이름에 이 글자가 있으면 같은 무기 */
+    public static final String N_SOUL_SPLITTER = "망령 수확자";
+    /** 예전 이름 "[✦] [Counter] Soul Splitter" 의 칼도 같은 무기로 인식 (다음 처치 때 새 이름으로 바뀜) */
+    public static final String N_SOUL_SPLITTER_OLD = "Soul Splitter";
+    public static final String N_TEAM_RED = "팀 색상 변경권 (Red)";
+    public static final String N_TEAM_GOLD = "팀 색상 변경권 (Gold)";
+
+    /* 컬렉션 아이템 (이름 정확히 일치) */
+    public static final String C_CLAYMORE = Msg.plainOf("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어");
+    public static final String C_REAPER_SOUL = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼");
+    public static final String C_JUDGE_HELMET = Msg.plainOf("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧");
+    public static final String C_REAPER_HEART = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장");
+
+    private static final java.util.Map<Material, String> KOREAN = java.util.Map.ofEntries(
+            java.util.Map.entry(Material.DIAMOND, "다이아몬드"), java.util.Map.entry(Material.GOLD_BLOCK, "금 블록"),
+            java.util.Map.entry(Material.EXPERIENCE_BOTTLE, "경험치 병"), java.util.Map.entry(Material.EMERALD_BLOCK, "에메랄드 블록"),
+            java.util.Map.entry(Material.GOLDEN_APPLE, "황금 사과"), java.util.Map.entry(Material.NETHERITE_SCRAP, "네더라이트 조각"),
+            java.util.Map.entry(Material.ANCIENT_DEBRIS, "고대 잔해"), java.util.Map.entry(Material.TOTEM_OF_UNDYING, "불사의 토템"),
+            java.util.Map.entry(Material.ENCHANTED_GOLDEN_APPLE, "마법이 부여된 황금 사과"), java.util.Map.entry(Material.ENCHANTED_BOOK, "마법이 부여된 책"),
+            java.util.Map.entry(Material.NETHERITE_INGOT, "네더라이트 주괴"), java.util.Map.entry(Material.IRON_BLOCK, "철 블록"),
+            java.util.Map.entry(Material.ENDER_PEARL, "엔더 진주"), java.util.Map.entry(Material.NETHER_STAR, "네더의 별"));
+
+    /** 채팅용 짧은 이름 "이름 x개수" */
+    public static String describeShort(ItemStack it) {
+        String n;
+        if (it.hasItemMeta() && it.getItemMeta().hasDisplayName()) {
+            n = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(it.getItemMeta().displayName());
+        } else {
+            n = "&f" + KOREAN.getOrDefault(it.getType(), it.getType().name().toLowerCase().replace('_', ' '));
+        }
+        return n + " &7x" + it.getAmount();
+    }
+
+    /* ======================= 재료 / 소모품 ======================= */
+
+    public static ItemStack quantumMatter() {
+        return It.of(Material.YELLOW_DYE).ench(Enchantment.UNBREAKING, 10)
+                .name("<b><gradient:#D4AF37:#FDFBF0><italic:false><b>[Quantum] 양자 물질</b></gradient></b>")
+                .lore("%nl%&7서버 스폰의 미스터리 상점에서 사용할 수 있습니다.").build();
+    }
+
+    public static ItemStack vibranium() {
+        return It.of(Material.ORANGE_DYE).ench(Enchantment.FORTUNE, 10)
+                .name("<b><gradient:#8C7427:#FDFBF0><italic:false><b>[Quantum] 압축된 고농도 비브라늄</b></gradient></b>")
+                .lore("%nl%&7서버 스폰의 미스터리 상점에서 사용할 수 있습니다.").build();
+    }
+
+    public static ItemStack newbiePass() {
+        return It.of(Material.PAPER).ench(Enchantment.FORTUNE, 10).name("&a&l[💡 NEWBIE] 뉴비 헬퍼 패스")
+                .lore("%nl%&7사용 시 뉴비 보호 월드에 입장할 수 있으며, 경험치 휙득량이 1.5배 상승합니다.").build();
+    }
+
+    public static ItemStack crownMark() {
+        return It.of(Material.NETHER_STAR).ench(Enchantment.FORTUNE, 10)
+                .name("<gradient:#FFF176:#FFB732><italic:false><b>[👑] [⭐8]</b><b> 크라</b><b>운 처치 알림 표식</b></gradient>")
+                .lore("%nl%&7등급 : <gradient:#FFF176:#FFB732><italic:false><b>Over Lord</b></gradient>%nl%&7오버 로드 ⭐8 달성 보상입니다.%nl%%nl%&e적용 후 플레이어 처치 시 특수한 크라운 표식이 적용됩니다.").build();
+    }
+
+    public static ItemStack packHigh(String lore) {
+        return It.of(Material.NETHER_STAR).name("&c&l[PVP] &e&l고급 전투 패키지").lore(lore).build();
+    }
+
+    public static ItemStack packMid(String lore) {
+        return It.of(Material.EMERALD).ench(Enchantment.FORTUNE, 5).name("&c&l[PVP] &6&l중급 전투 패키지").lore(lore).build();
+    }
+
+    public static ItemStack melon(int amount) {
+        return It.of(Material.MELON_SLICE, amount).ench(Enchantment.DEPTH_STRIDER, 1).name("&d&l최고급 수박 조각").build();
+    }
+
+    public static ItemStack newbiePackage() {
+        return It.of(Material.BOOK).name("&a[Newbie] &7&l뉴비 지원 패키지")
+                .lore("%nl%&a우클릭 시 오픈됩니다. 서버를 처음 시작할 때 매우 용이합니다.").build();
+    }
+
+    public static ItemStack mineralPack() {
+        return It.of(Material.BONE_MEAL).name("&a[Newbie] &7광물 팩")
+                .lore("&7다양한 광물이 들어 있습니다!%nl%%nl%&a우클릭 시 오픈됩니다.").build();
+    }
+
+    public static final String WEAPON_KEY_LORE = "%nl%&7다양한 무기 룰렛을 오픈할 수 있습니다.%nl%%nl%&7등장하는 아이템 목록%nl%&7- &f다이아몬드 헬멧 (보호 3)%nl%&7- &f다이아몬드 갑옷 (보호 3)%nl%&7- &f다이아몬드 레깅스 (보호 3)%nl%&7- &f다이아몬드 부츠 (보호 3)%nl%&7- &f다이아몬드 검 (날카로뭄 4)%nl%&7- &e마법이 부여된 책 (날카로움 5)%nl%&7- &e마법이 부여된 책 (보호 4)%nl%&7- &e마법이 부여된 책 (내구성 3)%nl%&7- &d삼지창%nl%&7- &d철퇴";
+    public static final String HEAVEN_KEY_LORE = "%nl%&c&l천국과 지옥, 과연 어디일까?%nl%%nl%&7등장하는 아이템 목록%nl%&7- &4즉사%nl%&7- &c채굴 피로 10 &7(5분)%nl%&7- &f아무 일도 일어나지 않음%nl%&7- <b><gradient:#D4AF37:#FDFBF0><italic:false><b>[Quantum] 양자 물질</b></gradient></b>%nl%&7- <b><gradient:#4AE3AA:#C7AA49><italic:false><b>[✦] [Special] Fate's Call</b></gradient></b>%nl%%nl%&e해당 룰렛은 야생에서만 사용할 수 있습니다.";
+
+    public static ItemStack weaponKey(int amount, String extraLore) {
+        return It.of(Material.PINK_DYE, amount).name("<b><gradient:#67BFE8:#755C6E><b><italic:false>[Roulette] • 다양한 무기 룰렛 키 •</b></gradient></b>")
+                .lore(WEAPON_KEY_LORE + (extraLore == null ? "" : extraLore)).build();
+    }
+
+    public static ItemStack heavenKey(int amount, String extraLore) {
+        return It.of(Material.GRAY_DYE, amount).name("<b><gradient:#F83131:#00FF4F><italic:false><b>[Roulette] • 천국과 지옥 룰렛 키 •</b></gradient></b>")
+                .lore(HEAVEN_KEY_LORE + (extraLore == null ? "" : extraLore)).build();
+    }
+
+    public static ItemStack sealedKey(int amount, String... extra) {
+        return It.of(Material.LIGHT_BLUE_DYE, amount).name("<gradient:#3DE8FA:#FFFFFF><italic:false><bold:true>[Sealed]</gradient> <bold:true><italic:false>• 심해 왕궁 키 •")
+                .lore("&7스페셜 상자의 Sealed Master Power 탭에서 오픈할 수 있습니다.").lore(extra).build();
+    }
+
+    public static ItemStack ruinerKey(int amount, String... extra) {
+        return It.of(Material.RED_DYE, amount).name("<italic:false><b><gradient:#FF0000:#530427><italic:false>[✦] • 파멸의 지배자 키 •</gradient></b>")
+                .lore("&7스페셜 상자의 The Ruiner's Gruge 탭에서 오픈할 수 있습니다.").lore(extra).build();
+    }
+
+    public static ItemStack timeShard() {
+        return It.of(Material.GLOWSTONE_DUST).ench(Enchantment.INFINITY, 1)
+                .name("<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] 시간의 파편</b></gradient>")
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%&7크로노스의 칼날 업그레이드 재료").build();
+    }
+
+    public static final String N_ALTAR_TICKET = "[☀] 천공의 제단 이동권";
+    public static final String N_LEGEND_VOUCHER = "[👑] Legendary 무기 교환권";
+    public static final String N_MYTHIC_VOUCHER = "[👑] 전설의 무기 교환권";
+    /** 예전 이름 (이미 지급된 교환권도 인식) */
+    public static final String N_LEGEND_VOUCHER_OLD = "[Over Lord] Legendary 무기 교환권";
+    public static final String N_MYTHIC_VOUCHER_OLD = "[Over Lord] 전설의 무기 교환권";
+
+    public static ItemStack legendVoucher() {
+        return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
+                .name("<b><gradient:#29FF00:#EEEEEE><italic:false>[👑] Legendary 무기 교환권</gradient></b>")
+                .lore("%nl%&7우클릭하면 Legendary 등급 무기·방어구 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- 얼어붙은 제왕의 검 / 날개%nl%&8- 파괴의 낫 / 재앙의 서막 바지%nl%&8- 공허의 속삭임 / 뒤틀린 차원의 갑옷%nl%&8- 아리스토텔레스의 이데아 / 러셀의 패러독스").build();
+    }
+
+    public static ItemStack mythicVoucher() {
+        return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
+                .name("<b><gradient:#FFF176:#FFB732><italic:false>[👑] 전설의 무기 교환권</gradient></b>")
+                .lore("%nl%&7우클릭하면 전설의 무기 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- The New Characteristic%nl%&8- 천공의 심판자 클레이모어%nl%&8- 프로스트 그레이브").build();
+    }
+
+    /** 설정 파일에서 이름으로 부르는 서버 아이템 (상자 보상, 보스 전리품 등). 없으면 null */
+    public static ItemStack special(String id) {
+        if (id == null) return null;
+        return switch (id.toLowerCase()) {
+            case "nature_boots" -> natureBoots();
+            case "time_shard" -> timeShard();
+            case "quantum_matter" -> quantumMatter();
+            case "vibranium" -> vibranium();
+            case "altar_ticket" -> altarTicket();
+            case "claymore" -> claymoreSd();
+            case "melon" -> melon(1);
+            default -> null;
+        };
+    }
+
+    /** 천공의 제단 이동권: 우클릭 또는 /천공의제단 으로 사용 */
+    public static ItemStack altarTicket() {
+        return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1)
+                .name("<b><gradient:#FFF200:#F6E47C:#FFFCD4><italic:false>[☀] 천공의 제단 이동권</gradient></b>")
+                .lore("%nl%&7천공의 심판자가 강림한 제단으로 이동합니다.%nl%%nl%&a우클릭 &7하여 천공의 제단 메뉴 열기%nl%&7메뉴에서 &e이동 &7클릭 시 이동%nl%%nl%&c&l1회용 &8(이동 시 1개 소모)%nl%&8심판자가 강림한 동안에만 사용 가능").build();
+    }
+
+    public static ItemStack ruinerEssence() {
+        return It.of(Material.ENCHANTED_BOOK).ench(Enchantment.FIRE_ASPECT, 3).ench(Enchantment.LOOTING, 4).ench(Enchantment.SWEEPING_EDGE, 5)
+                .name("<italic:false><b><gradient:#FF0000:#530427>[✦] 파멸자의 봉인된 정수</gradient></b>")
+                .lore(LEGENDARY + "&7우클릭 시 업그레이드 창이 열립니다.").build();
+    }
+
+    /** 닉네임 색상 변경권. color: red/gold/purple/magenta/gradient */
+    public static ItemStack nickPaper(String color, String source) {
+        String name = switch (color) {
+            case "gold" -> "&a&l닉네임 색상 변경권 &6&l(Gold)";
+            case "purple" -> "&a&l닉네임 색상 변경권 &5&l(Purple)";
+            case "magenta" -> "&a&l닉네임 색상 변경권 &d&l(Magenta)";
+            case "gradient" -> "&a&l닉네임 색상 변경권 <b><gradient:#FFF176:#FFB732>(Gradient Gold)</gradient></b>";
+            case "glacier" -> "&a&l닉네임 색상 변경권 <b><gradient:#39C7FF:#C2FFF5>(Glacier)</gradient></b>";
+            default -> "&a&l닉네임 색상 변경권 &c&l(Red)";
+        };
+        It b = It.of(Material.PAPER).name(name)
+                .lore("%nl%&7" + source + "%nl%&7사용 시 채팅, 킬 알림, 탭리스트, 입장 메시지의 닉네임에 특수한 색상이 부여됩니다.%nl%%nl%&a우클릭 시 사용");
+        if (color.equals("magenta") || color.equals("gradient") || color.equals("glacier")) b.ench(Enchantment.FORTUNE, 10);
+        return b.build();
+    }
+
+    public static ItemStack check(long amount, String issuer) {
+        return It.of(Material.PAPER).name("§e[🪙] &7캐시 수표")
+                .lore("§7금액: §f" + amount + " Cash", "§7발행자: §f" + issuer, " ", "§e&l[!] &7우클릭 시 캐시가 지급됩니다.").build();
+    }
+
+    public static ItemStack teamColorBook(String color) {
+        String n = color.equals("gold") ? "&a&l팀 색상 변경권 &6&l(Gold)" : "&a&l팀 색상 변경권 &c&l(Red)";
+        return It.of(Material.BOOK).name(n).lore("%nl%&7사용할 시 팀 이름에 특수한 색상이 부여됩니다.%nl%%nl%&a우클릭 시 사용").build();
+    }
+
+    public static ItemStack supremeRoulette() {
+        return It.of(Material.IRON_INGOT).ench(Enchantment.FORTUNE, 1).name("&e[💎] &6Rank Supreme 달성 룰렛")
+                .lore("%nl%&e&l랭크 Supreme 달성 보상입니다.%nl%%nl%&7등장하는 아이템 목록:%nl%&d무거운 코어%nl%&d마법이 부여된 황금 사과 x 3%nl%&d겉날개 (내구성 V)%nl%&f거북 등딱지%nl%&f삼지창%nl%&f&e네더의 별%nl%&e크리퍼 머리%nl%&e좀비 머리%nl%&e피글린 머리%nl%%nl%&e&l우클릭 시 오픈됩니다.").build();
+    }
+
+    /* ======================= 무기 / 방어구 ======================= */
+
+    public static final String EMBER_NAME = "<b><gradient:#FF3D00:#FF7A18:#FFD36E><italic:false>[Ember] [Lv.✹] 잿불 낙인검</gradient></b>";
+
+    /** 잿불 낙인검: 같은 대상을 4초 안에 3번 맞히면 낙인 폭발 (추가 피해 + 화염) */
+    public static ItemStack emberBrand(String... extraLore) {
+        ItemStack it = It.of(Material.DIAMOND_SWORD).name(EMBER_NAME)
+                .lore("%nl%&7등급 : <gradient:#FF7A18:#FFD36E><bold:true>Epic</gradient>%nl%%nl%"
+                        + "<b><gradient:#FF3D00:#FFD36E><italic:false>꺼지지 않는 잿불은, 세 번째 일격에 비로소 타오른다.</gradient></b>%nl%%nl%"
+                        + "<b><gradient:#FF7A18:#FFD36E><italic:false>[Lv.Ember 특성]</gradient></b>%nl%"
+                        + "&8&l>> &7적중할 때마다 대상에게 &6잿불 낙인&7을 새깁니다 &8(4초 유지)%nl%"
+                        + "&8&l>> &7낙인 3개가 모이면 폭발하여 &c추가 피해 2칸&7과 &6화염&7을 입힙니다")
+                .lore(extraLore).build();
+        var m = it.getItemMeta();
+        m.setEnchantmentGlintOverride(true);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    public static final String SHADE_NAME = "<b><gradient:#4A6FA5:#9FB4C7:#E8F1F8><italic:false>[Shade] [Lv.✧] 그림자 송곳</gradient></b>";
+
+    /** 그림자 송곳: 왼손(보조 손)에 들고 주 무기로 때리면 확률적으로 그림자 찌르기 */
+    public static ItemStack shadeStiletto(String... extraLore) {
+        ItemStack it = It.of(Material.IRON_SWORD).name(SHADE_NAME)
+                .lore("%nl%&7등급 : <gradient:#9FB4C7:#E8F1F8><bold:true>Epic</gradient> &8| &7보조 무기%nl%%nl%"
+                        + "<b><gradient:#4A6FA5:#E8F1F8><italic:false>앞의 칼이 시선을 끄는 사이, 그림자는 이미 등 뒤에 있다.</gradient></b>%nl%%nl%"
+                        + "<b><gradient:#9FB4C7:#E8F1F8><italic:false>[Lv.Shade 특성]</gradient></b>%nl%"
+                        + "&8&l>> &7왼손(보조 손)에 들었을 때만 발동합니다%nl%"
+                        + "&8&l>> &7주 무기로 적중하면 &f20% &7확률로 &9그림자 찌르기&7가 따라 들어가 &c추가 피해 1.5칸&7을 입힙니다%nl%"
+                        + "&8&l>> &9그림자 찌르기&7를 맞은 대상은 &f1초 &7동안 구속 I에 걸립니다 &8(재사용 1초)")
+                .lore(extraLore).build();
+        var m = it.getItemMeta();
+        m.setEnchantmentGlintOverride(true);
+        it.setItemMeta(m);
+        return it;
+    }
+
+    public static ItemStack timePiecerWind(String... extraLore) {
+        return It.of(Material.BREEZE_ROD).ench(Enchantment.UNBREAKING, 10)
+                .name("<reset><italic:false><gradient:#00FF7C:#FFAFCA>[✦] Time piecer Wind</gradient>")
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%&7시간을 조각하여 일정 확률로 플레이어를 하늘로 날려버립니다.").lore(extraLore).build();
+    }
+
+    /** 망령 수확자: 보라 → 영혼불 청록 */
+    public static final String SOUL_SPLITTER_NAME = "<b><gradient:#3A0CA3:#8A5CFF:#5FFBF1><italic:false>[Harvest] [Lv.♱] 망령 수확자</gradient></b>";
+    /** 수확 단계: 망령 수, 이름, 얻는 능력 */
+    private static final int[] SOUL_STEPS = {50, 100, 250};
+    private static final String[] SOUL_STEP_NAME = {"<color:#8A5CFF>첫 번째 각성</color>", "<color:#7FA8FF>두 번째 각성</color>", "<color:#5FFBF1>마지막 각성</color>"};
+    private static final String[] SOUL_STEP_TEXT = {"날카로움 IV", "날카로움 V · 약탈 IV", "날카로움 VI · 약탈 V"};
+
+    public static boolean isSoulSplitter(ItemStack it) {
+        return Msg.nameHas(it, N_SOUL_SPLITTER) || Msg.nameHas(it, N_SOUL_SPLITTER_OLD);
+    }
+
+    /** 망령 수확자 설명: 각성 단계 달성 표시, 다음 단계까지 진행 막대 */
+    public static String soulSplitterLore(int kills) {
+        StringBuilder b = new StringBuilder("%nl%&7등급 : <gradient:#8A5CFF:#5FFBF1><bold:true>Harvest</gradient>%nl%%nl%")
+                .append("<b><gradient:#3A0CA3:#8A5CFF:#5FFBF1><italic:false>쓰러진 자의 망령은 칼날에 깃들어, 다음 사냥을 부른다.</gradient></b>%nl%%nl%")
+                .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[Lv.Harvest 특성]</gradient></b>%nl%")
+                .append("&8&l>> &7적을 처치할 때마다 망령을 거두어 칼날에 깃듭니다%nl%")
+                .append("&8&l>> &7망령이 쌓이면 칼날이 각성합니다%nl%%nl%")
+                .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[각성]</gradient></b>%nl%");
+        for (int i = 0; i < SOUL_STEPS.length; i++) {
+            boolean done = kills >= SOUL_STEPS[i];
+            b.append(done ? "&b✦ " : "&8✧ ").append(done ? SOUL_STEP_NAME[i] : "&8" + Msg.plainOf(SOUL_STEP_NAME[i]))
+                    .append(done ? " &7(" : " &8(").append(SOUL_STEPS[i]).append(" 망령) ").append(done ? "&f" : "&8").append(SOUL_STEP_TEXT[i]).append("%nl%");
+        }
+        int next = -1, prev = 0;
+        for (int st : SOUL_STEPS) {
+            if (kills < st) {
+                next = st;
+                break;
+            }
+            prev = st;
+        }
+        b.append("%nl%&f깃든 망령 : <color:#5FFBF1>").append(kills).append("</color>");
+        if (next < 0) {
+            b.append(" &8· <gradient:#8A5CFF:#5FFBF1><b>완전 각성</b></gradient>");
+        } else {
+            b.append(" &7/ ").append(next).append("%nl%");
+            int bars = 20, fill = (int) Math.floor((double) (kills - prev) / (next - prev) * bars);
+            b.append("<color:#5FFBF1>").append("▮".repeat(Math.max(0, fill))).append("</color>&8").append("▮".repeat(Math.max(0, bars - fill)));
+        }
+        return b.toString();
+    }
+
+    /** 망령 수확자: 고유 번호(커스텀 모델 데이터)로 처치 수를 센다 */
+    public static ItemStack soulSplitter(WaveCore plugin, int kills, String... extraLore) {
+        int id = ThreadLocalRandom.current().nextInt(100000, 1000000);
+        plugin.store().global().swordKills.put(id, kills);
+        plugin.store().saveGlobal();
+        It b = It.of(Material.NETHERITE_SWORD).cmd(id).name(SOUL_SPLITTER_NAME).lore(soulSplitterLore(kills)).lore(extraLore);
+        if (kills >= 250) b.ench(Enchantment.SHARPNESS, 6).ench(Enchantment.LOOTING, 5);
+        else if (kills >= 100) b.ench(Enchantment.SHARPNESS, 5).ench(Enchantment.LOOTING, 4);
+        else if (kills >= 50) b.ench(Enchantment.SHARPNESS, 4);
+        else b.ench(Enchantment.SHARPNESS, 3);
+        return b.build();
+    }
+
+    /** 망령 수확자 진열용 (고유 번호 없음) */
+    public static ItemStack soulSplitterDisplay(String... extraLore) {
+        return It.of(Material.NETHERITE_SWORD).ench(Enchantment.SHARPNESS, 3).name(SOUL_SPLITTER_NAME).lore(soulSplitterLore(0)).lore(extraLore).build();
+    }
+
+    public static ItemStack voidBow() {
+        return It.of(Material.BOW).unbreakable().ench(Enchantment.POWER, 7).ench(Enchantment.FLAME, 1).ench(Enchantment.INFINITY, 1)
+                .name("<b><gradient:#F9F9F9:#C2C2C2:#404247><italic:false>[Void] [Lv.✕] 공허의 속삭임</gradient></b>")
+                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연으로 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7무기가 부서지지 않습니다%nl%&8&l>> &7적중 시 구속 II를 부여합니다.%nl%&8&l>> &7적중 시 일정 확률로 데미지의 1.5배를 입힙니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack voidChest() {
+        return It.of(Material.NETHERITE_CHESTPLATE).unbreakable().ench(Enchantment.PROTECTION, 5)
+                .name("<b><gradient:#F9F9F9:#C2C2C2:#404247><italic:false>[Void] [Lv.✕] 뒤틀린 차원의 갑옷</gradient></b>")
+                .lore(LEGENDARY + "<b><gradient:#404247:#C2C2C2:#88F4FF><italic:false>심연을 들여다본 자, 이제 그 심연을 입고 전장을 누빈다.</gradient></b>%nl%%nl%<b><gradient:#404247:#C2C2C2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 부서지지 않습니다%nl%&8&l>> &7장착 시 힘 I가 부여됩니다%nl%&8&l>> &7공격받을 시 일정 확률로 데미지를 반사합니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack russellHelmet() {
+        return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5).ench(Enchantment.RESPIRATION, 5)
+                .name("<b><gradient:#2193b0:#E7F0F2><italic:false>[Philosophy] [Lv.✕] 러셀의 패러독스</gradient></b>")
+                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7방어구가 부서지지 않습니다%nl%&8&l>> &7장착 시 성급함 III가 부여됩니다%nl%&8&l>> &7일정 확률로 받는 데미지를 무효화합니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack aristotlePickaxe() {
+        return It.of(Material.NETHERITE_PICKAXE).unbreakable().ench(Enchantment.EFFICIENCY, 7).ench(Enchantment.FORTUNE, 5)
+                .name("<b><gradient:#2193b0:#E7F0F2><italic:false>[Philosophy] [Lv.✕] 아리스토텔레스의 이데아</gradient></b>")
+                .lore(LEGENDARY + "<b><gradient:#2193b0:#E7F0F2><italic:false>넘어짐을 두려워 마라, 그것은 도약을 위한 웅크림이다.</gradient></b>%nl%%nl%<b><gradient:#2193b0:#E7F0F2><italic:false>[Lv.Unknown 특성]</gradient></b>%nl%&8&l>> &7곡괭이가 부서지지 않습니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack quantumSword() {
+        return It.of(Material.DIAMOND_SWORD).ench(Enchantment.SHARPNESS, 4)
+                .name("<b><gradient:#D4AF37:#FDFBF0><italic:false><b>[Quantum] [Lv.A] 앱솔루트 퀀텀</b></gradient></b>")
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#D4AF37:#FDFBF0><italic:false><bold:true>[Lv.Absolute 특성]%nl%&8&l>> &7일정 확률로 타격 시 데미지의 1.2배를 입힙니다").build();
+    }
+
+    public static ItemStack auroraBoots() {
+        return It.of(Material.DIAMOND_BOOTS).ench(Enchantment.PROTECTION, 4)
+                .name("<b><gradient:#D4AF37:#FDFBF0><italic:false><b>[Quantum] [Lv.A] 오로라 퀸트라늄</b></gradient></b>")
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#D4AF37:#FDFBF0><italic:false><bold:true>[Lv.Absolute 특성]%nl%&8&l>> &7일정 확률로 공격받을 시 데미지의 일부를 흡수합니다").build();
+    }
+
+    public static ItemStack chronosBoots() {
+        return It.of(Material.DIAMOND_BOOTS).ench(Enchantment.PROTECTION, 4)
+                .name("<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] [L</b><b>v.↗</b><b>] 크로노스의 신발</b></gradient> &7(+0)")
+                .lore("%nl%&7등급 : &6Upgrade%nl%&7업그레이드 시 특수한 능력이 추가됩니다.%nl%%nl%&7성장 진도 (0/5)%nl%&8&l>> &e보호 5%nl%&8&l>> &e네더라이트화%nl%&8&l>> &c내구도 무한%nl%&8&l>> &4보호 6%nl%&8&l>> <gradient:#BFA66E:#B2D6B6><italic:false><b>모래 폭풍</b></gradient>" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack natureBoots() {
+        return It.of(Material.DIAMOND_BOOTS).unbreakable().ench(Enchantment.PROTECTION, 5).ench(Enchantment.FEATHER_FALLING, 5).ench(Enchantment.DEPTH_STRIDER, 5)
+                .name("<gradient:#F5E400:#95FFBE><italic:false><b>[Natural]</b><b> [Lv.✦</b><b>] 대자연의 황혼</b></gradient>")
+                .lore("%nl%&7등급 : <gradient:#F5E400:#95FFBE><italic:false><b>The Echoe</b><b>s o</b><b>f Nature</b></gradient>%nl%&7스페셜 테마 뽑기에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#F5E400:#95FFBE><italic:false><b>[드루이드의 축복]</b></gradient>%nl%&e&l>> &7방어구가 부서지지 않습니다%nl%&e&l>> &7장착 시 신속 I가 부여됩니다%nl%&e&l>> &7장착 시 배고픔이 감소하지 않습니다%nl%&e&l>> &7숲 바이옴에 있을 시 재생 II를 부여받습니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack ruinerScythe() {
+        return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
+                .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 파괴의 낫</gradient></b>")
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 6으로 고정됩니다%nl%&8&l>> &7타격 시 구속 I를 부여합니다%nl%&8&l>> &7일정 확률로 적의 체력을 흡수합니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack ruinerPants() {
+        return It.of(Material.NETHERITE_LEGGINGS).unbreakable().ench(Enchantment.PROTECTION, 6)
+                .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 재앙의 서막 바지</gradient></b>")
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 부서지지 않습니다%nl%&8&l>> &7장착 시 저항 I가 부여됩니다%nl%&8&l>> &7일정 확률로 사망해도 아이템이 드롭되지 않습니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack sealedWings() {
+        return It.of(Material.ELYTRA).unbreakable().ench(Enchantment.UNBREAKING, 10)
+                .name("<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> <gradient:#D1D1D1:#DBDBDB><italic:false><bold:true>[Lv.✕]</gradient> <gradient:#DFDFDF:#919191><italic:false><bold:true>얼어붙은 제왕의 날개</gradient>")
+                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7겉날개가 부서지지 않습니다" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack sealedSword() {
+        return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
+                .name("<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> <gradient:#D1D1D1:#DBDBDB><italic:false><bold:true>[Lv.✕]</gradient> <gradient:#DFDFDF:#919191><italic:false><bold:true>얼어붙은 제왕의 검</gradient>")
+                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 부서지지 않습니다%nl%&8&l>> &7타격 시 랜덤 버프가 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 데미지의 1.3배를 입힙니다%nl%&8&l>> &7우클릭 시 신속 4를 7초간 부여받습니다 &7(쿨타임 1분)" + SEASON_KEEP).build();
+    }
+
+    public static ItemStack thunderAxe() {
+        return It.of(Material.IRON_AXE).unbreakable().ench(Enchantment.CHANNELING, 5)
+                .name("<gradient:#C2D93F:#AFEEF8><italic:false><b>[⚡] [Lv.L</b><b>] 천</b><b>둥의 심판</b></gradient>")
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 번개를 소환합니다 &c(고정 피해 2칸)").build();
+    }
+
+    public static ItemStack chaosApocalypse() {
+        return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
+                .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [</b><b>Lv.</b><b>✦] 혼돈의 아포칼립스</b></gradient>")
+                .lore("%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%&8&l>> &7네더 월드에 있을 시 화염 저항을 부여받습니다%nl%&8&l>> &7무기 기본 데미지가 6.5로 고정됩니다%nl%&8&l>> &7타격 시 구속 II를 부여합니다%nl%&8&l>> &7우클릭 " + SEASON_KEEP).build();
+    }
+
+    public static final String CLAYMORE_SD_NAME = "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>";
+    public static final String CLAYMORE_SD_LORE = "%nl%&7등급 : <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>Arbiter o</b><b>f H</b><b>eaven</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[심판자의</b><obf><b> </b></obf><b>권한]</b></gradient>%nl%&e&l>> &a무기 소지 시 이동 속도 증가%nl%&e&l>> &a무기 소지 시 최대 체력 3칸 증가%nl%&e&l>> &a플레이어 타격 시 강력한 고정 피해를 입힙니다%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+
+    public static ItemStack claymoreSd() {
+        return It.of(Material.GOLDEN_SWORD).unbreakable().ench(Enchantment.CHANNELING, 10).name(CLAYMORE_SD_NAME).lore(CLAYMORE_SD_LORE).build();
+    }
+
+    public static final String FROST_NAME = "<gradient:#39C7FF:#D2FFF8:#00FFFF><italic:false><b>[❆] [Lv.</b><obf><b>D</b></obf><obf><b>D</b></obf><b>] </b><b>프로스트 그레이브</b></gradient>";
+    public static final String FROST_LORE = "%nl%&7등급 : <gradient:#39C7FF:#C2FFF5:#F5DAF8><italic:false><b>Glacier S</b><b>tor</b><b>m</b></gradient>%nl%&7S6 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#39C7FF:#C2FFF5><italic:false><b>[아이스 블래스트</b><b>]</b></gradient>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 무기 소지 시 최대 체력 4칸 증가</color></color><color:#95E1FF></color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 무기 소지 시 받는 데미지 감소 &7(0.8x)</color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 타격 시 구속 II, 나약함 I를 부여합니다</color></color><color:#95E1FF></color>%nl%<color:#39C7FF><b>>></b><color:#B0E4F8> 엔티티 타격 시 일정 확률로 즉시 처치 발동</color>%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+
+    public static ItemStack frostGrave() {
+        return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 7).name(FROST_NAME).lore(FROST_LORE).build();
+    }
+
+    public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> The New</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> Characteristic</b></gradient>";
+    public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 힘 III를 20초간 부여받습니다 (쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 재생 V를 6초간 부여받습니다 (쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
+
+    public static ItemStack newCharacteristic() {
+        return It.of(Material.MUSIC_DISC_5).ench(Enchantment.UNBREAKING, 10).name(NEW_CHAR_NAME).lore(NEW_CHAR_LORE).build();
+    }
+
+    /* ---------------- 크로노스의 칼날 (0~6단계) ---------------- */
+
+    private static final String CHRONO_NAME = "<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] [L</b><b>v.↗</b><b>] 크로노스의 칼날</b></gradient>";
+    private static final String[] CHRONO_SUFFIX = {" &7(+0)", " &f(+1)", " &e(+2)", " &6(+3)", " &c(+4)", " &4(+5)"};
+    private static final String[] CHRONO_PROGRESS = {"&7성장 진도 (0/6)", "&7성장 진도 &f(1/6)", "&7성장 진도 &e(2/6)", "&7성장 진도 &6(3/6)", "&7성장 진도 &c(4/6)", "&7성장 진도 &4(5/6)"};
+    private static final String[][] CHRONO_LINES = {
+            {"&8&l>> &7날카로움 5", "&8&l>> &7네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&8&l>> &7네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&8&l>> &7타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(나약함 I)", "&8&l>> &7날카로움 6&l", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(나약함 I)", "&a&l>> &c날카로움 6", "&8&l>> &7타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+            {"&a&l>> &f날카로움 5", "&a&l>> &e네더라이트화", "&a&l>> &6타격 이펙트 &7(나약함 I)", "&a&l>> &c날카로움 6", "&a&l>> &4타격 이펙트 &7(확률적으로 추가 데미지 1.25x)"},
+    };
+
+    /** 0~5 단계 크로노스의 칼날, 6 은 이터널 크로노스 */
+    public static ItemStack chronos(int stage, String... extraLore) {
+        if (stage >= 6) {
+            return It.of(Material.NETHERITE_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
+                    .name("<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] [L</b><b>v.↗</b><b>] 이터널 크로노스</b></gradient> <color:#CBC1A9><b>(MAX)</b></color>")
+                    .lore("%nl%&7등급 : <gradient:#BFA66E:#B2D6B6><italic:false><b>Eternaled</b></gradient>%nl%&7크로노스의 칼날 최대 레벨 등급%nl%%nl%&7성장 진도 <color:#CBC1A9><b>(6/6)</b></color>%nl%&a&l>> &f날카로움 5%nl%&a&l>> &e네더라이트화%nl%&a&l>> &6타격 이펙트 &7(나약함 I)%nl%&a&l>> &c날카로움 6%nl%&a&l>> &4타격 이펙트 &7(확률적으로 추가 데미지 1.25x)%nl%&a&l>> <gradient:#BFA66E:#B2D6B6><italic:false><b>모래 폭풍</b></gradient>" + SEASON_KEEP)
+                    .lore(extraLore).build();
+        }
+        Material m = stage >= 2 ? Material.NETHERITE_SWORD : Material.DIAMOND_SWORD;
+        int sharp = stage == 0 ? 4 : stage <= 3 ? 5 : 6;
+        StringBuilder lore = new StringBuilder("%nl%&7등급 : &6Upgrade%nl%&7업그레이드 시 특수한 능력이 추가됩니다.%nl%%nl%");
+        lore.append(CHRONO_PROGRESS[stage]);
+        for (String l : CHRONO_LINES[stage]) lore.append("%nl%").append(l);
+        lore.append("%nl%&8&l>> &7???");
+        if (stage >= 4) lore.append(SEASON_KEEP);
+        return It.of(m).unbreakable().ench(Enchantment.SHARPNESS, sharp).name(CHRONO_NAME + CHRONO_SUFFIX[stage]).lore(lore.toString()).lore(extraLore).build();
+    }
+
+    /** 크로노스의 칼날 단계 판별 (-1 = 아님) */
+    public static int chronosStage(ItemStack it) {
+        String n = Msg.name(it);
+        if (n.contains(N_ETERNAL_CHRONOS)) return 6;
+        if (!n.contains(N_CHRONOS)) return -1;
+        for (int i = 0; i <= 5; i++) if (n.endsWith("(+" + i + ")")) return i;
+        return -1;
+    }
+
+    /* ---------------- 프리오더 ---------------- */
+
+    public static ItemStack judgeHelmet() {
+        return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5)
+                .name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧")
+                .lore("%nl%&c&l-심판의 빛이 머리 위를 스친다.%nl%%nl%&7&lS2 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%&a&l%nl%&6&l[심판자의 권한]%nl%&a&l- 헬멧 장착 시 받는 데미지 감소 %nl%&a&l- 데미지를 받을 시 일정 확률로 체력을 회복합니다%nl%&a&l- 헬멧이 부서지지 않습니다%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.").build();
+    }
+
+    public static ItemStack claymoreJs() {
+        return It.of(Material.GOLDEN_SWORD).unbreakable().ench(Enchantment.CHANNELING, 10)
+                .name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어")
+                .lore("%nl%&c&l-심판의 빛이 머리 위를 스친다.%nl%%nl%&7&lS2 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%&a&l&6&l[심판자의 권한]%nl%&a&l- 무기 장착 시 이동 속도 증가%nl%&a&l- 플레이어 타격 시 강력한 고정 피해를 입힙니다%nl%&a&l- 최대 체력 3칸 증가%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.").build();
+    }
+
+    public static ItemStack preorderTicket() {
+        return It.of(Material.AMETHYST_SHARD).ench(Enchantment.FORTUNE, 10).name("&d&l[Pre-Order] &b&l행운 티켓")
+                .lore("%nl%&a&l운에 맡겨보세요!%nl%%nl%&7등장하는 아이템 목록:%nl%&7- &6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧%nl%&7- &6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어%nl%&7- &d&l[Pre-Order] &bStarter Pickaxe%nl%&7- &f네더라이트 주괴 x 8%nl%&7- &f다이아몬드 x 40%nl%&7- &f엔더의 눈 x 20%nl%&7- &a[Newbie] &7&l뉴비 지원 패키지").build();
+    }
+
+    /* ---------------- 칭호 책 ---------------- */
+
+    /** 컬렉션 칭호: {키, 표시 이름(MiniMessage), LuckPerms 접두사} */
+    public static final String[][] COLLECTION_TITLES = {
+            {"sealed", "<b><gradient:#00E7FF:#FFFFFF>[✦] 얼어붙은 제왕</gradient></b>", "\"<b><gradient:#00E7FF:#FFFFFF>[✦] 얼어붙은 제왕</gradient></b>\""},
+            {"destroy", "<b><gradient:#FF0000:#530427>[✦] 파멸의 지배자</gradient></b>", "\"<b><gradient:#FF0000:#530427>[✦] 파멸의 지배자</gradient></b>\""},
+            {"void", "<b><gradient:#C2C2C2:#404247>[✦] 공허의 방랑자</gradient></b>", "\"<b><gradient:#C2C2C2:#404247>[✦] 공허의 방랑자</gradient></b>\""},
+            {"philosopher", "<b><gradient:#2193b0:#E7F0F2>[✦] 사유의 현자</gradient></b>", "\"<b><gradient:#2193b0:#E7F0F2>[✦] 사유의 현자</gradient></b>\""},
+            {"inscribed", "<b><gradient:#1E2586:#FAD4D4>[🌙] 새 시대의 각인자</gradient></b>", "\"<b><gradient:#1E2586:#FAD4D4>[🌙] 새 시대의 각인자</gradient></b>\""},
+            {"arbiter", "<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>", "\"<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>\""},
+            {"glacier", "<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>", "\"<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>\""},
+    };
+
+    /** 컬렉션 보상 칭호북 (우클릭 시 칭호 획득 + 적용) */
+    public static ItemStack collectionTitleBook(String key, String collectionName) {
+        for (String[] t : COLLECTION_TITLES) {
+            if (!t[0].equals(key)) continue;
+            return It.of(Material.BOOK).ench(Enchantment.UNBREAKING, 1).hide().name("&7[칭호] " + t[1].replace("<b>", "<b><italic:false>"))
+                    .lore("%nl%&7획득 방법 :%nl%&7" + collectionName + " 컬렉션의 모든 아이템을 수집하세요.%nl%%nl%&7우클릭 시 적용됩니다").build();
+        }
+        return null;
+    }
+
+    public static ItemStack[] titleBooks() {
+        return new ItemStack[]{
+                It.of(Material.BOOK).name("&7[칭호] &e[Ace]").lore("&7휙득 방법 : 랭크 &e[Ace] &7를 달성하기%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] &a[💎] &bSupreme").lore("&7휙득 방법 : 랭크 &a[💎] &bSupreme &7을 달성하기%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] &a[💎] &6Exceed").lore("&7휙득 방법 : 랭크 &a[💎] &6Exceed &7를 달성하기%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] &4[💎] &cPeerless").lore("&7휙득 방법 : 랭크 &4[💎] &cPeerless &7를 달성하기%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] <b><gradient:#00E7FF:#FFFFFF><italic:false>[✦] 얼어붙은 제왕</gradient></b>").lore("&7휙득 방법 :%nl%&7Sealed Master Power 컬렉션의 모든 아이템을 수집하세요.%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] <b><gradient:#FF0000:#530427><italic:false>[✦] 파멸의 지배자</gradient></b>").lore("&7휙득 방법 :%nl%&7The Ruiner's Grudge 컬렉션의 모든 아이템을 수집하세요.%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] <b><gradient:#670B0B:#FD4141><italic:false><b>[✧] 네더 로드</b></gradient></b>").lore("%nl%&e&lS1 시즌 한정 칭호입니다.%nl%%nl%&7휙득 방법 :%nl%&7스폰의 미스터리 상점에서 교환할 수 있습니다.%nl%%nl%&7우클릭 시 적용됩니다").build(),
+                It.of(Material.BOOK).name("&7[칭호] &e&l[💦] 파수꾼").lore("%nl%&7휙득 방법 :%nl%&77일 연속 출석하기%nl%%nl%&7우클릭 시 적용됩니다").build(),
+        };
+    }
+}

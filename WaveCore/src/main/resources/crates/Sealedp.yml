@@ -1,0 +1,359 @@
+Crate:
+  # https://docs.crazycrew.us/docs/plugins/crazycrates/misc/crate-types
+
+    # Make sure to check out the wiki for anything not explained here.
+  # https://docs.crazycrew.us/docs/category/crazycrates
+
+    # See CosmicCrate.yml to see how the Cosmic CrateType works.
+  CrateType: Wheel
+  # Starting amount of keys when the player 1st joins.
+  StartingKeys: 0
+  # The amount of keys required to use the crate.
+  RequiredKeys: 1
+  # Max amount of crates that can be opened at once using /crates mass-open
+  Max-Mass-Open: 10
+  # If the crate shows in /crates.
+  # If the type is QuickCrate/CrateOnTheGo/FireCracker, They will not work as they require a Physical Crate.
+  InGUI: true
+  # Slot the item is in the GUI.
+  Slot: 10
+  # Enables/Disables the Broadcasts message when they open a crate.
+  OpeningBroadCast: true
+  # Message that is broadcast when opening the crate.
+  BroadCast: ''
+  # This section is related to commands opening when a crate is opened.
+  opening-command:
+    # If the commands should be sent or not.
+    toggle: false
+    # The commands to run when the crate opens.
+    # Supports all placeholderapi placeholders
+    # Supports %prefix which returns our prefix, %player% which uses the player name
+    commands:
+    - put your command here.
+  sound:
+    # The sound options when the animation is cycling.
+    cycle-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use. Custom sounds from texture packs are supported!
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: block.note_block.xylophone
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+    # The sound options when an item is clicked.
+    click-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use. Custom sounds from texture packs are supported!
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: ui.button.click
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+    # The sound options when a crate ends.
+    stop-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use. Custom sounds from texture packs are supported!
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: entity.player.levelup
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+  # A default message if the prize doesn't have any Messages
+  # i.e. Messages: [] or the value isn't there.
+  # A list of commands to run by default on every prize.
+  # If you do not want these commands to run, set this to []
+  Prize-Commands: []
+  # Global Settings
+  Settings:
+    # Handles settings related to the border
+    Border:
+      # Settings related to the glass border
+      Glass-Border:
+        Toggle: true # Should the glass border be enabled?
+    # Broadcast a message to the server
+    Broadcast:
+      # If the messages should be sent.
+      Toggle: false
+      # The messages to broadcast.
+      Messages:
+      - ''
+      # If the player has this permission, they don't get the broadcast.
+      Permission: ''
+  # Item the crate is in the GUI
+  Item: amethyst_shard
+  # The custom model data of the item, -1 is disabled.
+  Custom-Model-Data: -1
+  # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+  # Set this to blank for it to do nothing.
+  Model:
+    # The namespace i.e. nexo
+    Namespace: ''
+    # The id i.e. emerald_helmet
+    Id: ''
+  # If the crate in the main /crates is glowing or not.
+  Glowing: false
+  # Name of the item in the GUI.
+  Name: <gradient:#3DE8FA:#FFFFFF><bold:true><italic:false>Sealed Master Power</gradient>
+  # The lore of the item in the GUI.
+  Lore:
+  - '<gray>오픈 가능한 상자 : <yellow>%keys%'
+  - <gray>우클릭하여 상자 구성품을 확인할 수 있습니다
+  - ''
+  - <gray>좌클릭 시 즉시 오픈됩니다.
+  Preview:
+    # The name of the inventory for the preview menu.
+    Name: 상자 구성품
+    # Turn on and off the preview for this crate.
+    Toggle: true
+    # How many rows should the preview be? You can use 1-6.
+    Rows: 4
+    # Settings related to the glass in the preview.
+    Glass:
+      # Turn the glass border in the preview on and off.
+      Toggle: true
+      # The name of the border item.
+      Name: ' '
+      # The custom model data of the item, -1 is disabled.
+      Custom-Model-Data: -1
+      # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+      # Set this to blank for it to do nothing.
+      Model:
+        # The namespace i.e. nexo
+        Namespace: ''
+        # The id i.e. emerald_helmet
+        Id: ''
+      # The item that shows in the border. Can be glass or any other item.
+      Item: gray_stained_glass_pane
+  tier-preview:
+    # Turn on and off the preview for this crate.
+    toggle: true
+    # How many lines the Tier Preview should have. Including Header and Bottom (Between 3 and 6)
+    rows: 5
+    # The glass border
+    glass:
+      # Turn the glass border in the preview on and off.
+      toggle: true
+      # The name of the border item.
+      name: ' '
+      # The custom model data of the item, -1 is disabled.
+      custom-model-data: -1
+      # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+      # Set this to blank for it to do nothing.
+      model:
+        # The namespace i.e. nexo
+        namespace: ''
+        # The id i.e. emerald_helmet
+        id: ''
+      # The item that shows in the border. Can be glass or any other item.
+      item: red_stained_glass_pane
+  # Tier related settings only for Casino.
+  random:
+    # If the tiers should be random.
+    toggle: false
+    # The rows with pre-defined tiers.
+    types:
+      # Row 1
+      row-1: Basic
+      # Row 2
+      row-2: UnCommon
+      # Row 3
+      row-3: Rare
+  # Tiers are available in Cosmic and Casino crate types.
+  # The Tiers the rewards can be found in.
+  Tiers:
+    # The config name for the tier
+    Rare:
+      # The in-game name of the tier.
+      Name: <b><gradient:#7EFF58:#EBFFFA><b>UNIQUE ITEMS</b></gradient></b>
+      # The in-game lore of the tier.
+      Lore:
+      - <gray>클릭하여 유니크 아이템 구성품을 확인합니다.
+      - ''
+      - '<gray>확률 : <red>%chance%'
+      # The item used for the secondary gui when you right-click for the preview.
+      Item: chest
+      # The custom model data of the item, -1 is disabled.
+      Custom-Model-Data: -1
+      # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+      # Set this to blank for it to do nothing.
+      Model:
+        # The namespace i.e. nexo
+        Namespace: ''
+        # The id i.e. emerald_helmet
+        Id: ''
+      # The lower the number, the less likely to win it.
+      Weight: 50.0
+      # The slot this item will be in the secondary gui.
+      Slot: 21
+    Basic:
+      # The in-game name of the tier.
+      Name: <b><gradient:#7EFF58:#EBFFFA><b>NORMAL ITEMS</b></gradient></b>
+      # The in-game lore of the tier.
+      Lore:
+      - <gray>클릭하여 일반 아이템 구성품을 확인합니다.
+      - ''
+      - '<gray>확률 : <red>%chance%'
+      # The item used for the secondary gui when you right-click for the preview.
+      Item: ender_chest
+      # The custom model data of the item, -1 is disabled.
+      Custom-Model-Data: -1
+      # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+      # Set this to blank for it to do nothing.
+      Model:
+        # The namespace i.e. nexo
+        Namespace: ''
+        # The id i.e. emerald_helmet
+        Id: ''
+      # The lower the number, the less likely to win it.
+      Weight: 25.0
+      # The slot this item will be in the secondary gui.
+      Slot: 23
+  PhysicalKey:
+    # Name of the Key.
+    Name: <gradient:#3DE8FA:#FFFFFF><italic:false><bold:true>[Sealed]</gradient> <bold:true>•
+      심해 왕궁 키 •
+    # The custom model data of the item, -1 is disabled.
+    Custom-Model-Data: -1
+    # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+    # Set this to blank for it to do nothing.
+    Model:
+      # The namespace i.e. nexo
+      Namespace: ''
+      # The id i.e. emerald_helmet
+      Id: ''
+    # Lore of the Key.
+    Lore:
+    - <gray>스페셜 상자의 Sealed Master Power 탭에서 오픈할 수 있습니다.
+    # The item the key is.
+    Item: light_blue_dye
+    # Makes the key look enchanted.
+    Glowing: true
+  # Settings for the holograms.
+  Hologram:
+    # Toggle on and off the holograms for the crates.
+    Toggle: true
+    # The height of the hologram above the crate.
+    Height: 1.5
+    # The distance the hologram can be seen.
+    Range: 8
+    # How often should the hologram update? -1 is disabled.
+    Update-Interval: -1
+    # The background color of the hologram. It uses hex colors. This only works with CMI/FancyHolograms
+    # Set the color to transparent if you don't want any color.
+    Color: transparent
+    # The message that will be displayed above the crate.
+    # Note: MiniMessage or Color Codes being supported is depending on the 'holograms' plugin.
+    Message:
+    - <bold><dark_blue>Casino Crate</bold>
+  Animation:
+    Glass-Frame:
+      Random: {}
+    Name: 심해 왕궁 상자
+  Prizes:
+    '1':
+      DisplayName: <gradient:#00B3FF:#DFDFDF><!italic><bold>[Sealed]</bold></!italic></gradient>
+        <gradient:#D1D1D1:#DBDBDB><!italic><bold>[Lv.✕]</bold></!italic></gradient>
+        <gradient:#DFDFDF:#919191><!italic><bold>얼어붙은 제왕의 검
+      DisplayLore:
+      - ''
+      - '<!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>등급 : <gradient:#29FF00:#EEEEEE><bold>Legendary'
+      - ''
+      - <gradient:#00DDFF:#FFD8D8><!italic><bold>얼어붙은 고대 제왕의 마지막 전리품
+      - ''
+      - <gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:white><!italic><bold>[Lv.Unknown
+        특성]
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>무기가
+        부서지지 않습니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>타격
+        시 랜덤 버프가 부여됩니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>타격
+        시 일정 확률로 데미지의 1.3배를 입힙니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>우클릭
+        시 신속 4를 7초간 부여받습니다 (쿨타임 1분)
+      - ''
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><red>해당 아이템은 시즌이
+        지나도 유지됩니다.
+      Items:
+      - Data:H4sIAAAAAAAA/82W32/bVBTHb0hbkvBLYgJeLe0FhFQ5dhLHe9hk+/o+8YbgBaHKTbwmamJPjkPZWwAPdc0qEBBoIa2CtHVMKiIroeqkSvwvPMbO/8C9q3J977C3IIG0nj7E+eSee8+5x+d8CwBkwUvQ8q0Pba/TdB0AXr+WAy806+CtdtOxa5513b9Sb1pt16mvdbZcr54FyzW36/gAgEwBFGpu+4br2I7fKYA34iVdZ92zrU1rvWWDPHg1Bi3Xswt47cs5QP4yYKXpW61mDX8qdJ267bXwT+v4aWndbdVBjuyG14ClDc+6mQfL9qe+ZxEHmdSHPF304mVJRUgUc2DJxxhk3gMMK0kIFk3KbJaVNaTLBmUbLFNkpJbV5HVVAymKQpnDMq2ESmqZsjrLdIgkXabMYhksIxHGMXgsMx//UXZznrjM/CsA4k84xe769W6nZvmPU/xKx/eam7bf8NzuRoP+MB9++3B6dlu4IoCLS+IyHd8Y+/Ul5kyiCCFCc2/Z6Ptz9sSiiSlk6ISlRQMaSKc0PN1nqaRjqsZrD3oslVVMKzQXAnfXCmYlunL6+4i77TLUkRTveofzW5ExFZP9KkWox/nPRqMhVw0ipkZM9wccNaFmstHssVQ1MFWSd9U0zMrxee9vc7VUhaopx37vc9EYFUyLzNrbfK1BFaLkXU0ZMyaaUcBSVIRVqMV+j445ijCtUjr7ZvuplZpQdwsU4WupRZj5iCsyCaOYcU1BKpkSwz7hCkwxSwxb5QpMNRWGfcCVl26qDOOaQgWaBsM2+fIxzbR1qoREhrlPNBqZYVtccVRQOc2nUUVVlHL5+BXQmJd6tvOIKw38SrOvfPAwpstbjaZvU68fP+Pi42b11MmQof7zdcvbXPvHeOAnRzxPLvxfDo8n07PxdNwTwtNeFAzxW4L/hWiwE+38Efa3w/7dRftl9upV4X8+7ruzL3rTkwdC1B8K4eEw3L0rhCfB7LtgHsAPx+HXD567Y19jjh0dnEejgTDbH4T3RuHPOI7dcfjbGcn7wZ5QXJXD8Ti8dy5Eh7dmh/vPXShm9ON49tkkPPr1Ipr+KPpyVyiREyvRZHs6Dub3MP6JVpDwdvTnLzgH0WEgFMPT4J1/FdBCCik+dtaz6wu6r84Gk7D/CFd7EB1MZreGeJKSsKKjO/hZwHcSfr4XfhUI0XBEHualtQoK4M1Yy9lOrWE5fpuovyy4FINOw/JuOHang8+/AjhhWOt2fLe95lhtm83+8gLtPce1d11Oa++SqKuITqLM+1ybFg2R0QicdquIRgXRychrMAUZhklVS6bFtWIEJbOa7FNHeNpS3cFrPtIzmVn7rMYISEdeIE0r7BZFYslpgjKx5CmIZQC25CkIFWLJUxALBGy0iv8aDvgZQuw/D7iQmtMntSesEEvTnoZJLE17GmViadpTN4glj069RCxNI2o6sTSNqEnEUjWiRix5V7VILFa8J70FBy8AfwPuhKcoFg4AAA==
+      DisplayData: H4sIAAAAAAAA/82W32/bVBTHb0hbkvBLYgJeLe0FhFQ5dhLHe9hk+/o+8YbgBaHKTbwmamJPjkPZWwAPdc0qEBBoIa2CtHVMKiIroeqkSvwvPMbO/8C9q3J977C3IIG0nj7E+eSee8+5x+d8CwBkwUvQ8q0Pba/TdB0AXr+WAy806+CtdtOxa5513b9Sb1pt16mvdbZcr54FyzW36/gAgEwBFGpu+4br2I7fKYA34iVdZ92zrU1rvWWDPHg1Bi3Xswt47cs5QP4yYKXpW61mDX8qdJ267bXwT+v4aWndbdVBjuyG14ClDc+6mQfL9qe+ZxEHmdSHPF304mVJRUgUc2DJxxhk3gMMK0kIFk3KbJaVNaTLBmUbLFNkpJbV5HVVAymKQpnDMq2ESmqZsjrLdIgkXabMYhksIxHGMXgsMx//UXZznrjM/CsA4k84xe769W6nZvmPU/xKx/eam7bf8NzuRoP+MB9++3B6dlu4IoCLS+IyHd8Y+/Ul5kyiCCFCc2/Z6Ptz9sSiiSlk6ISlRQMaSKc0PN1nqaRjqsZrD3oslVVMKzQXAnfXCmYlunL6+4i77TLUkRTveofzW5ExFZP9KkWox/nPRqMhVw0ipkZM9wccNaFmstHssVQ1MFWSd9U0zMrxee9vc7VUhaopx37vc9EYFUyLzNrbfK1BFaLkXU0ZMyaaUcBSVIRVqMV+j445ijCtUjr7ZvuplZpQdwsU4WupRZj5iCsyCaOYcU1BKpkSwz7hCkwxSwxb5QpMNRWGfcCVl26qDOOaQgWaBsM2+fIxzbR1qoREhrlPNBqZYVtccVRQOc2nUUVVlHL5+BXQmJd6tvOIKw38SrOvfPAwpstbjaZvU68fP+Pi42b11MmQof7zdcvbXPvHeOAnRzxPLvxfDo8n07PxdNwTwtNeFAzxW4L/hWiwE+38Efa3w/7dRftl9upV4X8+7ruzL3rTkwdC1B8K4eEw3L0rhCfB7LtgHsAPx+HXD567Y19jjh0dnEejgTDbH4T3RuHPOI7dcfjbGcn7wZ5QXJXD8Ti8dy5Eh7dmh/vPXShm9ON49tkkPPr1Ipr+KPpyVyiREyvRZHs6Dub3MP6JVpDwdvTnLzgH0WEgFMPT4J1/FdBCCik+dtaz6wu6r84Gk7D/CFd7EB1MZreGeJKSsKKjO/hZwHcSfr4XfhUI0XBEHualtQoK4M1Yy9lOrWE5fpuovyy4FINOw/JuOHang8+/AjhhWOt2fLe95lhtm83+8gLtPce1d11Oa++SqKuITqLM+1ybFg2R0QicdquIRgXRychrMAUZhklVS6bFtWIEJbOa7FNHeNpS3cFrPtIzmVn7rMYISEdeIE0r7BZFYslpgjKx5CmIZQC25CkIFWLJUxALBGy0iv8aDvgZQuw/D7iQmtMntSesEEvTnoZJLE17GmViadpTN4glj069RCxNI2o6sTSNqEnEUjWiRix5V7VILFa8J70FBy8AfwPuhKcoFg4AAA==
+      DisplayItem: diamond_sword
+      DisplayAmount: 1
+      DisplayEnchantments:
+      - sharpness:6
+      Weight: 2.0
+    '2':
+      DisplayName: <!italic><bold><#00B3FF>[</#00B3FF><#20B9FA>S</#20B9FA><#40C0F6>e</#40C0F6><#60C6F1>a</#60C6F1><#7FCCED>l</#7FCCED><#9FD2E8>e</#9FD2E8><#BFD9E4>d</#BFD9E4><#DFDFDF>]</#DFDFDF></bold></!italic>
+        <!italic><bold><#D1D1D1>[</#D1D1D1><#D3D3D3>L</#D3D3D3><#D5D5D5>v</#D5D5D5><#D7D7D7>.</#D7D7D7><#D9D9D9>✕</#D9D9D9><#DBDBDB>]</#DBDBDB></bold></!italic>
+        <!italic><bold><#DFDFDF>얼</#DFDFDF><#D7D7D7>어</#D7D7D7><#CFCFCF>붙</#CFCFCF><#C8C8C8>은</#C8C8C8><#C0C0C0>
+        </#C0C0C0><#B8B8B8>제</#B8B8B8><#B0B0B0>왕</#B0B0B0><#A8A8A8>의</#A8A8A8><#A1A1A1>
+        </#A1A1A1><#999999>날</#999999><#919191>개
+      DisplayLore:
+      - ''
+      - '<!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>등급 : <bold><#29FF00>L</#29FF00><#42FD1E>e</#42FD1E><#5AFB3C>g</#5AFB3C><#73F959>e</#73F959><#8CF777>n</#8CF777><#A4F495>d</#A4F495><#BDF2B3>a</#BDF2B3><#D5F0D0>r</#D5F0D0><#EEEEEE>y'
+      - ''
+      - <!italic><bold><#00DDFF>얼</#00DDFF><#0EDDFD>어</#0EDDFD><#1CDCFB>붙</#1CDCFB><#2BDCF9>은</#2BDCF9><#39DCF6>
+        </#39DCF6><#47DCF4>고</#47DCF4><#55DBF2>대</#55DBF2><#63DBF0> </#63DBF0><#71DBEE>제</#71DBEE><#80DBEC>왕</#80DBEC><#8EDAE9>의</#8EDAE9><#9CDAE7>
+        </#9CDAE7><#AADAE5>마</#AADAE5><#B8D9E3>지</#B8D9E3><#C6D9E1>막</#C6D9E1><#D5D9DF>
+        </#D5D9DF><#E3D9DC>전</#E3D9DC><#F1D8DA>리</#F1D8DA><#FFD8D8>품
+      - ''
+      - <!italic><bold><#00DDFF>[</#00DDFF><#12DFFF>L</#12DFFF><#24E2FF>v</#24E2FF><#37E4FF>.</#37E4FF><#49E7FF>U</#49E7FF><#5BE9FF>n</#5BE9FF><#6DECFF>k</#6DECFF><#80EEFF>n</#80EEFF><#92F0FF>o</#92F0FF><#A4F3FF>w</#A4F3FF><#B6F5FF>n</#B6F5FF><#C8F8FF>
+        </#C8F8FF><#DBFAFF>특</#DBFAFF><#EDFDFF>성</#EDFDFF><white>]
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>겉날개가
+        부서지지 않습니다
+      - ''
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><red>해당 아이템은 시즌이
+        지나도 유지됩니다.
+      Items:
+      - Data:H4sIAAAAAAAA/62Wz4vbRhTHR/Vuajv0B23Ss6HQY5Al25JySJE0mlNvpb2UErS2smvWloosN93bsriwPwIJLVsScMCHklDoYdNuQwP9a3q0tP9D3+yyM282UuJD/Xyw/NG8mXnz3vdNk5AauU7DLPw6SifDJCbko8/r5J3hgHw4HsZRPw3vZbej0U6WhjWy3k+mcUYI0Zqk2U/G3yVxFGeTJrkp353GG2kUbocbo4g0yPsSjJI0asLYRp3wj0auDbNwNOzDr+Y0HkTpCF4dwNPaRjIakDqfDcaQtc003GmQ9egHWAN3oFU+NMSgdz81HMZ0vU7WMsBE+4Ig1jEYbQeCRZh1XeaZvmCbmFkmc7pO+TjbZ5ZlCRZj5nZYx+kKNsDMo8zwTMFCzGiX6VTuIcUsOP8ItnMZOO3yL0LkLwhxsnFvOumH2XmI35tk6XA7yrbSZLq5JV5s5D+/WP590LrdIheHpERanhj++2O0Jl2nlLFLb7Xil3/wivUAKEX0FNO2T33mCZq/fIKp4QF15Ninu5iaDtCeiEVLOWsLWEeMXP65UE67Sz1myFkfKH57JlC93K/Vpp6Mf61YzJVs0IH6kj45VmhA3QDv5jGmjg/UKp/VdYF15Xqf7yu5ZFMnMKXf58pu/B7QNhp7oOYadSgrnzUwgaHdLGaYsja1qSv9PvtdoQyoLejZT/tvzNSSvFshCT+oTELtGyXJDECSKaJgdAIDse+VBLOCDmK3lARzAguxr5T08gIHMUUUejTwEdtW0ycIqsY5BtMRS64IjYnYfSU5eqxb5dO3mc0qDh9KwEVFfXb4SkkNKGlc8rMXkq7f3xpmkfD67VsOXorVGzuDJvw3BmG6ffe19qB2DtlPLvx/tvzjIN9bLE/my5PdVv5yt5jNoVDg2yqOD4vDv/Kj/fzo11Uls3bnzqVYrrzuWhoNVnRvnx2f5kevYGmz4unp2Y9zUL5WcTQvnj2A5xasOt97nD+ctYr5gj88+u1i+bdIk3yCGnjc3wrjbMy7dY3ceK1bD+NN2AA0ddzJ+9NJlozvxuE4wvFdX6Ee60o9emZVPRq65zAhHdqXSl3pvo5EXWm2Pd3vMSFlatO0mO8Hos1oI6V2GDUCu9ynx0AeRaNQmzRPciSOb8tkwktohTBdw1O0uZWHiZrcymULdBusXLaoxa1ctkDRwUQa/zs/Voue2/++4euVMb16WVCXfvWy4DNuVZcF3+ZWdVnwdW7lWufZ3Kqauqdzq2rqrs2tqqm7bW7lszrnH7mbPeWK4rS5yQvMyXxFHSXkP/MgEU7eCwAA
+      DisplayData: H4sIAAAAAAAA/62Wz4vbRhTHR/Vuajv0B23Ss6HQY5Al25JySJE0mlNvpb2UErS2smvWloosN93bsriwPwIJLVsScMCHklDoYdNuQwP9a3q0tP9D3+yyM282UuJD/Xyw/NG8mXnz3vdNk5AauU7DLPw6SifDJCbko8/r5J3hgHw4HsZRPw3vZbej0U6WhjWy3k+mcUYI0Zqk2U/G3yVxFGeTJrkp353GG2kUbocbo4g0yPsSjJI0asLYRp3wj0auDbNwNOzDr+Y0HkTpCF4dwNPaRjIakDqfDcaQtc003GmQ9egHWAN3oFU+NMSgdz81HMZ0vU7WMsBE+4Ig1jEYbQeCRZh1XeaZvmCbmFkmc7pO+TjbZ5ZlCRZj5nZYx+kKNsDMo8zwTMFCzGiX6VTuIcUsOP8ItnMZOO3yL0LkLwhxsnFvOumH2XmI35tk6XA7yrbSZLq5JV5s5D+/WP590LrdIheHpERanhj++2O0Jl2nlLFLb7Xil3/wivUAKEX0FNO2T33mCZq/fIKp4QF15Ninu5iaDtCeiEVLOWsLWEeMXP65UE67Sz1myFkfKH57JlC93K/Vpp6Mf61YzJVs0IH6kj45VmhA3QDv5jGmjg/UKp/VdYF15Xqf7yu5ZFMnMKXf58pu/B7QNhp7oOYadSgrnzUwgaHdLGaYsja1qSv9PvtdoQyoLejZT/tvzNSSvFshCT+oTELtGyXJDECSKaJgdAIDse+VBLOCDmK3lARzAguxr5T08gIHMUUUejTwEdtW0ycIqsY5BtMRS64IjYnYfSU5eqxb5dO3mc0qDh9KwEVFfXb4SkkNKGlc8rMXkq7f3xpmkfD67VsOXorVGzuDJvw3BmG6ffe19qB2DtlPLvx/tvzjIN9bLE/my5PdVv5yt5jNoVDg2yqOD4vDv/Kj/fzo11Uls3bnzqVYrrzuWhoNVnRvnx2f5kevYGmz4unp2Y9zUL5WcTQvnj2A5xasOt97nD+ctYr5gj88+u1i+bdIk3yCGnjc3wrjbMy7dY3ceK1bD+NN2AA0ddzJ+9NJlozvxuE4wvFdX6Ee60o9emZVPRq65zAhHdqXSl3pvo5EXWm2Pd3vMSFlatO0mO8Hos1oI6V2GDUCu9ynx0AeRaNQmzRPciSOb8tkwktohTBdw1O0uZWHiZrcymULdBusXLaoxa1ctkDRwUQa/zs/Voue2/++4euVMb16WVCXfvWy4DNuVZcF3+ZWdVnwdW7lWufZ3Kqauqdzq2rqrs2tqqm7bW7lszrnH7mbPeWK4rS5yQvMyXxFHSXkP/MgEU7eCwAA
+      DisplayItem: elytra
+      DisplayAmount: 1
+      DisplayEnchantments:
+      - unbreaking:10
+      Weight: 2.0
+      Tiers:
+      - Rare
+    '3':
+      Special: time_shard
+      DisplayItem: glowstone_dust
+      DisplayAmount: 2
+      Weight: 8.0
+    '4':
+      Special: quantum_matter
+      DisplayItem: yellow_dye
+      DisplayAmount: 1
+      Weight: 6.0
+    '5':
+      DisplayItem: enchanted_golden_apple
+      DisplayAmount: 1
+      Weight: 4.0
+    '6':
+      DisplayItem: golden_apple
+      DisplayAmount: 8
+      Weight: 10.0
+    '7':
+      DisplayItem: emerald_block
+      DisplayAmount: 8
+      Weight: 10.0
+    '8':
+      DisplayItem: diamond
+      DisplayAmount: 8
+      Weight: 8.0
+    '9':
+      DisplayItem: experience_bottle
+      DisplayAmount: 32
+      Weight: 12.0
+    '10':
+      DisplayItem: golden_carrot
+      DisplayAmount: 64
+      Weight: 12.0
+    '11':
+      DisplayItem: bone_meal
+      DisplayAmount: 64
+      Weight: 12.0

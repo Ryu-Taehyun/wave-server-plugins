@@ -1,0 +1,346 @@
+Crate:
+  # https://docs.crazycrew.us/docs/plugins/crazycrates/misc/crate-types
+
+    # Make sure to check out the wiki for anything not explained here.
+  # https://docs.crazycrew.us/docs/category/crazycrates
+
+    # See CosmicCrate.yml or CasinoCrate.yml to see how the Cosmic/Casino CrateType works.
+  CrateType: Wheel
+  # Starting amount of keys when the player 1st joins.
+  StartingKeys: 0
+  # The amount of keys required to use the crate.
+  RequiredKeys: 0
+  # Max amount of crates that can be opened at once using /crates mass-open
+  Max-Mass-Open: 10
+  # If the crate shows in the /crates.
+  # If the type is QuickCrate/CrateOnTheGo/FireCracker, They will not work as they require a Physical Crate.
+  InGUI: true
+  # Slot the item is in the GUI.
+  Slot: 11
+  # Enables/Disables the Broadcasts message when they open a crate.
+  OpeningBroadCast: true
+  # Message that is broadcast when opening the crate.
+  # This section is related to commands opening when a crate is opened.
+  opening-command:
+    # If the commands should be sent or not.
+    toggle: false
+    # The commands to run when the crate opens.
+    # Supports all placeholderapi placeholders
+    # Supports %prefix which returns our prefix, %player% which uses the player name
+    commands:
+    - put your command here.
+  sound:
+    # The sound options when the animation is cycling.
+    cycle-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use.
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: block.note_block.xylophone
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+    # The sound options when an item is clicked.
+    click-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use. Custom sounds from texture packs are supported!
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: ui.button.click
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+    # The sound options when a crate ends.
+    stop-sound:
+      # If sound should be enabled or not.
+      toggle: true
+      # The type of sound to use. Custom sounds from texture packs are supported!
+      # https://minecraft.wiki/w/Sounds.json#Java_Edition_values
+      value: entity.player.levelup
+      # The volume of the pitch.
+      volume: 1.0
+      # The speed of the sound.
+      pitch: 1.0
+  # A default message if the prize doesn't have any Messages
+  # i.e. Messages: [] or the value isn't there.
+  # A list of commands to run by default on every prize.
+  # If you do not want these commands to run, set this to []
+  Prize-Commands: []
+  # Global Settings
+  Settings:
+    # This defines whether we should track how many times players opened this crate
+    # True means track, False means don't track.
+    Tracking-Crate-Opening: false
+    # Handles settings related to the border
+    Border:
+      # Settings related to the glass border
+      Glass-Border:
+        Toggle: true # Should the glass border be enabled?
+    # Broadcast a message to the server
+    Rewards:
+      # Should a yes/no popup be made, to ask if they want to keep the prize?
+      Re-Roll-Spin: false
+      # Should there be a limit to how many times they can re-roll?
+      Permission:
+        # Should this be enabled?
+        Toggle: false
+        # Should this persist restarts? i.e. writes to disk the amount of respins, and reads the amount of respins.
+        Persist: false
+        # This will define how many permissions will be registered to the server per crate.
+        # i.e. crazycrates.respin.<crate_name>.1-20
+        # It will simply register multiple permissions, so it shows up in things like LuckPerms.
+        Max-Cap: 20
+  # Item the crate is in the GUI
+  Item: redstone
+  # The custom model data of the item, -1 is disabled.
+  Custom-Model-Data: -1
+  # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+  # Set this to blank for it to do nothing.
+  Model:
+    # The namespace i.e. nexo
+    Namespace: ''
+    # The id i.e. emerald_helmet
+    Id: ''
+  # If the crate in the main /crates is glowing or not.
+  Glowing: false
+  # Name of the item in the GUI.
+  Name: <italic:false><b><gradient:#FF0000:#530427>The Ruiner's Grudge</gradient></b>
+  # The lore of the item in the GUI.
+  Lore:
+  - '<gray>오픈 가능한 상자 : <yellow>%keys%'
+  - <gray>우클릭하여 상자 구성품을 확인할 수 있습니다
+  - ''
+  - <gray>좌클릭 시 즉시 오픈됩니다.
+  Preview:
+    # The name of the inventory for the preview menu.
+    Name: 상자 구성품
+    # Turn on and off the preview for this crate.
+    Toggle: true
+    # How many rows should the preview be? You can use 1-6.
+    Rows: 4
+    # Settings related to the glass in the preview.
+    Glass:
+      # Turn the glass border in the preview on and off.
+      Toggle: true
+      # The name of the border item.
+      Name: ' '
+      # The item that shows in the border. Can be glass or any other item.
+      Item: gray_stained_glass_pane
+      # The custom model data of the item, -1 is disabled.
+      Custom-Model-Data: -1
+      # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+      # Set this to blank for it to do nothing.
+      Model:
+        # The namespace i.e. nexo
+        Namespace: ''
+        # The id i.e. emerald_helmet
+        Id: ''
+  # Settings related to animations...
+  Animation:
+    # This is only when an animation starts.
+    # Set this to empty if you don't want to change it.
+    Name: 파멸의 지배자 상자
+    # The glass animation settings.
+    Glass-Frame:
+      # Should the glass animation be enabled?
+      Toggle: true
+      # If the glass animation option is set to false above, We will use static items.
+      # If this is empty, We will use nothing.
+      Items:
+        '1':
+          # The name of the item to display.
+          name: ' '
+          # The lore of the item to display.
+          lore: []
+          # The material to display.
+          material: gold_ingot
+          # The amount to display.
+          amount: 1
+      # The random settings for the glass animation.
+      Random:
+        # Should the animation be random?
+        Toggle: true
+        # A list of items to use, If the list is empty. We will use glass panes internally.
+        Items:
+          '1':
+            # The name of the item to display.
+            name: ' '
+            # The lore of the item to display.
+            lore: []
+            # The material to display.
+            material: gold_ingot
+            # The amount to display.
+            amount: 1
+          '2':
+            # The name of the item to display.
+            name: ' '
+            # The lore of the item to display.
+            lore: []
+            # The material to display.
+            material: iron_ingot
+            # The amount to display.
+            amount: 1
+  # Settings related to physical keys.
+  PhysicalKey:
+    # Name of the Key.
+    Name: <italic:false><b><gradient:#FF0000:#530427>[✦] • 파멸의 지배자 키 •</gradient></b>
+    # Lore of the Key.
+    Lore:
+    - <gray>스페셜 상자의 The Ruiner's Grudge 탭에서 오픈할 수 있습니다.
+    # The item the key is.
+    Item: red_dye
+    # The custom model data of the item, -1 is disabled.
+    Custom-Model-Data: -1
+    # The item model, Mojang introduced this in 1.21.4... this replaces custom model data!
+    # Set this to blank for it to do nothing.
+    Model:
+      # The namespace i.e. nexo
+      Namespace: ''
+      # The id i.e. emerald_helmet
+      Id: ''
+    # Makes the key look enchanted.
+    Glowing: true
+  # Settings for the holograms.
+  Hologram:
+    # Toggle on and off the holograms for the crates.
+    Toggle: true
+    # The height of the hologram above the crate.
+    Height: 1.5
+    # The distance the hologram can be seen.
+    Range: 8
+    # How often should the hologram update? -1 is disabled.
+    Update-Interval: -1
+    # The background color of the hologram. It uses hex colors. This only works with CMI/FancyHolograms
+    # Set the color to transparent if you don't want any color.
+    Color: transparent
+    # The message that will be displayed above the crate.
+    # Note: MiniMessage or Color Codes being supported is depending on the 'holograms' plugin.
+    Message:
+    - <bold><green>Basic Crate</bold>
+  Prizes:
+    '1':
+      DisplayName: <!italic><bold><#FF0000>[</#FF0000><#F40003>✦</#F40003><#E80105>]</#E80105><#DD0108>
+        </#DD0108><#D1010A>[</#D1010A><#C6010D>L</#C6010D><#BA0210>v</#BA0210><#AF0212>.</#AF0212><#A30215>✕</#A30215><#980217>]</#980217><#8C031A>
+        </#8C031A><#81031D>파</#81031D><#75031F>괴</#75031F><#6A0322>의</#6A0322><#5E0424>
+        </#5E0424><#530427>낫
+      DisplayLore:
+      - ''
+      - '<!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>등급 : <bold><#29FF00>L</#29FF00><#42FD1E>e</#42FD1E><#5AFB3C>g</#5AFB3C><#73F959>e</#73F959><#8CF777>n</#8CF777><#A4F495>d</#A4F495><#BDF2B3>a</#BDF2B3><#D5F0D0>r</#D5F0D0><#EEEEEE>y'
+      - ''
+      - <!italic><bold><#FF0000>무</#FF0000><#F80101>엇</#F80101><#F10101>을</#F10101><#EB0202>
+        </#EB0202><#E40303>베</#E40303><#DD0303>어</#DD0303><#D60404>내</#D60404><#CF0404>든</#CF0404><#C90505>
+        </#C90505><#C20606>결</#C20606><#BB0606>국</#BB0606><#B40707> </#B40707><#AD0808>부</#AD0808><#A70808>서</#A70808><#A00909>진</#A00909><#990A0A>
+        </#990A0A><#920A0A>파</#920A0A><#8B0B0B>편</#8B0B0B><#850C0C>만</#850C0C><#7E0C0C>이</#7E0C0C><#770D0D>
+        </#770D0D><#700D0D>남</#700D0D><#690E0E>으</#690E0E><#630F0F>리</#630F0F><#5C0F0F>라</#5C0F0F><#551010>.
+      - ''
+      - <!italic><bold><#FF0000>[</#FF0000><#FD0002>L</#FD0002><#FA0104>v</#FA0104><#F80107>.</#F80107><#F50109>U</#F50109><#F3020B>n</#F3020B><#F0020D>k</#F0020D><#EE0310>n</#EE0310><#EB0312>o</#EB0312><#E90314>w</#E90314><#E60416>n</#E60416><#E40418>
+        </#E40418><#E1041B>특</#E1041B><#DF051D>성</#DF051D><#DC051F>]
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>무기
+        기본 데미지가 6으로 고정됩니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>타격
+        시 구속 II를 부여합니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>일정
+        확률로 적의 체력을 흡수합니다
+      - ''
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><red>해당 아이템은 시즌이
+        지나도 유지됩니다.
+      Items:
+      - Data:H4sIAAAAAAAA/82W32vbVhTHr+d0i132g8I26JNgD3srV78sqw8dsmRBYa/byxhBsZVExJaKLK/Lm9elXbek3aB4zcAGF5ZkZRlL03S4kL9mj5b8P+yoJbr3JHJnBoPKGHz90bn33HPP+Z5bJqRILlpO5Hzuhh0v8Am59MkiecNrkg/bnu82Qmcluuq70ZobepG7tBa4RXKhEXT9iBBSKJNyI2jfCHzXjzpl8j4z6frLoeusO8stl5TIOwy0gtAtg+3FRZI+BfKmFzktrwG/yl2/6YYteLUJo4XloNUki+lqYEMWVkNno0QuuF9HoZNOUJg5KGVGb30k6bZN6SJZiACTwqeEY4pkW2I9Yy7PVMOuyWbGVnmmybau6vl2VdPWNC1jPs8MxVZ0NWNNntUsW6rJGXN4Zqk2tdgeQp7VXzwZ2zgNXOH0L0LYLwhxsLzS7TSc6EWI3+5EobcOhxsG3dW17MVS/ODJZPy9cFUgZw9pZswvcz6lEWcxL8YHx7zHdpWKVMxo8vA7REVMh5totzUqUSnbrYCYQmUqs1WPRiiGFqLJz8gnq0IVqjDbW4iaNqYP0MymTlWq5vtkSrRCK5nl5OgQnXkN02d/IKpQjWr58xoWrdIq8+ivHqIaosnmAFFKdaozuo8irOvUoEb+qrrEs+J0extlfo3Ch9H7Y0RValKTebyPbLU6oskQxV/TIP2tfJ80yjM4ud94WtFpndbZvIMTRGVqU5vZ7h0gBTAxHSJbVU0TNfPpCqqy8xWYPqh28kvq3ZlVVPgCVYkFiNUBUjXbAMeybC18da72NOQ1YyowpmqfISZD3WVni1UN3JS401nH6kRlLkr+mVqWRbaHADEdGNvDTcSgVsXKjDmhTsVqfqbUISoil58/PEcKYFNVtLiaeYKoCTTLhcKX/6Kyr2xphWzeUtMJ15fO9TXc8lgjfDm/BHI6GR8K8I2fjoX43mH85zjZ700Oe0IFEjx+NBAmT0fJqB//9Djeuhtv/Tqv7hevXRP+Z+8/nn7bmxw9FpIt8PLZQXLnnnD9erx7IoCEJQ8Ppv3Xz2UxGZ5ANIXpL/14d5SGNxl9kwx3hOToOB7tQocSpsNHyd2d/+b8XNcg5mIxdJtzTl+d9o/jredC0t8EQZ3eHiTDXhr4ZG8bxgLkTHxrJ/5xU0gGo3Rwmi5XSJl8wC5srt9Yc/yonV7xiuQSA56/4vletPHyYsFf/hrdThS0l3yn7c5xdXhvXtFTALEW/vdgD5V3Km0qV6K4+Yt0hixYqY4b+SuaFWBWvszWDCpx0oZk1rCBSfkya4CUiiq3iz5qsVWgWv4uqiaI4ozWXBWBMfk605o1FShrZZNj1F4rBpUliUnfcAc1ujpVJCV/VVUGlnkLzff3V7ZBQv4B7NvMqG8MAAA=
+      DisplayData: H4sIAAAAAAAA/82W32vbVhTHr+d0i132g8I26JNgD3srV78sqw8dsmRBYa/byxhBsZVExJaKLK/Lm9elXbek3aB4zcAGF5ZkZRlL03S4kL9mj5b8P+yoJbr3JHJnBoPKGHz90bn33HPP+Z5bJqRILlpO5Hzuhh0v8Am59MkiecNrkg/bnu82Qmcluuq70ZobepG7tBa4RXKhEXT9iBBSKJNyI2jfCHzXjzpl8j4z6frLoeusO8stl5TIOwy0gtAtg+3FRZI+BfKmFzktrwG/yl2/6YYteLUJo4XloNUki+lqYEMWVkNno0QuuF9HoZNOUJg5KGVGb30k6bZN6SJZiACTwqeEY4pkW2I9Yy7PVMOuyWbGVnmmybau6vl2VdPWNC1jPs8MxVZ0NWNNntUsW6rJGXN4Zqk2tdgeQp7VXzwZ2zgNXOH0L0LYLwhxsLzS7TSc6EWI3+5EobcOhxsG3dW17MVS/ODJZPy9cFUgZw9pZswvcz6lEWcxL8YHx7zHdpWKVMxo8vA7REVMh5totzUqUSnbrYCYQmUqs1WPRiiGFqLJz8gnq0IVqjDbW4iaNqYP0MymTlWq5vtkSrRCK5nl5OgQnXkN02d/IKpQjWr58xoWrdIq8+ivHqIaosnmAFFKdaozuo8irOvUoEb+qrrEs+J0extlfo3Ch9H7Y0RValKTebyPbLU6oskQxV/TIP2tfJ80yjM4ud94WtFpndbZvIMTRGVqU5vZ7h0gBTAxHSJbVU0TNfPpCqqy8xWYPqh28kvq3ZlVVPgCVYkFiNUBUjXbAMeybC18da72NOQ1YyowpmqfISZD3WVni1UN3JS401nH6kRlLkr+mVqWRbaHADEdGNvDTcSgVsXKjDmhTsVqfqbUISoil58/PEcKYFNVtLiaeYKoCTTLhcKX/6Kyr2xphWzeUtMJ15fO9TXc8lgjfDm/BHI6GR8K8I2fjoX43mH85zjZ700Oe0IFEjx+NBAmT0fJqB//9Djeuhtv/Tqv7hevXRP+Z+8/nn7bmxw9FpIt8PLZQXLnnnD9erx7IoCEJQ8Ppv3Xz2UxGZ5ANIXpL/14d5SGNxl9kwx3hOToOB7tQocSpsNHyd2d/+b8XNcg5mIxdJtzTl+d9o/jredC0t8EQZ3eHiTDXhr4ZG8bxgLkTHxrJ/5xU0gGo3Rwmi5XSJl8wC5srt9Yc/yonV7xiuQSA56/4vletPHyYsFf/hrdThS0l3yn7c5xdXhvXtFTALEW/vdgD5V3Km0qV6K4+Yt0hixYqY4b+SuaFWBWvszWDCpx0oZk1rCBSfkya4CUiiq3iz5qsVWgWv4uqiaI4ozWXBWBMfk605o1FShrZZNj1F4rBpUliUnfcAc1ujpVJCV/VVUGlnkLzff3V7ZBQv4B7NvMqG8MAAA=
+      DisplayItem: netherite_hoe
+      DisplayAmount: 1
+      DisplayEnchantments:
+      - infinity:1
+      Weight: 2.0
+    '2':
+      DisplayName: <!italic><bold><#FF0000>[</#FF0000><#F60002>✦</#F60002><#ED0004>]</#ED0004><#E40106>
+        </#E40106><#DB0108>[</#DB0108><#D2010A>L</#D2010A><#C9010C>v</#C9010C><#C0010E>.</#C0010E><#B70210>✕</#B70210><#AE0212>]</#AE0212><#A40215>
+        </#A40215><#9B0217>재</#9B0217><#920319>앙</#920319><#89031B>의</#89031B><#80031D>
+        </#80031D><#77031F>서</#77031F><#6E0321>막</#6E0321><#650423> </#650423><#5C0425>바</#5C0425><#530427>지
+      DisplayLore:
+      - ''
+      - '<!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>등급 : <bold><#29FF00>L</#29FF00><#42FD1E>e</#42FD1E><#5AFB3C>g</#5AFB3C><#73F959>e</#73F959><#8CF777>n</#8CF777><#A4F495>d</#A4F495><#BDF2B3>a</#BDF2B3><#D5F0D0>r</#D5F0D0><#EEEEEE>y'
+      - ''
+      - <!italic><bold><#FF0000>무</#FF0000><#F80101>엇</#F80101><#F10101>을</#F10101><#EB0202>
+        </#EB0202><#E40303>베</#E40303><#DD0303>어</#DD0303><#D60404>내</#D60404><#CF0404>든</#CF0404><#C90505>
+        </#C90505><#C20606>결</#C20606><#BB0606>국</#BB0606><#B40707> </#B40707><#AD0808>부</#AD0808><#A70808>서</#A70808><#A00909>진</#A00909><#990A0A>
+        </#990A0A><#920A0A>파</#920A0A><#8B0B0B>편</#8B0B0B><#850C0C>만</#850C0C><#7E0C0C>이</#7E0C0C><#770D0D>
+        </#770D0D><#700D0D>남</#700D0D><#690E0E>으</#690E0E><#630F0F>리</#630F0F><#5C0F0F>라</#5C0F0F><#551010>.
+      - ''
+      - <!italic><bold><#FF0000>[</#FF0000><#FD0002>L</#FD0002><#FA0104>v</#FA0104><#F80107>.</#F80107><#F50109>U</#F50109><#F3020B>n</#F3020B><#F0020D>k</#F0020D><#EE0310>n</#EE0310><#EB0312>o</#EB0312><#E90314>w</#E90314><#E60416>n</#E60416><#E40418>
+        </#E40418><#E1041B>특</#E1041B><#DF051D>성</#DF051D><#DC051F>]
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>방어구가
+        부서지지 않습니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>장착
+        시 저항 I가 부여됩니다
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><dark_gray>>> <!bold><gray>일정
+        확률로 사망해도 아이템이 드롭되지 않습니다
+      - ''
+      - <!italic><!underlined><!strikethrough><bold><!obfuscated><red>해당 아이템은 시즌이
+        지나도 유지됩니다.
+      Items:
+      - Data:H4sIAAAAAAAA/82W32vbVhTHr+e0S1y2Qen2MPYgGOyxHP2yrD502JIFg71uL2MExVYdE1sqsrytbyZkbE3CVsi8pmCXFNZ4gQTS0owW+tfsMZL/hx1lRPeeRu4Mo1DZGMsfn6vvPfee77klxorsiu1G7tde2GsHPmNXP19k77Sb7JNu2/caoXsruuF70aoXtiNvueO1Wm2/1SuyS42g70eMsUKJlRpB93bge37UK7EPeVzfXwk9d81d6Xhsib3PQScIvRLGXllk6VVgl9uR22k38Fup7ze9sIN/beLdwkrQabLF9GkYwxZaoXtniV3yfohCNx2gMPNmKQt691PFdByARbYQIWaFL5nANMWx5XrGPJHpVaemWhlricxQHVM38+MqlmMYRsZ8kVU1RzP1jDVFVrMdpaZmzBWZrTtg8zmEIqufXRm7c564wvlPjPFvmOJg5Va/13CjsxS/14vC9hqucBj0W6vZH5finSenz+9KNyT26iLNzPnHgqY04zznxfjwmajYqYAMckaT+z8RKlM63iCzrYECSjZbiTANVFD5U5/ukRzahCa/E012GTTQeOw6oZZD6Q4Z2TJBBz1fk6VAGcpZ5OnTY7LmNUpPjgjVwAAjf9yqDRWocEV/DQg1CE02RoQCmGByOiEZNk2oQjX/qaYisuJ0e5vs/Brgi9NfnhOqgwUWVzwhsUad0GRM8m8YuP3tfE0GiAxX7k+Rlk2oQ52PO3pJqAoOODx2/5A4gEXpmMTqerpRM03XSZVdrMD0IrWTX1IfzKyiwjekSmxEvA6IqzlVFJbt1sJ3F2rPIKo505FxV/uKMBXrLltb6mooUxFWZ426E6hClvxXalmV+RwCwkxkfA7fE4a1KpdnjIl1Klfyd0odsyIL+3PzBXEAB3TZFmrmCaEW0mwvFL79D5d9bUsrZOMuNd1wbflCX6MtjzfCf8f/LD4+QPc6PTk8PR5IWPlY3slkgG8pGW4mmyfx1s/x1h/zen3x5k3pTStOHj5Ojg+kZGskJXuD6fBI+uJc+/3D+N7BW6fYTsYvk72hNH0wjB/vxY9Q9/phPBlPh8/iXzcwzxvoUNMfR/gpxTuj+NFRfG/3f63AXIchrroYes05h6+kordeiKIH6VIk+9upfFQdr++ezWq0l96cL8d1VmIf8WOb5zdWXT/qpge9IrvGwe0wiLxGdHZ+ZJcZOQQ2+r0o6C77bteb4whxbV7zK4vmV/x7tE/KPLVGTShVag8yb7jUHuwaskr+E20FWTXfbrH9y7x1Ubu1AFk9325rBijcGnEWQ9Kk60iV/FlUNWQzDhwmHpBkg9vYQ9LSsIGrstD6hw9Ii05NlxtkMt4lFJDOasIGMkcwT3LgKGMTUPiRLp7cJVQHTVHzx8UWrCk6jzz+jVAVqTDXyeC1TZixfwD1Gepj8gwAAA==
+      DisplayData: H4sIAAAAAAAA/82W32vbVhTHr+e0S1y2Qen2MPYgGOyxHP2yrD502JIFg71uL2MExVYdE1sqsrytbyZkbE3CVsi8pmCXFNZ4gQTS0owW+tfsMZL/hx1lRPeeRu4Mo1DZGMsfn6vvPfee77klxorsiu1G7tde2GsHPmNXP19k77Sb7JNu2/caoXsruuF70aoXtiNvueO1Wm2/1SuyS42g70eMsUKJlRpB93bge37UK7EPeVzfXwk9d81d6Xhsib3PQScIvRLGXllk6VVgl9uR22k38Fup7ze9sIN/beLdwkrQabLF9GkYwxZaoXtniV3yfohCNx2gMPNmKQt691PFdByARbYQIWaFL5nANMWx5XrGPJHpVaemWhlricxQHVM38+MqlmMYRsZ8kVU1RzP1jDVFVrMdpaZmzBWZrTtg8zmEIqufXRm7c564wvlPjPFvmOJg5Va/13CjsxS/14vC9hqucBj0W6vZH5finSenz+9KNyT26iLNzPnHgqY04zznxfjwmajYqYAMckaT+z8RKlM63iCzrYECSjZbiTANVFD5U5/ukRzahCa/E012GTTQeOw6oZZD6Q4Z2TJBBz1fk6VAGcpZ5OnTY7LmNUpPjgjVwAAjf9yqDRWocEV/DQg1CE02RoQCmGByOiEZNk2oQjX/qaYisuJ0e5vs/Brgi9NfnhOqgwUWVzwhsUad0GRM8m8YuP3tfE0GiAxX7k+Rlk2oQ52PO3pJqAoOODx2/5A4gEXpmMTqerpRM03XSZVdrMD0IrWTX1IfzKyiwjekSmxEvA6IqzlVFJbt1sJ3F2rPIKo505FxV/uKMBXrLltb6mooUxFWZ426E6hClvxXalmV+RwCwkxkfA7fE4a1KpdnjIl1Klfyd0odsyIL+3PzBXEAB3TZFmrmCaEW0mwvFL79D5d9bUsrZOMuNd1wbflCX6MtjzfCf8f/LD4+QPc6PTk8PR5IWPlY3slkgG8pGW4mmyfx1s/x1h/zen3x5k3pTStOHj5Ojg+kZGskJXuD6fBI+uJc+/3D+N7BW6fYTsYvk72hNH0wjB/vxY9Q9/phPBlPh8/iXzcwzxvoUNMfR/gpxTuj+NFRfG/3f63AXIchrroYes05h6+kordeiKIH6VIk+9upfFQdr++ezWq0l96cL8d1VmIf8WOb5zdWXT/qpge9IrvGwe0wiLxGdHZ+ZJcZOQQ2+r0o6C77bteb4whxbV7zK4vmV/x7tE/KPLVGTShVag8yb7jUHuwaskr+E20FWTXfbrH9y7x1Ubu1AFk9325rBijcGnEWQ9Kk60iV/FlUNWQzDhwmHpBkg9vYQ9LSsIGrstD6hw9Ii05NlxtkMt4lFJDOasIGMkcwT3LgKGMTUPiRLp7cJVQHTVHzx8UWrCk6jzz+jVAVqTDXyeC1TZixfwD1Gepj8gwAAA==
+      DisplayItem: netherite_leggings
+      DisplayAmount: 1
+      DisplayEnchantments:
+      - protection:6
+      Weight: 2.0
+    '3':
+      DisplayName: <!italic><bold><gradient:#FF0000:#530427>[✦] 파멸자의 봉인된 정수
+      DisplayLore:
+      - ''
+      - '<!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>등급 : <gradient:#29FF00:#EEEEEE><bold>Legendary'
+      - ''
+      - <!italic><!underlined><!strikethrough><!bold><!obfuscated><gray>우클릭 시 업그레이드
+        창이 열립니다.
+      Items:
+      - Data:H4sIAAAAAAAA/52Tz2sTQRTHX9xEkxUVBX8cA95lfyWb7UWSbPbk2YtI2OxOkqXJTtidUHv0IKSkh0IRi6TSgxQ8CBUC5tJ/xmM3/R98W+jsrKYgzmlmPu/XvPcdGUCCu7bL3NckigMaAjx6WYZbgQ/PxkFIvMjtsy0SekM3ZMTv9ijdlqDk0WnIAKAgg+zR8YSGJGRxBe5nPiMaERlNimVIVwFuB8wdBR7u5Gnok2iEpj6eij068qGcBkUfKA4id7cCJfKORW4aoHDjocKd7jzXLMdRlDIUGWIovAKBGZpjqx3OiMhqTaeltzkbiMzUHatmbfZrtB3TNDkLRdY0HMOqceaLrGU7WkvnzBWZXXMUO3tDJLLO1eJs97pxhesrgGyHLaa9/jT2XHbV4nsxi4JtwoYRnQ6G3LCSHP64WO1Vt6rwP0P6xyza+vPZ5ftlcvq9up4vqutPHy5+rpKT2fp4mRzi+ewcd3iNFufJfJbMv74AGZ78pb5xKjEJnmYg3iFkEoSDLvEHBMsvSfA4o/0gIl03nhAvbYkkwUNRnJShYypPzCU4edOY0XE3dMcka8aNAnwgDCiVnyDAN+LwHB0RH7r0a3GaG21dUZU693ybk0QTWYOzqsjaHWQtHvVyfz9HNaRcMFLybZWTYU3RVJXT9ZeDnIAtpEZGj49EatlI65trsvCdqpVlXe7lPo2BtC3EzdVkNpA6me/BQqT1tqJr6uas+G8MTaj35GOO6kjNjM6Ocl/lz28E8Bv3NQuPFQUAAA==
+      DisplayData: H4sIAAAAAAAA/52Tz2sTQRTHX9xEkxUVBX8cA95lfyWb7UWSbPbk2YtI2OxOkqXJTtidUHv0IKSkh0IRi6TSgxQ8CBUC5tJ/xmM3/R98W+jsrKYgzmlmPu/XvPcdGUCCu7bL3NckigMaAjx6WYZbgQ/PxkFIvMjtsy0SekM3ZMTv9ijdlqDk0WnIAKAgg+zR8YSGJGRxBe5nPiMaERlNimVIVwFuB8wdBR7u5Gnok2iEpj6eij068qGcBkUfKA4id7cCJfKORW4aoHDjocKd7jzXLMdRlDIUGWIovAKBGZpjqx3OiMhqTaeltzkbiMzUHatmbfZrtB3TNDkLRdY0HMOqceaLrGU7WkvnzBWZXXMUO3tDJLLO1eJs97pxhesrgGyHLaa9/jT2XHbV4nsxi4JtwoYRnQ6G3LCSHP64WO1Vt6rwP0P6xyza+vPZ5ftlcvq9up4vqutPHy5+rpKT2fp4mRzi+ewcd3iNFufJfJbMv74AGZ78pb5xKjEJnmYg3iFkEoSDLvEHBMsvSfA4o/0gIl03nhAvbYkkwUNRnJShYypPzCU4edOY0XE3dMcka8aNAnwgDCiVnyDAN+LwHB0RH7r0a3GaG21dUZU693ybk0QTWYOzqsjaHWQtHvVyfz9HNaRcMFLybZWTYU3RVJXT9ZeDnIAtpEZGj49EatlI65trsvCdqpVlXe7lPo2BtC3EzdVkNpA6me/BQqT1tqJr6uas+G8MTaj35GOO6kjNjM6Ocl/lz28E8Bv3NQuPFQUAAA==
+      DisplayItem: enchanted_book
+      DisplayAmount: 1
+      Weight: 2.0
+    '4':
+      Special: time_shard
+      DisplayItem: glowstone_dust
+      DisplayAmount: 2
+      Weight: 8.0
+    '5':
+      Special: quantum_matter
+      DisplayItem: yellow_dye
+      DisplayAmount: 1
+      Weight: 6.0
+    '6':
+      DisplayItem: enchanted_golden_apple
+      DisplayAmount: 1
+      Weight: 4.0
+    '7':
+      DisplayItem: golden_apple
+      DisplayAmount: 8
+      Weight: 10.0
+    '8':
+      DisplayItem: emerald_block
+      DisplayAmount: 8
+      Weight: 10.0
+    '9':
+      DisplayItem: diamond
+      DisplayAmount: 8
+      Weight: 8.0
+    '10':
+      DisplayItem: experience_bottle
+      DisplayAmount: 32
+      Weight: 12.0
+    '11':
+      DisplayItem: golden_carrot
+      DisplayAmount: 64
+      Weight: 12.0
+    '12':
+      DisplayItem: bone_meal
+      DisplayAmount: 64
+      Weight: 12.0
+# All the prizes that can be obtained in the Crate.
+# These prizes do not require any extra configuration
+# They will give the prizes based on what's already below.
+# See the AdvancedExample.yml for a more advanced crate.

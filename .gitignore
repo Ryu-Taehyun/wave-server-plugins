@@ -1,0 +1,28 @@
+# 빌드 결과물
+target/
+*.class
+*.jar
+*.zip
+
+# 공개하지 않는 서버 값 (IP 잠금, 관리자 닉네임, 문의처, 홍보 링크 등)
+# 예시는 WaveCore/private.example.yml
+private.yml
+**/private.yml
+*.private.yml
+secrets.yml
+.env
+.env.*
+
+# 서버 데이터 (플레이어 정보, 저장 파일)
+data/
+playerdata/
+*.db
+*.sqlite
+logs/
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
