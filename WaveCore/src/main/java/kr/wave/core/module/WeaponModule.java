@@ -1053,7 +1053,7 @@ public class WeaponModule extends Module {
         if (probing || !(e.getEntity() instanceof Player p) || !chaosHelm(p)) return;
         var cfg = plugin.getConfig();
         if (p.getHealth() >= maxHealth(p) * cfg.getDouble("weapons.chaos-helmet.low-health", 0.3)) return;
-        e.setDamage(e.getDamage() * (1 - cfg.getDouble("weapons.chaos-helmet.low-health-reduction", 0.25)));
+        e.setDamage(e.getDamage() * (1 - cfg.getDouble("weapons.chaos-helmet.low-health-reduction", 0.20)));
         Fx.p(p.getLocation().add(0, 1, 0), Particle.SMOKE, 6, 0.3, 0.02);
     }
 
@@ -1064,7 +1064,7 @@ public class WeaponModule extends Module {
         var cfg = plugin.getConfig();
         LivingEntity src = e.getDamager() instanceof LivingEntity le ? le
                 : e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof LivingEntity sh ? sh : null;
-        if (src == null || src == p || !chance(cfg.getDouble("weapons.chaos-helmet.wither-chance", 0.20))) return;
+        if (src == null || src == p || !chance(cfg.getDouble("weapons.chaos-helmet.wither-chance", 0.15))) return;
         effect(src, PotionEffectType.WITHER, cfg.getDouble("weapons.chaos-helmet.wither-seconds", 3), 1);
         Fx.p(src.getLocation().add(0, 1, 0), Particle.SQUID_INK, 10, 0.3, 0.03);
         Fx.fade(src.getLocation().add(0, 1, 0), CHAOS_D, CHAOS_L, 1.1f, 10, 0.4);

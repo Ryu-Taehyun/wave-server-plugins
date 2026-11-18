@@ -530,7 +530,7 @@ public final class Items {
                 .lore(CHAOS_HEAD + "&8&l>> &7방어구가 &f부서지지 않습니다%nl%"
                         + "&8&l>> &7장착 시 <color:#D6D6D6>나약함</color>&7과 <color:#D6D6D6>구속</color>&7에 걸리지 않습니다%nl%"
                         + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 <color:#D6D6D6>위더 I</color>&7를 부여합니다%nl%"
-                        + "&8&l>> &7체력이 &f30% 미만&7일 때 &e받는 데미지&7가 &f25%&7 감소합니다"
+                        + "&8&l>> &7체력이 &f30% 미만&7일 때 &e받는 데미지&7가 &f20%&7 감소합니다"
                         + SEASON_KEEP).build();
     }
 
