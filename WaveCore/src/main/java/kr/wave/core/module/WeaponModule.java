@@ -472,9 +472,6 @@ public class WeaponModule extends Module {
         // 피격자 장비
         if (victim instanceof Player vp) {
             boolean abyss = Msg.nameHas(vp.getInventory().getHelmet(), Items.N_ABYSS_HELMET);
-            if (abyss && Msg.nameHas(vp.getInventory().getItemInMainHand(), Items.N_CHAOS)) {
-                e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.chaos.set-damage-taken", 0.9));   // 세트 효과
-            }
             if (abyss && chance(plugin.getConfig().getDouble("weapons.chaos.helmet-chance", 0.2))) {
                 LivingEntity src = attacker != null ? attacker : shooter;
                 if (src != null) {
@@ -926,7 +923,7 @@ public class WeaponModule extends Module {
     }
 
     /**
-     * 액션바 한 칸: 이름 » [■■■□□□] 12초  /  이름 » ✔ 사용 가능 (우클릭)
+     * 액션바 한 칸: 이름 | [■■■□□□] 12초  /  이름 | ✔ 사용 가능 (우클릭)
      * 쿨타임이 막 끝난 순간(1초 안)에는 짧은 알림음을 낸다.
      */
     private static String skill(Player p, String label, Map<UUID, Long> cd, long now, long totalMs, String color, String hint, int width) {
@@ -934,10 +931,10 @@ public class WeaponModule extends Module {
         long ms = end - now;
         if (ms <= 0) {
             if (end > 0 && -ms < 1000) p.playSound(p.getLocation(), "block.note_block.pling", 0.6f, 1.8f);   // 다시 사용 가능
-            return label + " &8» &a&l✔ 사용 가능 &8(" + hint + ")";
+            return label + " &8| &a&l✔ 사용 가능 &8(" + hint + ")";
         }
         int filled = (int) Math.round(width * (1 - Math.min(1.0, (double) ms / Math.max(1, totalMs))));
-        return label + " &8» &8[" + color + "▮".repeat(filled) + "&8" + "▮".repeat(width - filled) + "&8] &f" + ((ms + 999) / 1000) + "초";
+        return label + " &8| &8[" + color + "▮".repeat(filled) + "&8" + "▮".repeat(width - filled) + "&8] &f" + ((ms + 999) / 1000) + "초";
     }
 
 
@@ -1114,7 +1111,7 @@ public class WeaponModule extends Module {
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 long storm = sandStormUntil.getOrDefault(id, 0L) - now;
                 bar = storm > 0
-                        ? "<gradient:#BFA66E:#B2D6B6><b>⌛ 모래 폭풍</b></gradient> &8» &e&l발동 중 &f" + ((storm + 999) / 1000) + "초"
+                        ? "<gradient:#BFA66E:#B2D6B6><b>⌛ 모래 폭풍</b></gradient> &8| &e&l발동 중 &f" + ((storm + 999) / 1000) + "초"
                         : skill(p, "<gradient:#BFA66E:#B2D6B6><b>⌛ 모래 폭풍</b></gradient>", chronosCd, now, 60_000, "&6", "우클릭", 12);
             } else if (tool.contains(Items.N_CHAOS)) {
                 bar = skill(p, "<gradient:#727272:#E0E0E0><b>✦ 혼돈의 파열</b></gradient>", chaosCd, now,

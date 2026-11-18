@@ -71,7 +71,6 @@ weapons:
     skill-damage: 4.0              # 혼돈의 파열 피해 (4 = 하트 2칸, 이 피해로는 죽지 않음)
     skill-cooldown-seconds: 45
     helmet-chance: 0.2             # 심연의 공포: 공격자에게 어둠 + 구속 확률
-    set-damage-taken: 0.9          # 세트(무기 + 헬멧) 받는 데미지 배율
   claymore-splash:
     radius: 4.0
     damage: 3.0              # 2 = 하트 1칸

@@ -514,7 +514,7 @@ public final class Items {
     }
 
     /** 혼돈의 아포칼립스 세트 설명 (세 아이템 공통) */
-    public static final String CHAOS_SET = "<gradient:#1F1F1F:#BCBCBC><italic:false><b>[세트 : 혼돈의 아포칼립스]</b></gradient>%nl%&8- 혼돈의 아포칼립스 &7(무기)%nl%&8- 심연의 공포 &7(헬멧)%nl%&8- 다크니스 웨이브 &7(스킬)%nl%&7무기를 들고 헬멧을 쓰면 &e받는 데미지 감소 &7(0.9x)";
+    public static final String CHAOS_SET = "<gradient:#1F1F1F:#BCBCBC><italic:false><b>[세트 : 혼돈의 아포칼립스]</b></gradient>%nl%&8- 혼돈의 아포칼립스 &7(무기)%nl%&8- 심연의 공포 &7(헬멧)%nl%&8- 다크니스 웨이브 &7(스킬)";
     private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";
 
     /** 심연의 공포 (혼돈의 아포칼립스 세트 헬멧) */
