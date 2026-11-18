@@ -815,14 +815,23 @@ public class WeaponModule extends Module {
                     Msg.send(p, "&c아직 사용 할 수 없습니다.");
                     return;
                 }
-                waveCd2.put(id, now + 90_000);
-                effect(p, PotionEffectType.INVISIBILITY, 5, 1);
-                effect(p, PotionEffectType.SPEED, 5, 2);
-                // 심연의 장막: 검은 연기에 몸을 숨김
-                Fx.p(p.getLocation().add(0, 1, 0), Particle.LARGE_SMOKE, 60, 0.5, 0.02);
-                Fx.helix(p, CHAOS_D, CHAOS_L, 0.7, 2.2, 30);
-                Msg.sound(p, "entity.enderman.teleport", 0.8f, 0.6f);
-                Msg.send(p, "&8&l[Chaos] &72번 스킬 &5심연의 장막&7을 사용했습니다.");
+                waveCd2.put(id, now + (long) (plugin.getConfig().getDouble("weapons.darkness-wave.veil-cooldown-seconds", 90) * 1000));
+                // 어둠의 장막: 내 주변에 검은 연기가 따라다니며, 들어온 적에게 실명
+                double radius = plugin.getConfig().getDouble("weapons.darkness-wave.veil-radius", 3);
+                int ticks = (int) (plugin.getConfig().getDouble("weapons.darkness-wave.veil-seconds", 5) * 20);
+                Msg.soundAt(p.getLocation(), "entity.warden.sonic_charge", 0.6f, 0.6f);
+                for (int t = 0; t <= ticks; t += 5) {
+                    final int tt = t;
+                    later(t, () -> {
+                        if (!p.isOnline() || p.isDead()) return;
+                        Location c = p.getLocation();
+                        Fx.p(c.clone().add(0, 0.8, 0), Particle.LARGE_SMOKE, 25, radius * 0.6, 0.01);
+                        Fx.p(c.clone().add(0, 0.3, 0), Particle.SQUID_INK, 10, radius * 0.6, 0.01);
+                        if (tt % 20 == 0) Fx.ring(c.clone().add(0, 0.1, 0), radius, 36, CHAOS_D, 1.2f);
+                        for (LivingEntity tg : aoeTargets(p, c, radius)) effect(tg, PotionEffectType.BLINDNESS, 1.5, 1);
+                    });
+                }
+                Msg.send(p, "&8&l[Chaos] &72번 스킬 &5어둠의 장막&7을 사용했습니다.");
             }
         } else if (n.contains(Items.N_SEALED_SWORD) && (hand.getType() == Material.DIAMOND_SWORD || hand.getType() == Material.NETHERITE_SWORD)) {
             if (sealedCd.getOrDefault(id, 0L) > now) {
@@ -1194,7 +1203,8 @@ public class WeaponModule extends Module {
                         (long) (plugin.getConfig().getDouble("weapons.chaos.skill-cooldown-seconds", 45) * 1000), "&7", "우클릭", 12);
             } else if (tool.contains(Items.N_DARK_WAVE)) {
                 bar = skill(p, "<gradient:#727272:#E0E0E0><b>✦ 어둠의 파동</b></gradient>", waveCd1, now, 60_000, "&7", "우클릭", 6)
-                        + "  &8│  " + skill(p, "<gradient:#E0E0E0:#727272><b>심연의 장막</b></gradient>", waveCd2, now, 90_000, "&7", "웅크리기+우클릭", 6);
+                        + "  &8│  " + skill(p, "<gradient:#E0E0E0:#727272><b>어둠의 장막</b></gradient>", waveCd2, now,
+                        (long) (plugin.getConfig().getDouble("weapons.darkness-wave.veil-cooldown-seconds", 90) * 1000), "&7", "웅크리기+우클릭", 6);
             } else if (Items.isNewChar(tool)) {
                 bar = skill(p, "<gradient:#1E2586:#C8B0B0><b>🌙 월광의 힘</b></gradient>", newCharCd1, now, 90_000, "&9", "우클릭", 6)
                         + "  &8│  " + skill(p, "<gradient:#FAD4D4:#C8B0B0><b>달빛 치유</b></gradient>", newCharCd2, now, 90_000, "&d", "웅크리기+우클릭", 6);

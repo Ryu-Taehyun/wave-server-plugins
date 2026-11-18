@@ -73,6 +73,11 @@ weapons:
     dash-distance: 6               # 제왕의 진군 돌진 거리 (칸)
     dash-slow-seconds: 2           # 경로의 적 구속 II 시간
     dash-cooldown-seconds: 30
+  # 다크니스 웨이브 2번 스킬 (어둠의 장막)
+  darkness-wave:
+    veil-seconds: 5
+    veil-radius: 3
+    veil-cooldown-seconds: 90
   # 재앙의 서막 바지
   ruiner-pants:
     fall-fire-multiplier: 0.5      # 낙하 / 화염 피해 배율 (0.5 = 50% 감소)

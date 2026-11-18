@@ -518,7 +518,7 @@ public final class Items {
         return It.of(Material.MUSIC_DISC_11).ench(Enchantment.UNBREAKING, 10)
                 .name("<gradient:#1F1F1F:#BCBCBC><italic:false><b>[Chaos] [Lv.✦] </b></gradient><gradient:#BCBCBC:#727272><italic:false><b>다크니스 웨이브</b></gradient>")
                 .lore(CHAOS_HEAD + "&8&l>> &7우클릭 시 주변 &f6칸&7의 적에게 &9어둠&7 4초 + &9구속 III&7 3초, 밀쳐냅니다 &8(쿨타임 1분)%nl%"
-                        + "&8&l>> &7웅크리기 + 우클릭 시 &a투명화&7 + &a신속 II&7를 &f5초&7간 부여받습니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
+                        + "&8&l>> &7웅크리기 + 우클릭 시 &f5초&7간 주변 &f3칸&7에 검은 연기가 퍼져, 들어온 적에게 &9실명&7을 부여합니다 &8(쿨타임 1분 30초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack chaosApocalypse() {
