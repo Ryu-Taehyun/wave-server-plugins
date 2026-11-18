@@ -54,6 +54,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class WeaponModule extends Module {
 
     private static final Attribute MAX_HEALTH = resolve("max_health", "generic.max_health");
+    private static final Attribute KNOCKBACK = resolve("knockback_resistance", "generic.knockback_resistance");
     private static final Set<Biome> FORESTS = new HashSet<>();
 
     static {
@@ -331,7 +332,7 @@ public class WeaponModule extends Module {
                 if (frozenUntil.getOrDefault(victim.getUniqueId(), 0L) > nowMs) {
                     // 얼음 깨뜨리기: 얼어붙은 대상에게 1.3배, 빙결 해제
                     frozenUntil.remove(victim.getUniqueId());
-                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.shatter-multiplier", 1.3));
+                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.shatter-multiplier", 1.25));
                     victim.removePotionEffect(PotionEffectType.SLOWNESS);
                     victim.removePotionEffect(PotionEffectType.JUMP_BOOST);
                     victim.setFreezeTicks(0);
@@ -847,7 +848,7 @@ public class WeaponModule extends Module {
             }
             e.setCancelled(true);
             sealedCd.put(id, now + (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000));
-            // 제왕의 진군: 바라보는 방향으로 돌진, 지나간 길에 얼음 자국, 경로의 적 구속
+            // 돌진: 바라보는 방향으로 돌진, 지나간 길에 얼음 자국, 경로의 적 구속
             Vector dir = p.getLocation().getDirection().setY(0);
             if (dir.lengthSquared() < 1e-4) dir = new Vector(1, 0, 0);
             dir.normalize();
@@ -872,7 +873,7 @@ public class WeaponModule extends Module {
             later(9, () -> {
                 if (p.isOnline()) Fx.shockwave(p.getLocation().add(0, 0.1, 0), ICE, 2.5, 8);
             });
-            Msg.send(p, "<gradient:#00DDFF:#FFFFFF><b>[❄ Sealed]</b></gradient> &7제왕의 진군을 사용했습니다.");
+            Msg.send(p, "<gradient:#00DDFF:#FFFFFF><b>[❄ Sealed]</b></gradient> &7돌진을 사용했습니다.");
         } else if (n.contains(Items.N_ETERNAL_CHRONOS)) {
             if (chronosCd.getOrDefault(id, 0L) > now) {
                 Msg.send(p, "&c아직 사용 할 수 없습니다.");
@@ -1019,6 +1020,28 @@ public class WeaponModule extends Module {
         reapplyWalkSoon(e.getPlayer());
     }
 
+    /* ======================= 재앙의 서막 바지: 죽음 거부 ======================= */
+
+    /** 치명상을 입으면 20% 확률로 버티고 체력 절반으로 돌아옴 (불사의 토템처럼, 토템은 쓰지 않음) */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onLethal(org.bukkit.event.entity.EntityDamageEvent e) {
+        if (probing || !(e.getEntity() instanceof Player p)) return;
+        if (e.getFinalDamage() < p.getHealth()) return;
+        if (!Msg.nameHas(p.getInventory().getLeggings(), Items.N_RUINER_PANTS)) return;
+        if (e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.VOID || e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.KILL) return;
+        if (!chance(plugin.getConfig().getDouble("weapons.ruiner-pants.deny-death-chance", 0.2))) return;
+        e.setCancelled(true);
+        p.setHealth(Math.max(1, maxHealth(p) * 0.5));
+        p.setFireTicks(0);
+        // 죽음 거부: 붉은 기둥 + 토템 연출
+        Location c = p.getLocation();
+        Fx.burst(c.clone().add(0, 1, 0), Particle.TOTEM_OF_UNDYING, 60, 0.5);
+        Fx.helix(p, RUIN_D, Fx.rgb(0xFF0000), 0.8, 2.6, 30);
+        Fx.shockwave(c.clone().add(0, 0.1, 0), RUIN_D, 3.0, 10);
+        Msg.soundAt(c, "item.totem.use", 0.8f, 0.8f);
+        Msg.title(p, "<gradient:#FF0000:#530427><b>죽음을 거부했습니다</b></gradient>", "&7재앙의 서막 바지가 당신을 일으켜 세웁니다", 5, 30, 10);
+    }
+
     /* ======================= 접속 시 특수 아이템 이름/설명 최신화 ======================= */
 
     /** 특수 아이템이면 이름/설명을 최신으로 바꿈 (인챈트, 내구도, 개수, 태그는 그대로). 바뀌었으면 true */
@@ -1120,7 +1143,16 @@ public class WeaponModule extends Module {
                 if (Items.ensureSeasonKeep(b)) p.getInventory().setBoots(b);   // 예전에 받은 아이템 설명 갱신
             }
             if (tool.contains(Items.N_NATURE_BOOTS) && Items.ensureSeasonKeep(hand)) p.getInventory().setItemInMainHand(hand);
-            if (legs.contains(Items.N_RUINER_PANTS)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);
+            boolean ruinerLegs = legs.contains(Items.N_RUINER_PANTS);
+            if (KNOCKBACK != null && p.getAttribute(KNOCKBACK) != null) {
+                double kb = ruinerLegs ? plugin.getConfig().getDouble("weapons.ruiner-pants.knockback-resistance", 0.5) : 0;
+                if (p.getAttribute(KNOCKBACK).getBaseValue() != kb) p.getAttribute(KNOCKBACK).setBaseValue(kb);
+            }
+            if (ruinerLegs && p.getHealth() <= maxHealth(p) * plugin.getConfig().getDouble("weapons.ruiner-pants.low-health", 0.3)) {
+                effect(p, PotionEffectType.STRENGTH, 1.5, 2);
+                effect(p, PotionEffectType.SPEED, 1.5, 1);
+                Fx.p(p.getLocation().add(0, 1, 0), Particle.DAMAGE_INDICATOR, 2, 0.3, 0.02);
+            }
             if (chest.contains(Items.N_VOID_CHEST)) effect(p, PotionEffectType.STRENGTH, 1.5, 1);
             if (helmet.contains(Items.N_RUSSELL)) effect(p, PotionEffectType.HASTE, 1.5, 3);
             if (helmet.contains(Items.N_RUSSELL)) Fx.p(p.getLocation().add(0, 2.2, 0), Particle.ENCHANT, 3, 0.3, 0.3);
@@ -1132,7 +1164,7 @@ public class WeaponModule extends Module {
                 effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             }
 
-            if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 제왕의 위엄
+            if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 들고 있으면 저항 I
             if (tool.contains(Items.N_CHAOS) && inWorld(p, "nether")) effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             if (helmet.contains(Items.N_ABYSS_HELMET)) effect(p, PotionEffectType.NIGHT_VISION, 15, 1);   // 15초: 깜빡임 없이 유지
 
@@ -1141,7 +1173,7 @@ public class WeaponModule extends Module {
             // 스킬 쿨타임 액션바: [이름] [진행 막대] 남은 시간 / 사용 가능
             String bar = null;
             if (tool.contains(Items.N_SEALED_SWORD)) {
-                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 제왕의 진군</b></gradient>", sealedCd, now,
+                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 돌진</b></gradient>", sealedCd, now,
                         (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000), "&b", "우클릭", 12);
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 long storm = sandStormUntil.getOrDefault(id, 0L) - now;

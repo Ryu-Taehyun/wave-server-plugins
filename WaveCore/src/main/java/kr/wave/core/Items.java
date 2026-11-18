@@ -492,7 +492,7 @@ public final class Items {
     public static ItemStack ruinerPants() {
         return It.of(Material.NETHERITE_LEGGINGS).unbreakable().ench(Enchantment.PROTECTION, 6)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 재앙의 서막 바지</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &a저항 I&7이 부여됩니다%nl%&8&l>> &7일정 확률로 &e사망해도 아이템이 드롭되지 않습니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &e넉백 저항 50%&7이 부여됩니다%nl%&8&l>> &7체력이 &f30% 이하&7일 때 &a힘 II&7 + &a신속 I&7이 부여됩니다%nl%&8&l>> &f20%&7 확률로 &e죽음을 거부&7하고 체력의 &a절반&7으로 되돌아옵니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack sealedWings() {
@@ -504,7 +504,7 @@ public final class Items {
     public static ItemStack sealedSword() {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 6)
                 .name("<gradient:#00B3FF:#DFDFDF><italic:false><bold:true>[Sealed]</gradient> <gradient:#D1D1D1:#DBDBDB><italic:false><bold:true>[Lv.✕]</gradient> <gradient:#DFDFDF:#919191><italic:false><bold:true>얼어붙은 제왕의 검</gradient>")
-                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &b제왕의 위엄&7: 무기를 들고 있으면 &a저항 I&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 &b빙결&7: 대상이 &f1초&7간 &9얼어붙습니다 &8(이동·점프 불가)%nl%&8&l>> &7얼어붙은 대상을 타격하면 얼음이 깨지며 &c데미지의 1.3배&7를 입힙니다%nl%&8&l>> &7우클릭 시 &b제왕의 진군&7: 앞으로 &f6칸&7 돌진하며 지나간 적에게 &9구속 II&7 2초 &8(쿨타임 30초)" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<gradient:#00DDFF:#FFD8D8><italic:false><bold:true>얼어붙은 고대 제왕의 마지막 전리품</gradient>%nl%%nl%<gradient:#00DDFF:#FFD8D8><gradient:#00DDFF:#FFFFFF><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기가 &f부서지지 않습니다%nl%&8&l>> &7무기를 들고 있으면 &a저항 I&7이 부여됩니다%nl%&8&l>> &7타격 시 일정 확률로 대상이 &f1초&7간 &9얼어붙습니다%nl%&8&l>> &7얼어붙은 대상을 타격하면 얼음이 깨지며 &c데미지의 1.25배&7를 입힙니다%nl%&8&l>> &7우클릭 시 앞으로 &f6칸&7 돌진하며 지나간 적에게 &9구속 II&7 2초 &8(쿨타임 30초)" + SEASON_KEEP).build();
     }
 
     public static ItemStack thunderAxe() {
