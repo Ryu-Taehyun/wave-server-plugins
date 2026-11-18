@@ -324,7 +324,7 @@ public class CoreModule extends Module {
         for (String k : new String[]{"[칭호]", "닉네임 색상 변경권", "팀 색상 변경권", "천공의 심판자", "얼어붙은 제왕", "사신의",
                 "[pre-order]", "[sealed]", "[roulette]", "[time]", "[quantum]", "[ruiner]", "[void]", "[natural]", "[chaos]",
                 "soulstripe", "soul splitter", "캐시 수표", "이동권", "[pvp]", "[newbie]", "[magic]",
-                "신월의 기록", "새 시대의 각인", "new characteristic", "망령 수확자", "잿불 낙인검", "시간을 가르는 바람", "time piecer", "그림자 사슬", "umbral chain", "메아리 종", "echo bell"}) PROTECTED_NAMES.add(k);
+                "초승달의 서약", "신월의 기록", "새 시대의 각인", "new characteristic", "망령 수확자", "잿불 낙인검", "시간을 가르는 바람", "time piecer", "그림자 사슬", "umbral chain", "메아리 종", "echo bell"}) PROTECTED_NAMES.add(k);
     }
 
     public static boolean protectedName(String plain) {
