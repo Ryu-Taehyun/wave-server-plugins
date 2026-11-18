@@ -978,6 +978,62 @@ public class WeaponModule extends Module {
         reapplyWalkSoon(e.getPlayer());
     }
 
+    /* ======================= 접속 시 특수 아이템 이름/설명 최신화 ======================= */
+
+    /** 특수 아이템이면 이름/설명을 최신으로 바꿈 (인챈트, 내구도, 개수, 태그는 그대로). 바뀌었으면 true */
+    public boolean refresh(ItemStack it) {
+        if (It.isAir(it) || !it.hasItemMeta()) return false;
+        String plain = Msg.name(it);
+        if (plain.isEmpty()) return false;
+        ItemMeta m = it.getItemMeta();
+        net.kyori.adventure.text.Component name;
+        java.util.List<net.kyori.adventure.text.Component> lore;
+        boolean force = false;
+        if (Items.isSoulSplitter(it)) {   // 처치 수가 들어간 설명
+            force = !m.getPersistentDataContainer().has(new org.bukkit.NamespacedKey(plugin, "soul_id"));   // 번호를 새로 붙였으면 꼭 저장
+            int id = Items.soulId(plugin, m);
+            name = Msg.item(Items.SOUL_SPLITTER_NAME);
+            lore = Msg.lore(Items.soulSplitterLore(global().swordKills.getOrDefault(id, 0)));
+        } else {
+            var sup = Items.template(plain);
+            if (sup == null) return false;
+            ItemMeta f = sup.get().getItemMeta();
+            name = f.displayName();
+            lore = f.lore();
+        }
+        if (!force && java.util.Objects.equals(m.displayName(), name) && java.util.Objects.equals(m.lore(), lore)) return false;
+        m.displayName(name);
+        m.lore(lore);
+        it.setItemMeta(m);
+        return true;
+    }
+
+    private int refreshAll(ItemStack[] items) {
+        int n = 0;
+        if (items != null) for (ItemStack it : items) if (refresh(it)) n++;
+        return n;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoinRefresh(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        later(20, () -> {
+            if (!p.isOnline()) return;
+            ItemStack[] inv = p.getInventory().getContents();   // 가방 + 갑옷 + 왼손
+            int a = refreshAll(inv);
+            if (a > 0) p.getInventory().setContents(inv);
+            ItemStack[] ender = p.getEnderChest().getContents();
+            int b = refreshAll(ender);
+            if (b > 0) p.getEnderChest().setContents(ender);
+            kr.wave.core.data.PlayerData d = data(p);
+            // 배낭 / 우편함 / 사망 보관 아이템 (같은 객체를 고치므로 목록에 그대로 반영됨)
+            int c = refreshAll(d.backpack) + refreshAll(d.mailbox.toArray(new ItemStack[0])) + refreshAll(d.respawnItems.toArray(new ItemStack[0]));
+            if (c > 0) plugin.store().save(d);
+            int n = a + b + c;
+            if (n > 0) Msg.actionBar(p, "&7보유 중인 특수 아이템 &f" + n + "개&7의 이름과 설명이 최신으로 바뀌었습니다.");
+        });
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoinWalk(org.bukkit.event.player.PlayerJoinEvent e) {
         reapplyWalkSoon(e.getPlayer());

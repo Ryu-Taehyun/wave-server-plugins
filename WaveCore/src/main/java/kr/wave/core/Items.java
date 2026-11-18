@@ -66,6 +66,40 @@ public final class Items {
     public static final String N_NEW_CHAR = "[🌙] [Lv.DD] 새 시대의 각인";
     public static final String N_NEW_CHAR_OLD = "The New Characteristic";
 
+    private static java.util.Map<String, java.util.function.Supplier<ItemStack>> templates;
+
+    /**
+     * 이름(색 없는 글자)이 정확히 같은 특수 아이템의 최신 모습. 접속 시 이름/설명 갱신에 사용.
+     * 예전 이름(영어 이름 등)도 새 아이템으로 연결한다. 망령 수확자는 처치 수가 들어가므로 따로 처리.
+     */
+    public static java.util.function.Supplier<ItemStack> template(String plain) {
+        if (templates == null) {
+            java.util.Map<String, java.util.function.Supplier<ItemStack>> m = new java.util.HashMap<>();
+            java.util.List<java.util.function.Supplier<ItemStack>> all = new java.util.ArrayList<>(java.util.List.of(
+                    Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
+                    Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::abyssHelmet, Items::darknessWave,
+                    Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
+                    Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
+                    Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
+                    () -> melon(1), Items::newbiePass, Items::legendVoucher, Items::mythicVoucher, Items::altarTicket,
+                    Items::timeShard, Items::quantumMatter, Items::vibranium, Items::ruinerEssence));
+            for (int i = 0; i <= 6; i++) {
+                final int st = i;
+                all.add(() -> chronos(st));
+            }
+            for (var sup : all) m.put(Msg.name(sup.get()), sup);
+            // 예전 이름
+            m.put("[✦] " + N_TIME_WIND_OLD, Items::timePiecerWind);
+            m.put("[✦] " + N_SHADE_OLD, Items::umbralChain);
+            m.put("[✦] " + N_BELL_OLD, Items::echoBell);
+            m.put("[🌙] [Lv.DD] " + N_NEW_CHAR_OLD, Items::newCharacteristic);
+            m.put(N_LEGEND_VOUCHER_OLD, Items::legendVoucher);
+            m.put(N_MYTHIC_VOUCHER_OLD, Items::mythicVoucher);
+            templates = m;
+        }
+        return templates.get(plain);
+    }
+
     public static boolean isNewChar(String plainName) {
         return plainName.contains(N_NEW_CHAR) || plainName.contains(N_NEW_CHAR_OLD);
     }
@@ -515,7 +549,9 @@ public final class Items {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 7).name(FROST_NAME).lore(FROST_LORE).build();
     }
 
-    public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> 새 시대의</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> 각인</b></gradient>";
+    /** 새 시대의 각인: 초승달(은빛) · 등급 표식(별빛) · 이름(밤하늘 남색 → 보라 → 새벽 분홍 → 금빛) */
+    public static final String NEW_CHAR_NAME = "<italic:false><b><gradient:#FFF3B0:#C9B6FF>[🌙]</gradient> <gradient:#8EC5FC:#E0C3FC>[Lv.<obf>DD</obf>]</gradient> "
+            + "<gradient:#3A47D5:#7B5CFF:#C471ED:#F7A1C4:#FFD8A8>새 시대의 각인</gradient></b>";
     public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 &a힘 III&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 &a재생 V&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack newCharacteristic() {
