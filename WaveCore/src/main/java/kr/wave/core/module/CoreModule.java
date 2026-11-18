@@ -605,8 +605,8 @@ public class CoreModule extends Module {
 
     /** 크라운 처치 알림 (한 줄) */
     private void crownKillBroadcast(Component killer, Component victim, Component item, String pos) {
-        // 한 줄: 👑 처치자 ▶ 상대 ( 무기 ) (좌표) - 좌표까지 금빛
-        Msg.broadcastFill("<gradient:#FFF176:#FFB732><b>👑</b></gradient> %killer% <color:#FFB732><b>▶</b></color> %victim% &6( %item% &6) <gradient:#FFF176:#FFB732>(" + pos + ")</gradient>",
+        // 한 줄: 👑 처치자 » 상대 ( 무기 ) (좌표) - 좌표까지 금빛
+        Msg.broadcastFill("<gradient:#FFF176:#FFB732><b>👑</b></gradient> %killer% <color:#FFB732><b>»</b></color> %victim% &6( %item% &6) <gradient:#FFF176:#FFB732>(" + pos + ")</gradient>",
                 "%killer%", killer, "%victim%", victim, "%item%", item);
         for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.bell.use", 0.5f, 0.7f);
     }
