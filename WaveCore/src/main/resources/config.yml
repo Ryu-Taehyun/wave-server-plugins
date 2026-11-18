@@ -65,6 +65,14 @@ weapons:
     nausea-seconds: 4
     knockback: 0.9
     cooldown-ms: 0
+  # 얼어붙은 제왕의 검
+  sealed:
+    freeze-chance: 0.20            # 타격 시 빙결 확률
+    freeze-seconds: 1.0            # 빙결 시간 (이동·점프 불가)
+    shatter-multiplier: 1.3        # 얼어붙은 대상 타격 시 피해 배율
+    dash-distance: 6               # 제왕의 진군 돌진 거리 (칸)
+    dash-slow-seconds: 2           # 경로의 적 구속 II 시간
+    dash-cooldown-seconds: 30
   # 혼돈의 아포칼립스 세트 (무기 / 심연의 공포 헬멧 / 다크니스 웨이브)
   chaos:
     damage: 6.5                    # 무기 고정 데미지

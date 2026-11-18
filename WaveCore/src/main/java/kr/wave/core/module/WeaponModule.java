@@ -87,6 +87,8 @@ public class WeaponModule extends Module {
     private final Map<UUID, Long> sealedCd = new HashMap<>();
     private final Map<UUID, Long> chronosCd = new HashMap<>();
     private final Map<UUID, Long> chaosCd = new HashMap<>();
+    /** 얼어붙은 제왕의 검 빙결: 대상 -> 풀리는 시각 */
+    private final Map<UUID, Long> frozenUntil = new HashMap<>();
     private final Map<UUID, Long> waveCd1 = new HashMap<>();
     private final Map<UUID, Long> waveCd2 = new HashMap<>();
     /** 범위 스킬 대상 확인용 가짜 피해 이벤트 중에는 무기 효과를 건너뜀 */
@@ -325,20 +327,31 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_SEALED_SWORD)) {
                 Location mid = vl.clone().add(0, 1, 0);
-                if (chance(0.20)) {
-                    e.setDamage(e.getDamage() * 1.3);
-                    // 얼어붙은 제왕의 일격: 얼음 파편 폭발
-                    Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 40, 0.4);
-                    Fx.burst(mid, Particle.SNOWFLAKE, 40, 0.15);
-                    Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
+                long nowMs = System.currentTimeMillis();
+                if (frozenUntil.getOrDefault(victim.getUniqueId(), 0L) > nowMs) {
+                    // 얼음 깨뜨리기: 얼어붙은 대상에게 1.3배, 빙결 해제
+                    frozenUntil.remove(victim.getUniqueId());
+                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.shatter-multiplier", 1.3));
+                    victim.removePotionEffect(PotionEffectType.SLOWNESS);
+                    victim.removePotionEffect(PotionEffectType.JUMP_BOOST);
+                    victim.setFreezeTicks(0);
+                    Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 50, 0.4);
+                    Fx.burst(mid, Particle.SNOWFLAKE, 40, 0.18);
+                    Fx.ring(vl.clone().add(0, 0.1, 0), 1.3, 30, ICE, 1.4f);
+                    Msg.soundAt(mid, "block.glass.break", 1, 0.9f);
+                    Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 얼음 깨뜨리기!</b></gradient>");
+                } else if (chance(plugin.getConfig().getDouble("weapons.sealed.freeze-chance", 0.20))) {
+                    // 빙결: 1초간 이동·점프 불가 + 얼음 테두리
+                    double sec = plugin.getConfig().getDouble("weapons.sealed.freeze-seconds", 1.0);
+                    if (frozenUntil.size() > 300) frozenUntil.values().removeIf(t -> t < nowMs);
+                    frozenUntil.put(victim.getUniqueId(), nowMs + (long) (sec * 1000) + 250);
+                    effect(victim, PotionEffectType.SLOWNESS, sec, 7);
+                    effect(victim, PotionEffectType.JUMP_BOOST, sec, 129);   // 음수 점프 강화 = 점프 불가
+                    victim.setFreezeTicks(Math.max(0, victim.getMaxFreezeTicks() - 1));   // 얼음 테두리 (동상 피해는 없음)
                     Fx.sphere(mid, 0.9, 30, ICE_L, 0.9f);
-                    Msg.soundAt(mid, "block.glass.break", 0.8f, 1.6f);
-                }
-                switch (ThreadLocalRandom.current().nextInt(1, 5)) {
-                    case 1 -> effect(attacker, PotionEffectType.STRENGTH, 1.5, 2);
-                    case 2 -> effect(attacker, PotionEffectType.RESISTANCE, 1.5, 1);
-                    case 3 -> effect(attacker, PotionEffectType.REGENERATION, 1.5, 2);
-                    default -> effect(attacker, PotionEffectType.SPEED, 1.5, 2);
+                    Fx.block(vl.clone().add(0, 0.5, 0), Particle.BLOCK, Material.ICE.createBlockData(), 30, 0.35);
+                    Msg.soundAt(mid, "block.glass.place", 1, 0.6f);
+                    Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 빙결</b></gradient> &7- 다음 타격에 얼음이 깨집니다");
                 }
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
@@ -832,14 +845,34 @@ public class WeaponModule extends Module {
                 e.setCancelled(true);
                 return;
             }
-            effect(p, PotionEffectType.SPEED, 7, 4);
-            Msg.sound(p, "block.enchantment_table.use", 1, 2);
-            // 얼어붙은 제왕의 질주: 얼음 나선 + 서리 충격파
-            Fx.helix(p, ICE, ICE_L, 0.9, 2.5, 30);
-            Fx.burst(p.getLocation().add(0, 1, 0), Particle.SNOWFLAKE, 50, 0.15);
-            Fx.shockwave(p.getLocation().add(0, 0.1, 0), ICE, 3.0, 8);
-            Msg.send(p, "&e&l특수 능력을 사용했습니다.");
-            sealedCd.put(id, now + 45_000);
+            e.setCancelled(true);
+            sealedCd.put(id, now + (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000));
+            // 제왕의 진군: 바라보는 방향으로 돌진, 지나간 길에 얼음 자국, 경로의 적 구속
+            Vector dir = p.getLocation().getDirection().setY(0);
+            if (dir.lengthSquared() < 1e-4) dir = new Vector(1, 0, 0);
+            dir.normalize();
+            double dist = plugin.getConfig().getDouble("weapons.sealed.dash-distance", 6);
+            p.setVelocity(dir.clone().multiply(Math.min(3.0, 0.42 * dist)).setY(0.2));
+            Msg.sound(p, "entity.player.attack.sweep", 1, 0.6f);
+            Msg.soundAt(p.getLocation(), "block.powder_snow.break", 1, 0.8f);
+            java.util.Set<UUID> hit = new java.util.HashSet<>();
+            for (int t = 0; t <= 8; t++) {
+                later(t, () -> {
+                    if (!p.isOnline()) return;
+                    Location at = p.getLocation();
+                    Fx.block(at.clone().add(0, 0.1, 0), Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 12, 0.4);
+                    Fx.p(at.clone().add(0, 0.6, 0), Particle.SNOWFLAKE, 6, 0.3, 0.02);
+                    for (LivingEntity tg : aoeTargets(p, at, 1.8)) {
+                        if (!hit.add(tg.getUniqueId())) continue;
+                        effect(tg, PotionEffectType.SLOWNESS, plugin.getConfig().getDouble("weapons.sealed.dash-slow-seconds", 2), 2);
+                        Fx.ring(tg.getLocation().add(0, 0.2, 0), 0.7, 16, ICE, 1.1f);
+                    }
+                });
+            }
+            later(9, () -> {
+                if (p.isOnline()) Fx.shockwave(p.getLocation().add(0, 0.1, 0), ICE, 2.5, 8);
+            });
+            Msg.send(p, "<gradient:#00DDFF:#FFFFFF><b>[❄ Sealed]</b></gradient> &7제왕의 진군을 사용했습니다.");
         } else if (n.contains(Items.N_ETERNAL_CHRONOS)) {
             if (chronosCd.getOrDefault(id, 0L) > now) {
                 Msg.send(p, "&c아직 사용 할 수 없습니다.");
@@ -1099,6 +1132,7 @@ public class WeaponModule extends Module {
                 effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             }
 
+            if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 제왕의 위엄
             if (tool.contains(Items.N_CHAOS) && inWorld(p, "nether")) effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
             if (helmet.contains(Items.N_ABYSS_HELMET)) effect(p, PotionEffectType.NIGHT_VISION, 15, 1);   // 15초: 깜빡임 없이 유지
 
@@ -1107,7 +1141,8 @@ public class WeaponModule extends Module {
             // 스킬 쿨타임 액션바: [이름] [진행 막대] 남은 시간 / 사용 가능
             String bar = null;
             if (tool.contains(Items.N_SEALED_SWORD)) {
-                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 제왕의 질주</b></gradient>", sealedCd, now, 45_000, "&b", "우클릭", 12);
+                bar = skill(p, "<gradient:#00DDFF:#FFFFFF><b>❄ 제왕의 진군</b></gradient>", sealedCd, now,
+                        (long) (plugin.getConfig().getDouble("weapons.sealed.dash-cooldown-seconds", 30) * 1000), "&b", "우클릭", 12);
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 long storm = sandStormUntil.getOrDefault(id, 0L) - now;
                 bar = storm > 0
