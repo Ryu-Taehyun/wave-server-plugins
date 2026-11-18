@@ -527,9 +527,10 @@ public final class Items {
     public static ItemStack chaosHelmet() {
         return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5)
                 .name("<gradient:#1F1F1F:#BCBCBC:#727272><italic:false><b>[Chaos] [Lv.✦] 종말의 투구</b></gradient>")
-                .lore(CHAOS_HEAD + "&8&l>> &7장착 시 <color:#D6D6D6>어둠</color>&7과 <color:#D6D6D6>실명</color>&7에 걸리지 않습니다%nl%"
+                .lore(CHAOS_HEAD + "&8&l>> &7방어구가 &f부서지지 않습니다%nl%"
                         + "&8&l>> &7공격받을 시 일정 확률로 공격자에게 <color:#D6D6D6>위더 I</color>&7를 부여합니다%nl%"
-                        + "&8&l>> &7체력이 &f40% 이하&7로 떨어지면 주변 적에게 <color:#D6D6D6>구속 II</color>&7 · <color:#D6D6D6>나약함 I</color>&7를 부여합니다 &8(쿨타임 1분)"
+                        + "&8&l>> &7장착 시 <color:#D6D6D6>나약함</color>&7과 <color:#D6D6D6>구속</color>&7에 걸리지 않습니다%nl%"
+                        + "&8&l>> &7체력이 &f30% 미만&7일 때 &e받는 데미지&7가 &f25%&7 감소합니다"
                         + SEASON_KEEP).build();
     }
 

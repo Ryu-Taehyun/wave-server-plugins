@@ -88,7 +88,6 @@ public class WeaponModule extends Module {
     private final Map<UUID, Long> sealedCd = new HashMap<>();
     private final Map<UUID, Long> chronosCd = new HashMap<>();
     private final Map<UUID, Long> chaosCd = new HashMap<>();
-    private final Map<UUID, Long> chaosHelmCd = new HashMap<>();
     /** 혹한의 연쇄 발동이 끝나는 시각 */
     private final Map<UUID, Long> chainBoostUntil = new HashMap<>();
     /** 연쇄 피해 중 (연쇄가 또 연쇄를 일으키지 않게) */
@@ -1040,45 +1039,36 @@ public class WeaponModule extends Module {
         return Msg.nameHas(p.getInventory().getHelmet(), Items.N_CHAOS_HELM);
     }
 
-    /** 어둠 · 실명 면역 */
+    /** 나약함 · 구속 면역 */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onChaosHelmImmune(org.bukkit.event.entity.EntityPotionEffectEvent e) {
         if (!(e.getEntity() instanceof Player p) || e.getNewEffect() == null) return;
         PotionEffectType t = e.getNewEffect().getType();
-        if ((t.equals(PotionEffectType.DARKNESS) || t.equals(PotionEffectType.BLINDNESS)) && chaosHelm(p)) e.setCancelled(true);
+        if ((t.equals(PotionEffectType.WEAKNESS) || t.equals(PotionEffectType.SLOWNESS)) && chaosHelm(p)) e.setCancelled(true);
     }
 
-    /** 공격받으면 확률로 공격자 위더 I, 체력 40% 아래로 떨어지는 순간 주변 적 구속 II · 나약함 I */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onChaosHelmHurt(org.bukkit.event.entity.EntityDamageEvent e) {
+    /** 체력 30% 미만이면 받는 피해 25% 감소 */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onChaosHelmReduce(org.bukkit.event.entity.EntityDamageEvent e) {
         if (probing || !(e.getEntity() instanceof Player p) || !chaosHelm(p)) return;
         var cfg = plugin.getConfig();
-        if (e instanceof EntityDamageByEntityEvent be) {
-            LivingEntity src = be.getDamager() instanceof LivingEntity le ? le
-                    : be.getDamager() instanceof Projectile pr && pr.getShooter() instanceof LivingEntity sh ? sh : null;
-            if (src != null && src != p && chance(cfg.getDouble("weapons.chaos-helmet.wither-chance", 0.15))) {
-                effect(src, PotionEffectType.WITHER, cfg.getDouble("weapons.chaos-helmet.wither-seconds", 3), 1);
-                Fx.p(src.getLocation().add(0, 1, 0), Particle.SQUID_INK, 10, 0.3, 0.03);
-                Fx.fade(src.getLocation().add(0, 1, 0), CHAOS_D, CHAOS_L, 1.1f, 10, 0.4);
-            }
-        }
-        double max = maxHealth(p), line = max * cfg.getDouble("weapons.chaos-helmet.low-health", 0.4);
-        double after = p.getHealth() - e.getFinalDamage();
-        if (after <= 0 || after > line || p.getHealth() <= line) return;   // 40% 선을 넘어 떨어질 때만
-        long now = System.currentTimeMillis();
-        if (now < chaosHelmCd.getOrDefault(p.getUniqueId(), 0L)) return;
-        chaosHelmCd.put(p.getUniqueId(), now + (long) (cfg.getDouble("weapons.chaos-helmet.cooldown-seconds", 60) * 1000));
-        Location c = p.getLocation();
-        double sec = cfg.getDouble("weapons.chaos-helmet.debuff-seconds", 3);
-        for (LivingEntity t : aoeTargets(p, c, cfg.getDouble("weapons.chaos-helmet.radius", 4))) {
-            effect(t, PotionEffectType.SLOWNESS, sec, 2);
-            effect(t, PotionEffectType.WEAKNESS, sec, 1);
-            Fx.p(t.getLocation().add(0, 1, 0), Particle.SMOKE, 12, 0.3, 0.02);
-        }
-        Fx.shockwave(c.clone().add(0, 0.1, 0), CHAOS_D, 4.0, 10);
-        Fx.implode(c.clone().add(0, 1, 0), CHAOS_L, 2.0, 8);
-        Msg.soundAt(c, "entity.warden.sonic_charge", 0.7f, 1.3f);
-        Msg.send(p, "<gradient:#1F1F1F:#BCBCBC><b>[Chaos]</b></gradient> &7종말의 투구가 주변을 짓누릅니다.");
+        if (p.getHealth() >= maxHealth(p) * cfg.getDouble("weapons.chaos-helmet.low-health", 0.3)) return;
+        e.setDamage(e.getDamage() * (1 - cfg.getDouble("weapons.chaos-helmet.low-health-reduction", 0.25)));
+        Fx.p(p.getLocation().add(0, 1, 0), Particle.SMOKE, 6, 0.3, 0.02);
+    }
+
+    /** 공격받으면 확률로 공격자 위더 I */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChaosHelmHurt(EntityDamageByEntityEvent e) {
+        if (probing || !(e.getEntity() instanceof Player p) || !chaosHelm(p)) return;
+        var cfg = plugin.getConfig();
+        LivingEntity src = e.getDamager() instanceof LivingEntity le ? le
+                : e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof LivingEntity sh ? sh : null;
+        if (src == null || src == p || !chance(cfg.getDouble("weapons.chaos-helmet.wither-chance", 0.15))) return;
+        effect(src, PotionEffectType.WITHER, cfg.getDouble("weapons.chaos-helmet.wither-seconds", 3), 1);
+        Fx.p(src.getLocation().add(0, 1, 0), Particle.SQUID_INK, 10, 0.3, 0.03);
+        Fx.fade(src.getLocation().add(0, 1, 0), CHAOS_D, CHAOS_L, 1.1f, 10, 0.4);
+        Msg.soundAt(src.getLocation(), "entity.wither.shoot", 0.4f, 1.6f);
     }
 
     /* ======================= 재앙의 서막 바지: 죽음 거부 ======================= */
@@ -1226,8 +1216,8 @@ public class WeaponModule extends Module {
             }
             if (chest.contains(Items.N_VOID_CHEST)) effect(p, PotionEffectType.STRENGTH, 1.5, 1);
             if (helmet.contains(Items.N_CHAOS_HELM)) {
-                p.removePotionEffect(PotionEffectType.DARKNESS);
-                p.removePotionEffect(PotionEffectType.BLINDNESS);
+                p.removePotionEffect(PotionEffectType.WEAKNESS);
+                p.removePotionEffect(PotionEffectType.SLOWNESS);
                 Fx.p(p.getLocation().add(0, 2.1, 0), Particle.SMOKE, 2, 0.2, 0.01);
             }
             if (helmet.contains(Items.N_RUSSELL)) effect(p, PotionEffectType.HASTE, 1.5, 3);
