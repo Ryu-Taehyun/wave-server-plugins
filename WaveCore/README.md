@@ -395,3 +395,4 @@ mvn package
 - 수치는 config `weapons.ruiner-pants` (fall-fire-multiplier, low-health, deny-death-chance)
 - 서리 균열을 남기면 액션바 오른쪽에 `│ 서리 균열 » 3초` 로 남은 시간이 따로 표시
 - 혼돈의 아포칼립스 · 심연의 공포 · 다크니스 웨이브 설명에서 [세트 : 혼돈의 아포칼립스] 칸 삭제
+- 혼돈의 아포칼립스 · 다크니스 웨이브 설명에서 스킬 이름(혼돈의 파열 / 어둠의 파동 / 심연의 장막) 문구 삭제
