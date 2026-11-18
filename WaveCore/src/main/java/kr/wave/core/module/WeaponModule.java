@@ -1022,6 +1022,19 @@ public class WeaponModule extends Module {
 
     /* ======================= 재앙의 서막 바지: 죽음 거부 ======================= */
 
+    /** 낙하 / 화염 피해 감소 (용암, 불, 불붙음, 마그마 블록, 모닥불 포함) */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onRuinerReduce(org.bukkit.event.entity.EntityDamageEvent e) {
+        if (probing || !(e.getEntity() instanceof Player p)) return;
+        if (!Msg.nameHas(p.getInventory().getLeggings(), Items.N_RUINER_PANTS)) return;
+        switch (e.getCause()) {
+            case FALL, FIRE, FIRE_TICK, LAVA, HOT_FLOOR, CAMPFIRE ->
+                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.ruiner-pants.fall-fire-multiplier", 0.5));
+            default -> {
+            }
+        }
+    }
+
     /** 치명상을 입으면 20% 확률로 버티고 체력 절반으로 돌아옴 (불사의 토템처럼, 토템은 쓰지 않음) */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onLethal(org.bukkit.event.entity.EntityDamageEvent e) {
@@ -1144,10 +1157,8 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_NATURE_BOOTS) && Items.ensureSeasonKeep(hand)) p.getInventory().setItemInMainHand(hand);
             boolean ruinerLegs = legs.contains(Items.N_RUINER_PANTS);
-            if (KNOCKBACK != null && p.getAttribute(KNOCKBACK) != null) {
-                double kb = ruinerLegs ? plugin.getConfig().getDouble("weapons.ruiner-pants.knockback-resistance", 0.5) : 0;
-                if (p.getAttribute(KNOCKBACK).getBaseValue() != kb) p.getAttribute(KNOCKBACK).setBaseValue(kb);
-            }
+            // 예전 버전의 넉백 저항(기본값 0.5)을 원래대로 되돌림
+            if (KNOCKBACK != null && p.getAttribute(KNOCKBACK) != null && p.getAttribute(KNOCKBACK).getBaseValue() == 0.5) p.getAttribute(KNOCKBACK).setBaseValue(0);
             if (ruinerLegs && p.getHealth() <= maxHealth(p) * plugin.getConfig().getDouble("weapons.ruiner-pants.low-health", 0.3)) {
                 effect(p, PotionEffectType.STRENGTH, 1.5, 2);
                 effect(p, PotionEffectType.SPEED, 1.5, 1);
