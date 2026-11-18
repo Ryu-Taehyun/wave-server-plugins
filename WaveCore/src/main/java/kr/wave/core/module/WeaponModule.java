@@ -1161,7 +1161,6 @@ public class WeaponModule extends Module {
             if (KNOCKBACK != null && p.getAttribute(KNOCKBACK) != null && p.getAttribute(KNOCKBACK).getBaseValue() == 0.5) p.getAttribute(KNOCKBACK).setBaseValue(0);
             if (ruinerLegs && p.getHealth() <= maxHealth(p) * plugin.getConfig().getDouble("weapons.ruiner-pants.low-health", 0.3)) {
                 effect(p, PotionEffectType.STRENGTH, 1.5, 2);
-                effect(p, PotionEffectType.SPEED, 1.5, 1);
                 Fx.p(p.getLocation().add(0, 1, 0), Particle.DAMAGE_INDICATOR, 2, 0.3, 0.02);
             }
             if (chest.contains(Items.N_VOID_CHEST)) effect(p, PotionEffectType.STRENGTH, 1.5, 1);

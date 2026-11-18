@@ -492,7 +492,7 @@ public final class Items {
     public static ItemStack ruinerPants() {
         return It.of(Material.NETHERITE_LEGGINGS).unbreakable().ench(Enchantment.PROTECTION, 6)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 재앙의 서막 바지</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &e낙하 피해&7와 &e화염 피해&7가 &f50%&7 감소합니다%nl%&8&l>> &7체력이 &f30% 이하&7일 때 &a힘 II&7 + &a신속 I&7이 부여됩니다%nl%&8&l>> &f20%&7 확률로 &e죽음을 거부&7하고 체력의 &a절반&7으로 되돌아옵니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7방어구가 &f부서지지 않습니다%nl%&8&l>> &7장착 시 &e낙하 피해&7와 &e화염 피해&7가 &f50%&7 감소합니다%nl%&8&l>> &7체력이 &f30% 이하&7일 때 &a힘 II&7가 부여됩니다%nl%&8&l>> &7일정 확률로 &e죽음을 거부&7하고 체력의 &a절반&7으로 되돌아옵니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack sealedWings() {
