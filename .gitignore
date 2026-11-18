@@ -13,7 +13,9 @@ secrets.yml
 .env
 .env.*
 
-# 서버 데이터 (플레이어 정보, 저장 파일)
+# 서버 데이터 (플레이어 정보, 팀/밴/창고 저장 파일)
+global.yml
+players/
 data/
 playerdata/
 *.db
