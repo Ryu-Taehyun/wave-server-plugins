@@ -69,12 +69,10 @@ weapons:
   sealed:
     crit-chance: 0.20              # 타격 시 데미지 배율이 붙을 확률
     crit-multiplier: 1.3           # 그때 데미지 배율
-    chain-chance: 0.20             # 타격 시 냉기가 튈 확률
     chain-damage: 2.0              # 튈 때마다 피해 (2 = 하트 1칸)
     chain-radius: 4                # 다음 대상을 찾는 거리 (칸)
-    chain-max: 3                   # 평소 최대 연쇄 수
-    boost-seconds: 6               # 우클릭 혹한의 연쇄 지속 시간 (이 동안 100% 연쇄)
-    boost-max: 5                   # 혹한의 연쇄 중 최대 연쇄 수
+    boost-seconds: 6               # 우클릭 혹한의 연쇄 지속 시간 (이 동안 타격하면 냉기가 튐)
+    boost-max: 5                   # 한 번 타격에 냉기가 이어지는 최대 인원
     boost-cooldown-seconds: 40
   # 다크니스 웨이브 2번 스킬 (어둠의 장막)
   darkness-wave:

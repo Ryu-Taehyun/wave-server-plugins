@@ -338,9 +338,9 @@ public class WeaponModule extends Module {
                     Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
                     Msg.soundAt(mid, "block.glass.break", 0.8f, 1.6f);
                 }
-                boolean boost = chainBoostUntil.getOrDefault(attacker.getUniqueId(), 0L) > nowMs;
-                if (boost || chance(plugin.getConfig().getDouble("weapons.sealed.chain-chance", 0.20))) {
-                    chainFrost(attacker, victim, boost ? plugin.getConfig().getInt("weapons.sealed.boost-max", 5) : plugin.getConfig().getInt("weapons.sealed.chain-max", 3));
+                // 냉기 연쇄: 우클릭 혹한의 연쇄 발동 중에만
+                if (chainBoostUntil.getOrDefault(attacker.getUniqueId(), 0L) > nowMs) {
+                    chainFrost(attacker, victim, plugin.getConfig().getInt("weapons.sealed.boost-max", 5));
                 }
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
