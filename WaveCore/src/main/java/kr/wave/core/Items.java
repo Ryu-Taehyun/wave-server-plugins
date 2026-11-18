@@ -339,9 +339,7 @@ public final class Items {
     /** 망령 수확자 설명: 각성 단계 달성 표시, 다음 단계까지 진행 막대 */
     public static String soulSplitterLore(int kills) {
         StringBuilder b = new StringBuilder("%nl%&7등급 : &dEpic%nl%%nl%")
-                .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[Lv.Harvest 특성]</gradient></b>%nl%")
-                .append("&8&l>> &7플레이어나 몬스터를 처치할 때마다 망령을 거두어 칼날에 깃듭니다%nl%")
-                .append("&8&l>> &7망령이 쌓이면 칼날이 각성합니다%nl%%nl%")
+                .append("&7플레이어나 몬스터를 처치할 때마다 망령을 거두어 칼날이 각성합니다.%nl%%nl%")
                 .append("<b><gradient:#8A5CFF:#5FFBF1><italic:false>[각성]</gradient></b>%nl%");
         for (int i = 0; i < SOUL_STEPS.length; i++) {
             boolean done = kills >= SOUL_STEPS[i];
