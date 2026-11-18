@@ -384,10 +384,9 @@ mvn package
 
 ## 얼어붙은 제왕의 검 리빌딩
 - 제왕의 위엄 (패시브): 들고 있으면 저항 I (예전 타격 시 무작위 버프 삭제)
-- 빙결: 타격 시 20% 확률로 대상이 1초간 얼어붙음 (이동·점프 불가, 얼음 테두리)
-- 얼음 깨뜨리기: 얼어붙은 대상을 때리면 1.25배 피해 + 빙결 해제 (예전 20% 확률 1.3배를 대체)
+- 서리 균열: 타격 시 20% 확률로 4초 동안 대상이 받는 피해 15% 증가 (움직임은 막지 않음, 예전 빙결/1.3배 확률을 대체)
 - 제왕의 진군 (우클릭, 쿨타임 30초): 바라보는 방향으로 6칸 돌진, 지나간 길에 얼음 자국, 경로의 적 구속 II 2초 (예전 신속 IV 7초 대체)
-- 수치는 config `weapons.sealed` (freeze-chance, freeze-seconds, shatter-multiplier, dash-distance, dash-slow-seconds, dash-cooldown-seconds)
+- 수치는 config `weapons.sealed` (crack-chance, crack-seconds, crack-damage-taken, dash-distance, dash-slow-seconds, dash-cooldown-seconds)
 - 얼어붙은 제왕의 검 설명에서 "제왕의 위엄", "제왕의 진군" 문구 삭제 (액션바는 `❄ 돌진`)
 
 ## 재앙의 서막 바지 리워크

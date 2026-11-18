@@ -67,9 +67,9 @@ weapons:
     cooldown-ms: 0
   # 얼어붙은 제왕의 검
   sealed:
-    freeze-chance: 0.20            # 타격 시 빙결 확률
-    freeze-seconds: 1.0            # 빙결 시간 (이동·점프 불가)
-    shatter-multiplier: 1.25       # 얼어붙은 대상 타격 시 피해 배율
+    crack-chance: 0.20             # 타격 시 서리 균열 확률
+    crack-seconds: 4               # 서리 균열 유지 시간
+    crack-damage-taken: 1.15       # 서리 균열이 생긴 대상이 받는 피해 배율
     dash-distance: 6               # 제왕의 진군 돌진 거리 (칸)
     dash-slow-seconds: 2           # 경로의 적 구속 II 시간
     dash-cooldown-seconds: 30

@@ -88,8 +88,8 @@ public class WeaponModule extends Module {
     private final Map<UUID, Long> sealedCd = new HashMap<>();
     private final Map<UUID, Long> chronosCd = new HashMap<>();
     private final Map<UUID, Long> chaosCd = new HashMap<>();
-    /** 얼어붙은 제왕의 검 빙결: 대상 -> 풀리는 시각 */
-    private final Map<UUID, Long> frozenUntil = new HashMap<>();
+    /** 얼어붙은 제왕의 검 서리 균열: 대상 -> 사라지는 시각 */
+    private final Map<UUID, Long> crackedUntil = new HashMap<>();
     private final Map<UUID, Long> waveCd1 = new HashMap<>();
     private final Map<UUID, Long> waveCd2 = new HashMap<>();
     /** 범위 스킬 대상 확인용 가짜 피해 이벤트 중에는 무기 효과를 건너뜀 */
@@ -275,6 +275,8 @@ public class WeaponModule extends Module {
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
         Location vl = victim.getLocation();
+        // 서리 균열이 생긴 대상 (이번 타격 전부터)
+        boolean cracked = crackedUntil.getOrDefault(victim.getUniqueId(), 0L) > System.currentTimeMillis();
 
         if (attacker != null) {
             String tool = Msg.name(attacker.getInventory().getItemInMainHand());
@@ -326,34 +328,18 @@ public class WeaponModule extends Module {
                 Fx.p(mid, Particle.ENCHANT, 30, 0.5, 0.6);
                 Msg.soundAt(mid, "block.amethyst_block.resonate", 1, 1.6f);
             }
-            if (tool.contains(Items.N_SEALED_SWORD)) {
-                Location mid = vl.clone().add(0, 1, 0);
+            if (tool.contains(Items.N_SEALED_SWORD) && !cracked
+                    && chance(plugin.getConfig().getDouble("weapons.sealed.crack-chance", 0.20))) {
+                // 서리 균열: 일정 시간 받는 피해 증가 (움직임은 막지 않음)
                 long nowMs = System.currentTimeMillis();
-                if (frozenUntil.getOrDefault(victim.getUniqueId(), 0L) > nowMs) {
-                    // 얼음 깨뜨리기: 얼어붙은 대상에게 1.3배, 빙결 해제
-                    frozenUntil.remove(victim.getUniqueId());
-                    e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.shatter-multiplier", 1.25));
-                    victim.removePotionEffect(PotionEffectType.SLOWNESS);
-                    victim.removePotionEffect(PotionEffectType.JUMP_BOOST);
-                    victim.setFreezeTicks(0);
-                    Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 50, 0.4);
-                    Fx.burst(mid, Particle.SNOWFLAKE, 40, 0.18);
-                    Fx.ring(vl.clone().add(0, 0.1, 0), 1.3, 30, ICE, 1.4f);
-                    Msg.soundAt(mid, "block.glass.break", 1, 0.9f);
-                    Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 얼음 깨뜨리기!</b></gradient>");
-                } else if (chance(plugin.getConfig().getDouble("weapons.sealed.freeze-chance", 0.20))) {
-                    // 빙결: 1초간 이동·점프 불가 + 얼음 테두리
-                    double sec = plugin.getConfig().getDouble("weapons.sealed.freeze-seconds", 1.0);
-                    if (frozenUntil.size() > 300) frozenUntil.values().removeIf(t -> t < nowMs);
-                    frozenUntil.put(victim.getUniqueId(), nowMs + (long) (sec * 1000) + 250);
-                    effect(victim, PotionEffectType.SLOWNESS, sec, 7);
-                    effect(victim, PotionEffectType.JUMP_BOOST, sec, 129);   // 음수 점프 강화 = 점프 불가
-                    victim.setFreezeTicks(Math.max(0, victim.getMaxFreezeTicks() - 1));   // 얼음 테두리 (동상 피해는 없음)
-                    Fx.sphere(mid, 0.9, 30, ICE_L, 0.9f);
-                    Fx.block(vl.clone().add(0, 0.5, 0), Particle.BLOCK, Material.ICE.createBlockData(), 30, 0.35);
-                    Msg.soundAt(mid, "block.glass.place", 1, 0.6f);
-                    Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 빙결</b></gradient> &7- 다음 타격에 얼음이 깨집니다");
-                }
+                if (crackedUntil.size() > 300) crackedUntil.values().removeIf(t -> t < nowMs);
+                crackedUntil.put(victim.getUniqueId(), nowMs + (long) (plugin.getConfig().getDouble("weapons.sealed.crack-seconds", 4) * 1000));
+                Location mid = vl.clone().add(0, 1, 0);
+                Fx.block(mid, Particle.BLOCK, Material.PACKED_ICE.createBlockData(), 40, 0.4);
+                Fx.burst(mid, Particle.SNOWFLAKE, 30, 0.15);
+                Fx.ring(vl.clone().add(0, 0.1, 0), 1.2, 28, ICE, 1.4f);
+                Msg.soundAt(mid, "block.glass.break", 0.9f, 1.4f);
+                Msg.actionBar(attacker, "<gradient:#00DDFF:#FFFFFF><b>❄ 서리 균열</b></gradient> &7- 대상이 받는 피해 증가");
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
@@ -481,6 +467,12 @@ public class WeaponModule extends Module {
                     Fx.ring(mid, 1.4, 30, VOID_C, 1.2f);
                 });
             }
+        }
+
+        // 서리 균열: 받는 피해 증가
+        if (cracked) {
+            e.setDamage(e.getDamage() * plugin.getConfig().getDouble("weapons.sealed.crack-damage-taken", 1.15));
+            Fx.block(vl.clone().add(0, 1, 0), Particle.BLOCK, Material.ICE.createBlockData(), 10, 0.3);
         }
 
         // 피격자 장비
@@ -1133,6 +1125,14 @@ public class WeaponModule extends Module {
         double frostBonus = plugin.getConfig().getDouble("health.frost-bonus", legacy);
         float fastWalk = (float) plugin.getConfig().getDouble("health.claymore-walk-speed", 0.24);
 
+        crackedUntil.entrySet().removeIf(en -> {
+            if (en.getValue() < now) return true;
+            org.bukkit.entity.Entity ent = Bukkit.getEntity(en.getKey());
+            if (ent == null || ent.isDead()) return true;
+            Fx.ring(ent.getLocation().add(0, 1.1, 0), 0.6, 10, ICE_L, 0.9f);
+            Fx.block(ent.getLocation().add(0, 1, 0), Particle.BLOCK, Material.ICE.createBlockData(), 4, 0.3);
+            return false;
+        });
         for (Player p : Bukkit.getOnlinePlayers()) {
             UUID id = p.getUniqueId();
             ItemStack hand = p.getInventory().getItemInMainHand();
