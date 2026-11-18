@@ -307,8 +307,8 @@ mvn package
 - 채팅/킬 알림 이름 정보에 팀 역할 표시
 
 ## 무기 상점 (`/combatshop`)
-- 특수 무기: 망령 수확자 85,000 · Time piecer Wind 62,500 · 잿불 낙인검 70,000 · 그림자 송곳(보조 무기) 40,000
-- 전투 장비 (인챈트 없음): 다이아몬드 검 4,500 · 네더라이트 검 22,000 · 활 1,500 · 쇠뇌 2,000 · 방패 1,250
+- 특수 무기: 망령 수확자 85,000 · Time piecer Wind 62,500 · 잿불 낙인검 70,000 · Umbral Chain(보조 무기) 55,000 · Echo Bell(보조 무기) 50,000
+- 전투 장비 (인챈트 없음): 철 도끼 2,500 · 낚싯대 800 · 활 1,500 · 쇠뇌 2,000 · 방패 1,250
 - 소모품: 불사의 토템 4,000 · 화살 32 200 · 분광 화살 32 350 · 경험치 병 48 1,250 · 엔더 진주 8 1,000 · 폭죽 로켓 32 700 · 돌풍구 16 1,600
 
 ## 망령 수확자 (예전 Soul Splitter 를 완전히 바꿈)
@@ -327,8 +327,14 @@ mvn package
 - 낙인 3개 → 낙인 폭발: 추가 피해 2칸 + 화염 3초 + 불꽃 폭발 연출
 - 수치는 config `weapons.ember` (window-seconds, min-interval-ms, burst-damage, fire-seconds)
 
-## 그림자 송곳 (`[Shade] [Lv.✧] 그림자 송곳`, 보조 무기, 무기 상점 40,000 캐시)
-- 철 검, 인챈트 없음 (빛나는 효과만), 등급 Epic · 보조 무기, 푸른 회색 → 흰색
-- **왼손(보조 손)에 들었을 때만** 발동: 주 무기로 근접 적중 시 20% 확률로 그림자 찌르기
-  - 추가 피해 1.5칸 + 구속 I 1초, 대상 등 뒤에서 찔러 들어오는 잔상 연출, 재사용 1초
-- 수치는 config `weapons.shade` (chance, damage, slow-seconds, cooldown-ms)
+## Umbral Chain (`[✦] Umbral Chain`, 보조 무기, 무기 상점 55,000 캐시)
+- Time piecer Wind 와 같은 포지션의 보조 무기: 같은 이름/설명 양식, 등급 Epic, 쇠사슬 아이템 (서버 버전에 맞춰 IRON_CHAIN / CHAIN)
+- 들고 때리면 27.5% 확률로 그림자 사슬: 대상을 공격자 쪽으로 끌어당기고 1.5초 묶음 (구속 III)
+  - Time piecer Wind 는 하늘로 띄웠다 내리꽂고, Umbral Chain 은 끌어당겨 묶는 반대 역할
+- 수치는 config `weapons.shade` (chance, pull-strength, bind-seconds, slow-level, cooldown-ms)
+
+## Echo Bell (`[✦] Echo Bell`, 보조 무기, 무기 상점 50,000 캐시)
+- Time piecer Wind / Umbral Chain 과 같은 보조 무기 양식, 등급 Epic, 종 아이템, 금색 → 보라
+- 들고 때리면 27.5% 확률로 메아리 종: 대상에게 어둠 2.5초 + 멀미 4초, 공격자 반대쪽으로 밀쳐냄
+- 종소리 + 금빛/보라 고리가 세 번 퍼지는 연출
+- 수치는 config `weapons.bell` (chance, darkness-seconds, nausea-seconds, knockback, cooldown-ms)

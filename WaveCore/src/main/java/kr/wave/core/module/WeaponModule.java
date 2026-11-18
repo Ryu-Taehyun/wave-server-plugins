@@ -416,8 +416,10 @@ public class WeaponModule extends Module {
                 }
             }
             if (tool.contains(Items.N_EMBER)) ember(attacker, victim, e);
-            if (Msg.nameHas(attacker.getInventory().getItemInOffHand(), Items.N_SHADE) && e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK)
-                shade(attacker, victim, e);
+            if (tool.contains(Items.N_SHADE) && e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK)
+                shade(attacker, victim);
+            if (tool.contains(Items.N_BELL) && e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK)
+                bell(attacker, victim);
             if (tool.contains(Items.N_TIME_WIND) && chance(0.275)) {
                 for (Player near : victim.getWorld().getPlayers()) {
                     if (near.getLocation().distanceSquared(vl) <= 100) near.playSound(vl, "entity.wither.shoot", 1, 1);
@@ -593,30 +595,82 @@ public class WeaponModule extends Module {
         if (brands.size() > 500) brands.values().removeIf(x -> now - x[1] > window);
     }
 
-    /* ======================= 그림자 송곳 (보조 무기) ======================= */
+    /* ======================= Echo Bell (보조 무기) ======================= */
+
+    private final java.util.Map<UUID, Long> bellCd = new java.util.HashMap<>();
+    private static final org.bukkit.Color BELL = Fx.rgb(0xFFD86B), BELL_V = Fx.rgb(0x8A6BFF);
+
+    /** 메아리 종: 대상에게 어둠 + 멀미, 공격자 반대쪽으로 밀쳐냄 */
+    private void bell(Player attacker, LivingEntity victim) {
+        long now = System.currentTimeMillis();
+        Long last = bellCd.get(attacker.getUniqueId());
+        if (last != null && now - last < plugin.getConfig().getLong("weapons.bell.cooldown-ms", 0)) return;
+        if (!chance(plugin.getConfig().getDouble("weapons.bell.chance", 0.275))) return;
+        bellCd.put(attacker.getUniqueId(), now);
+        Location vl = victim.getLocation();
+        for (Player near : victim.getWorld().getPlayers()) {
+            if (near.getLocation().distanceSquared(vl) <= 100) {
+                near.playSound(vl, "block.bell.use", 1, 0.8f);
+                near.playSound(vl, "block.bell.resonate", 0.7f, 1.2f);
+            }
+        }
+        effect(victim, PotionEffectType.DARKNESS, plugin.getConfig().getDouble("weapons.bell.darkness-seconds", 2.5), 1);
+        effect(victim, PotionEffectType.NAUSEA, plugin.getConfig().getDouble("weapons.bell.nausea-seconds", 4), 1);
+        Vector push = vl.toVector().subtract(attacker.getLocation().toVector()).setY(0);
+        if (push.lengthSquared() < 1e-4) push = attacker.getLocation().getDirection().setY(0);
+        if (push.lengthSquared() > 1e-4) victim.setVelocity(push.normalize().multiply(plugin.getConfig().getDouble("weapons.bell.knockback", 0.9)).setY(0.3));
+        // 메아리: 금빛 → 보라 고리가 세 번 퍼짐
+        Location mid = vl.clone().add(0, 1, 0);
+        Fx.p(mid, Particle.NOTE, 8, 0.5, 1);
+        for (int i = 0; i < 3; i++) {
+            final int k = i;
+            later(i * 4L, () -> {
+                Fx.ring(vl.clone().add(0, 0.2 + k * 0.6, 0), 0.8 + k * 0.6, 20 + k * 8, k % 2 == 0 ? BELL : BELL_V, 1.2f);
+                Fx.p(mid, Particle.SCULK_CHARGE_POP, 6, 0.4 + k * 0.2, 0.01);
+            });
+        }
+    }
+
+    /* ======================= Umbral Chain (보조 무기) ======================= */
 
     private final java.util.Map<UUID, Long> shadeCd = new java.util.HashMap<>();
     private static final org.bukkit.Color SHADE = Fx.rgb(0x4A6FA5), SHADE_L = Fx.rgb(0xE8F1F8);
 
-    private void shade(Player attacker, LivingEntity victim, EntityDamageByEntityEvent e) {
+    /** 그림자 사슬: 대상을 공격자 쪽으로 끌어당기고 잠시 묶음 (Time piecer Wind 는 띄워 올림, 이건 끌어당김) */
+    private void shade(Player attacker, LivingEntity victim) {
         long now = System.currentTimeMillis();
         Long last = shadeCd.get(attacker.getUniqueId());
-        if (last != null && now - last < plugin.getConfig().getLong("weapons.shade.cooldown-ms", 1000)) return;
-        if (!chance(plugin.getConfig().getDouble("weapons.shade.chance", 0.20))) return;
+        if (last != null && now - last < plugin.getConfig().getLong("weapons.shade.cooldown-ms", 0)) return;
+        if (!chance(plugin.getConfig().getDouble("weapons.shade.chance", 0.275))) return;
         shadeCd.put(attacker.getUniqueId(), now);
-        e.setDamage(e.getDamage() + plugin.getConfig().getDouble("weapons.shade.damage", 3.0));
-        effect(victim, PotionEffectType.SLOWNESS, plugin.getConfig().getDouble("weapons.shade.slow-seconds", 1), 1);
-        // 그림자 찌르기: 대상 등 뒤에서 푸른 잔상이 찔러 들어옴
-        Location mid = victim.getLocation().add(0, 1, 0);
-        Vector dir = victim.getLocation().getDirection().setY(0);
-        if (dir.lengthSquared() < 1e-4) dir = new Vector(1, 0, 0);
-        Location behind = mid.clone().subtract(dir.normalize().multiply(1.2));
-        Fx.line(behind, mid, SHADE, 1.1f, 0.15);
-        Fx.p(mid, Particle.SQUID_INK, 10, 0.25, 0.02);
-        Fx.p(mid, Particle.CRIT, 14, 0.3, 0.1);
-        Fx.fade(mid, SHADE, SHADE_L, 1.0f, 14, 0.4);
-        Msg.soundAt(mid, "item.trident.hit", 0.7f, 1.6f);
-        Msg.actionBar(attacker, "<gradient:#4A6FA5:#E8F1F8><b>✧ 그림자 찌르기</b></gradient>");
+        Location from = victim.getLocation().add(0, 1, 0), to = attacker.getLocation().add(0, 1, 0);
+        for (Player near : victim.getWorld().getPlayers()) {
+            if (near.getLocation().distanceSquared(from) <= 100) near.playSound(from, "block.chain.break", 1, 0.6f);
+        }
+        // 사슬이 날아가 감김: 공격자 → 대상 사슬 선 + 대상 주위 고리
+        Fx.line(to, from, SHADE, 1.0f, 0.2);
+        Fx.ring(victim.getLocation().add(0, 0.6, 0), 0.7, 18, SHADE, 1.1f);
+        Fx.ring(victim.getLocation().add(0, 1.3, 0), 0.7, 18, SHADE_L, 1.0f);
+        Fx.p(from, Particle.SQUID_INK, 14, 0.3, 0.02);
+        Msg.soundAt(from, "item.trident.return", 0.8f, 0.7f);
+        // 끌어당김
+        later(4, () -> {
+            if (victim.isDead() || !attacker.isOnline()) return;
+            Vector pull = attacker.getLocation().toVector().subtract(victim.getLocation().toVector());
+            double dist = pull.length();
+            if (dist < 0.5) return;
+            double power = plugin.getConfig().getDouble("weapons.shade.pull-strength", 1.1);
+            victim.setVelocity(pull.normalize().multiply(Math.min(power, 0.25 + dist * 0.18)).setY(0.35));
+            Fx.line(attacker.getLocation().add(0, 1, 0), victim.getLocation().add(0, 1, 0), SHADE_L, 0.8f, 0.25);
+            Msg.soundAt(victim.getLocation(), "block.chain.place", 1, 0.8f);
+        });
+        // 묶임: 구속 + 점프 차단
+        double bind = plugin.getConfig().getDouble("weapons.shade.bind-seconds", 1.5);
+        effect(victim, PotionEffectType.SLOWNESS, bind, plugin.getConfig().getInt("weapons.shade.slow-level", 3));
+        later(6, () -> {
+            if (victim.isDead()) return;
+            Fx.fade(victim.getLocation().add(0, 1, 0), SHADE, SHADE_L, 1.0f, 16, 0.5);
+        });
     }
 
     /** 크로노스: 모래색 시계 고리 (눈금 12개) */

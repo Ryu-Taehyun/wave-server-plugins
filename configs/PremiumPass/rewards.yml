@@ -8,83 +8,83 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 16
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:torch
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 16
         schema_version: 1
-        count: 2
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 2
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '2':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:torch
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '3':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '4':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:oak_log
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '5':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 2
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -93,61 +93,61 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '7':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 4
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '8':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:cooked_beef
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '9':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:torch
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '10':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 2
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
       commands:
       - cashgive %player% 5000
       command-lore:
@@ -155,15 +155,15 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 5
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 5
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - 상자 give %player% combat 1
       command-lore:
@@ -172,77 +172,75 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:oak_log
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '12':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 32
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:string
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '13':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '14':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '15':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            efficiency: 4
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:efficiency":4}'
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -251,81 +249,78 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:torch
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '17':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 4
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '18':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:oak_log
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '19':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 32
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:string
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '20':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 2
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: TILE_ENTITY
-          blockMaterial: SHULKER_BOX
-        count: 1
+        DataVersion: 4671
         id: minecraft:shulker_box
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 3
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 3
+        schema_version: 1
       commands:
       - 상자 give %player% enderpearl 2
       command-lore:
@@ -334,56 +329,56 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '22':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:cooked_beef
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '23':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 64
+        DataVersion: 4671
         id: minecraft:torch
-        DataVersion: 1
+        count: 64
+        schema_version: 1
   '24':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '25':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
       commands:
       - 상자 give %player% enderpearl 1
       command-lore:
@@ -391,15 +386,15 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 2
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -408,56 +403,56 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:golden_carrot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '27':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 4
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 10
+        DataVersion: 4671
         id: minecraft:obsidian
-        DataVersion: 1
+        count: 10
+        schema_version: 1
   '28':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '29':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:gold_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
   '30':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 3
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -465,19 +460,17 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            mending: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:mending":1}'
         schema_version: 1
-        count: 32
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 32
+        schema_version: 1
       commands:
       - wave boss ticket %player% 1
       command-lore:
@@ -486,72 +479,70 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:redstone
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '32':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '33':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:golden_carrot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '34':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 10
+        DataVersion: 4671
         id: minecraft:obsidian
-        DataVersion: 1
+        count: 10
+        schema_version: 1
   '35':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            efficiency: 4
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:efficiency":4}'
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -560,73 +551,73 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:gold_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
   '37':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:lapis_lazuli
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '38':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:redstone
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '39':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 32
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '40':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 3
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:totem_of_undying
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 8
+        schema_version: 1
       commands:
       - 상자 give %player% Sealedp 1
       command-lore:
@@ -635,68 +626,68 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 10
+        DataVersion: 4671
         id: minecraft:obsidian
-        DataVersion: 1
+        count: 10
+        schema_version: 1
   '42':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '43':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:gold_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
   '44':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:lapis_lazuli
-        DataVersion: 1
+        count: 32
+        schema_version: 1
   '45':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 2
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
       commands:
       - cashgive %player% 10000
       command-lore:
@@ -705,61 +696,61 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '47':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:golden_carrot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '48':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 10
+        DataVersion: 4671
         id: minecraft:obsidian
-        DataVersion: 1
+        count: 10
+        schema_version: 1
   '49':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 32
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '50':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 4
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:ender_pearl
-        DataVersion: 1
+        count: 8
+        schema_version: 1
       commands:
       - 상자 give %player% combat 1
       command-lore:
@@ -767,15 +758,15 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:netherite_scrap
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 2
         schema_version: 1
-        count: 10
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 10
+        schema_version: 1
       commands:
       - 상자 give %player% TheEchoesOfNatural 1
       - cashgive %player% 30000
@@ -786,72 +777,70 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '52':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '53':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '54':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '55':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            efficiency: 5
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:efficiency":5}'
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - cashgive %player% 15000
       command-lore:
@@ -860,84 +849,77 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '57':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 8
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:emerald
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '58':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '59':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 32
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 32
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '60':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            unbreaking: 3
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:unbreaking":3}'
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            fortune: 3
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: TILE_ENTITY
-          blockMaterial: SHULKER_BOX
         count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:fortune":3}'
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:shulker_box
-        DataVersion: 1
+        count: 1
+        schema_version: 1
       commands:
       - 상자 give %player% TheRuiner 1
       command-lore:
@@ -946,73 +928,73 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '62':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:ender_pearl
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '63':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '64':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:emerald
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '65':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 4
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 4
+        schema_version: 1
       commands:
       - cashgive %player% 15000
       command-lore:
@@ -1021,56 +1003,56 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '67':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '68':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '69':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 48
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 48
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:ender_pearl
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '70':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 5
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 5
+        schema_version: 1
       commands:
       - cashgive %player% 20000
       command-lore:
@@ -1078,15 +1060,15 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:netherite_upgrade_smithing_template
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 8
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 8
+        schema_version: 1
       commands:
       - wave boss ticket %player% 2
       command-lore:
@@ -1095,56 +1077,56 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:emerald
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '72':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 16
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
   '73':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '74':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '75':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
       commands:
       - 상자 give %player% enderpearl 2
       command-lore:
@@ -1152,19 +1134,17 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            efficiency: 5
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:efficiency":5}'
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - cashgive %player% 15000
       command-lore:
@@ -1173,81 +1153,78 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: FIREWORK
-          effects: []
-        count: 32
+        DataVersion: 4671
         id: minecraft:firework_rocket
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 32
         schema_version: 1
-        count: 4
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '77':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '78':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '79':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 48
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 48
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '80':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 5
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 5
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_golden_apple
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 4
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:netherite_scrap
-        DataVersion: 1
+        count: 4
+        schema_version: 1
       commands:
       - 상자 give %player% TheEchoesOfNatural 2
       command-lore:
@@ -1256,81 +1233,78 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:blaze_rod
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 8
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:ender_pearl
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '82':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '83':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: FIREWORK
-          effects: []
-        count: 32
+        DataVersion: 4671
         id: minecraft:firework_rocket
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 32
         schema_version: 1
-        count: 4
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '84':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '85':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 4
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 4
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 4
+        schema_version: 1
       commands:
       - cashgive %player% 15000
       command-lore:
@@ -1339,66 +1313,66 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '87':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:emerald_block
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '88':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:blaze_rod
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 8
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:ender_pearl
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '89':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 48
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 48
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '90':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 6
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 6
         schema_version: 1
-        count: 24
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
       commands:
       - cashgive %player% 25000
       command-lore:
@@ -1406,18 +1380,15 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: TILE_ENTITY
-          blockMaterial: BEACON
-        count: 1
+        DataVersion: 4671
         id: minecraft:beacon
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 64
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 64
+        schema_version: 1
       commands:
       - 상자 give %player% Sealedp 1
       - 상자 give %player% TheRuiner 1
@@ -1428,72 +1399,70 @@ levels:
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:bread
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '92':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '93':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:coal
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
   '94':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:emerald_block
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '95':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 24
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 24
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: ENCHANTED
-          stored-enchantments:
-            efficiency: 5
-        count: 1
+        DataVersion: 4671
         id: minecraft:enchanted_book
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
+        components:
+          minecraft:stored_enchantments: '{"minecraft:efficiency":5}'
         schema_version: 1
-        count: 16
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:experience_bottle
-        DataVersion: 1
+        count: 16
+        schema_version: 1
       commands:
       - cashgive %player% 15000
       command-lore:
@@ -1502,74 +1471,71 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 3
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 3
+        schema_version: 1
   '97':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 12
+        DataVersion: 4671
         id: minecraft:iron_ingot
-        DataVersion: 1
+        count: 12
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        components:
-          meta-type: FIREWORK
-          effects: []
-        count: 32
+        DataVersion: 4671
         id: minecraft:firework_rocket
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 32
         schema_version: 1
-        count: 4
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:gold_block
-        DataVersion: 1
+        count: 4
+        schema_version: 1
   '98':
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 2
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
+        count: 2
+        schema_version: 1
   '99':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 48
+        DataVersion: 4671
         id: minecraft:arrow
-        DataVersion: 1
+        count: 48
+        schema_version: 1
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:iron_block
-        DataVersion: 1
+        count: 8
+        schema_version: 1
   '100':
     free:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 8
+        DataVersion: 4671
         id: minecraft:diamond
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 8
         schema_version: 1
-        count: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:totem_of_undying
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 4
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:golden_apple
-        DataVersion: 1
+        count: 4
+        schema_version: 1
       commands:
       - cashgive %player% 50000
       - 상자 give %player% TheEchoesOfNatural 1
@@ -1579,25 +1545,25 @@ levels:
     premium:
       items:
       - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
-        count: 1
+        DataVersion: 4671
         id: minecraft:elytra
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
+        count: 1
         schema_version: 1
-        count: 2
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:netherite_ingot
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 2
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:totem_of_undying
-        DataVersion: 1
-      - ==: org.bukkit.inventory.ItemStack
-        schema_version: 1
         count: 2
+        schema_version: 1
+      - ==: org.bukkit.inventory.ItemStack
+        DataVersion: 4671
         id: minecraft:enchanted_golden_apple
-        DataVersion: 1
+        count: 2
+        schema_version: 1
       commands:
       - cashgive %player% 100000
       - 상자 give %player% TheEchoesOfNatural 3

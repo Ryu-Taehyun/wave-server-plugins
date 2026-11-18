@@ -459,13 +459,17 @@ public class ShopModule extends Module {
             if (left(e)) buy(p, 70000, false, () -> It.give(p, Items.emberBrand()),
                     "§a[💰] " + Items.EMBER_NAME + "&7을 70,000 캐시에 구매했습니다.");
         });
-        g.set(13, Items.shadeStiletto("", price(40000, false)), e -> {
-            if (left(e)) buy(p, 40000, false, () -> It.give(p, Items.shadeStiletto()),
-                    "§a[💰] " + Items.SHADE_NAME + "&7을 40,000 캐시에 구매했습니다. &8(왼손에 들고 사용)");
+        g.set(13, Items.umbralChain("", price(55000, false)), e -> {
+            if (left(e)) buy(p, 55000, false, () -> It.give(p, Items.umbralChain()),
+                    "§a[💰] " + Items.SHADE_NAME + "&7을 55,000 캐시에 구매했습니다.");
+        });
+        g.set(14, Items.echoBell("", price(50000, false)), e -> {
+            if (left(e)) buy(p, 50000, false, () -> It.give(p, Items.echoBell()),
+                    "§a[💰] " + Items.BELL_NAME + "&7을 50,000 캐시에 구매했습니다.");
         });
         // 전투 장비 (인챈트 없는 기본 장비)
-        simple(g, p, 19, new ItemStack(Material.DIAMOND_SWORD), 4500, "§a[💰] &7다이아몬드 검을 4,500 캐시에 구매했습니다.");
-        simple(g, p, 20, new ItemStack(Material.NETHERITE_SWORD), 22000, "§a[💰] &7네더라이트 검을 22,000 캐시에 구매했습니다.");
+        simple(g, p, 19, new ItemStack(Material.IRON_AXE), 2500, "§a[💰] &7철 도끼를 2,500 캐시에 구매했습니다.");
+        simple(g, p, 20, new ItemStack(Material.FISHING_ROD), 800, "§a[💰] &7낚싯대를 800 캐시에 구매했습니다.");
         simple(g, p, 21, new ItemStack(Material.BOW), 1500, "§a[💰] &7활을 1,500 캐시에 구매했습니다.");
         simple(g, p, 22, new ItemStack(Material.CROSSBOW), 2000, "§a[💰] &7쇠뇌를 2,000 캐시에 구매했습니다.");
         simple(g, p, 23, new ItemStack(Material.SHIELD), 1250, "§a[💰] &7방패를 1,250 캐시에 구매했습니다.");

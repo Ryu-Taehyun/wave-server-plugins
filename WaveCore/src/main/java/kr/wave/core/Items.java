@@ -63,8 +63,10 @@ public final class Items {
     public static final String N_CLAYMORE_SD = "[⚡] [Lv.sd] 천공의 심판자 클레이모어";
     public static final String N_FROST = "[❆] [Lv.DD] 프로스트 그레이브";
     public static final String N_TIME_WIND = "[✦] Time piecer Wind";
-    /** 그림자 송곳 (보조 무기, 왼손) */
-    public static final String N_SHADE = "그림자 송곳";
+    /** Echo Bell (보조 무기: Time piecer Wind 와 같은 포지션) */
+    public static final String N_BELL = "[✦] Echo Bell";
+    /** Umbral Chain (보조 무기: Time piecer Wind 와 같은 포지션) */
+    public static final String N_SHADE = "[✦] Umbral Chain";
     /** 잿불 낙인검 (일반 상점 판매) */
     public static final String N_EMBER = "잿불 낙인검";
 /** 망령 수확자 (예전 Soul Splitter 를 완전히 바꾼 무기). 이름에 이 글자가 있으면 같은 무기 */
@@ -273,22 +275,27 @@ public final class Items {
         return it;
     }
 
-    public static final String SHADE_NAME = "<b><gradient:#4A6FA5:#9FB4C7:#E8F1F8><italic:false>[Shade] [Lv.✧] 그림자 송곳</gradient></b>";
+    public static final String SHADE_NAME = "<reset><italic:false><gradient:#4A6FA5:#9FB4C7:#E8F1F8>[✦] Umbral Chain</gradient>";
 
-    /** 그림자 송곳: 왼손(보조 손)에 들고 주 무기로 때리면 확률적으로 그림자 찌르기 */
-    public static ItemStack shadeStiletto(String... extraLore) {
-        ItemStack it = It.of(Material.IRON_SWORD).name(SHADE_NAME)
-                .lore("%nl%&7등급 : <gradient:#9FB4C7:#E8F1F8><bold:true>Epic</gradient> &8| &7보조 무기%nl%%nl%"
-                        + "<b><gradient:#4A6FA5:#E8F1F8><italic:false>앞의 칼이 시선을 끄는 사이, 그림자는 이미 등 뒤에 있다.</gradient></b>%nl%%nl%"
-                        + "<b><gradient:#9FB4C7:#E8F1F8><italic:false>[Lv.Shade 특성]</gradient></b>%nl%"
-                        + "&8&l>> &7왼손(보조 손)에 들었을 때만 발동합니다%nl%"
-                        + "&8&l>> &7주 무기로 적중하면 &f20% &7확률로 &9그림자 찌르기&7가 따라 들어가 &c추가 피해 1.5칸&7을 입힙니다%nl%"
-                        + "&8&l>> &9그림자 찌르기&7를 맞은 대상은 &f1초 &7동안 구속 I에 걸립니다 &8(재사용 1초)")
-                .lore(extraLore).build();
-        var m = it.getItemMeta();
-        m.setEnchantmentGlintOverride(true);
-        it.setItemMeta(m);
-        return it;
+    public static final String BELL_NAME = "<reset><italic:false><gradient:#FFD86B:#FFF6D5:#8A6BFF>[✦] Echo Bell</gradient>";
+
+    /** Echo Bell: 일정 확률로 종을 울려 대상을 어둠과 멀미에 빠뜨리고 밀쳐냄 */
+    public static ItemStack echoBell(String... extraLore) {
+        return It.of(Material.BELL).ench(Enchantment.UNBREAKING, 10).name(BELL_NAME)
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%&7메아리치는 종을 울려 일정 확률로 플레이어의 시야와 감각을 빼앗습니다.").lore(extraLore).build();
+    }
+
+    /** 쇠사슬: 1.21.9 부터 IRON_CHAIN (예전 CHAIN). 서버 버전에 맞춰 찾음 */
+    public static Material chainMaterial() {
+        Material m = Material.matchMaterial("IRON_CHAIN");
+        if (m == null) m = Material.matchMaterial("CHAIN");
+        return m != null ? m : Material.IRON_BARS;
+    }
+
+    /** Umbral Chain: 일정 확률로 그림자 사슬을 걸어 적을 끌어당기고 묶음 (Time piecer Wind 와 같은 보조 무기) */
+    public static ItemStack umbralChain(String... extraLore) {
+        return It.of(chainMaterial()).ench(Enchantment.UNBREAKING, 10).name(SHADE_NAME)
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%&7그림자 사슬을 던져 일정 확률로 플레이어를 끌어당기고 묶어버립니다.").lore(extraLore).build();
     }
 
     public static ItemStack timePiecerWind(String... extraLore) {

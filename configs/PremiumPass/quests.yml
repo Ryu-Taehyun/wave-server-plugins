@@ -1,0 +1,323 @@
+# ==========================================
+#          프리미엄 패스 퀘스트 설정
+# ==========================================
+# type 목록:
+#   BREAK_BLOCK   블록 부수기 (직접 설치한 블록은 제외, 농작물은 다 자란 것만 인정)
+#   PLACE_BLOCK   블록 설치
+#   KILL_MOB      몹 처치 (targets 에 HOSTILE 을 쓰면 모든 적대 몹)
+#   FISH          낚시로 아이템 낚기
+#   CRAFT         아이템 제작
+#   SMELT         화로/훈연기/용광로에서 결과물 꺼내기
+#   ENCHANT       마법부여대로 마법부여
+#   BREED         동물 번식
+#   CONSUME       음식/물약 섭취
+#   PLAYTIME      접속 시간 (분, 잠수 시 제외)
+#   COMPLETE_DAILY 일일 퀘스트 완료 횟수 (시즌 퀘스트용)
+#
+# targets: 블록/아이템/엔티티 이름 목록. 비우거나 ANY 면 전부 인정.
+#          * 와일드카드 지원 (예: "*_LOG", "COOKED_*")
+# amount : 목표 수량
+# xp     : 완료 시 패스 XP (최대 레벨 이후엔 포인트로 자동 전환)
+# points : 완료 시 즉시 지급되는 프리미엄 패스 포인트
+# icon   : GUI 에 표시될 아이템
+
+daily:
+  miner_stone:
+    name: "&7채석장 노동"
+    description: "돌 계열 블록을 캐세요."
+    type: BREAK_BLOCK
+    targets: [STONE, DEEPSLATE, COBBLESTONE, COBBLED_DEEPSLATE, ANDESITE, DIORITE, GRANITE, TUFF]
+    amount: 200
+    xp: 300
+    points: 2
+    icon: STONE_PICKAXE
+  ore_miner:
+    name: "&b광부의 하루"
+    description: "광석을 캐세요. (석탄/구리/철/금/레드스톤/청금석/다이아/에메랄드)"
+    type: BREAK_BLOCK
+    targets: ["*_ORE", NETHER_QUARTZ_ORE, NETHER_GOLD_ORE]
+    amount: 24
+    xp: 400
+    points: 3
+    icon: IRON_ORE
+  lumberjack:
+    name: "&6벌목꾼"
+    description: "나무 원목을 베세요."
+    type: BREAK_BLOCK
+    targets: ["*_LOG", "*_STEM"]
+    amount: 64
+    xp: 300
+    points: 2
+    icon: IRON_AXE
+  farmer:
+    name: "&a농부"
+    description: "다 자란 농작물을 수확하세요."
+    type: BREAK_BLOCK
+    targets: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART, MELON, PUMPKIN, SUGAR_CANE]
+    amount: 64
+    xp: 300
+    points: 2
+    icon: WHEAT
+  monster_hunter:
+    name: "&c몬스터 사냥꾼"
+    description: "적대적 몹을 처치하세요."
+    type: KILL_MOB
+    targets: [HOSTILE]
+    amount: 30
+    xp: 400
+    points: 3
+    icon: IRON_SWORD
+  zombie_hunter:
+    name: "&2좀비 퇴치"
+    description: "좀비류 몹을 처치하세요."
+    type: KILL_MOB
+    targets: [ZOMBIE, ZOMBIE_VILLAGER, HUSK, DROWNED]
+    amount: 15
+    xp: 300
+    points: 2
+    icon: ROTTEN_FLESH
+  skeleton_hunter:
+    name: "&f해골 퇴치"
+    description: "스켈레톤류 몹을 처치하세요."
+    type: KILL_MOB
+    targets: [SKELETON, STRAY, BOGGED]
+    amount: 15
+    xp: 300
+    points: 2
+    icon: BONE
+  creeper_hunter:
+    name: "&a폭탄 제거반"
+    description: "크리퍼를 처치하세요."
+    type: KILL_MOB
+    targets: [CREEPER]
+    amount: 5
+    xp: 350
+    points: 3
+    icon: GUNPOWDER
+  fisher:
+    name: "&3강태공"
+    description: "낚시로 무언가를 낚으세요."
+    type: FISH
+    targets: [ANY]
+    amount: 10
+    xp: 350
+    points: 3
+    icon: FISHING_ROD
+  cook:
+    name: "&e요리사"
+    description: "음식을 구워서 꺼내세요."
+    type: SMELT
+    targets: ["COOKED_*", BAKED_POTATO, DRIED_KELP]
+    amount: 32
+    xp: 300
+    points: 2
+    icon: COOKED_BEEF
+  smelter:
+    name: "&7제련공"
+    description: "광물을 제련해서 주괴를 꺼내세요."
+    type: SMELT
+    targets: [IRON_INGOT, GOLD_INGOT, COPPER_INGOT, NETHERITE_SCRAP]
+    amount: 32
+    xp: 350
+    points: 3
+    icon: FURNACE
+  breeder:
+    name: "&d목장 주인"
+    description: "동물을 번식시키세요."
+    type: BREED
+    targets: [ANY]
+    amount: 10
+    xp: 300
+    points: 2
+    icon: WHEAT_SEEDS
+  enchanter:
+    name: "&5마법사의 제자"
+    description: "마법부여대로 마법부여를 하세요."
+    type: ENCHANT
+    targets: [ANY]
+    amount: 3
+    xp: 400
+    points: 3
+    icon: ENCHANTING_TABLE
+  builder:
+    name: "&e건축가"
+    description: "블록을 설치하세요."
+    type: PLACE_BLOCK
+    targets: [ANY]
+    amount: 256
+    xp: 300
+    points: 2
+    icon: BRICKS
+  crafter:
+    name: "&6장인"
+    description: "아이템을 제작하세요."
+    type: CRAFT
+    targets: [ANY]
+    amount: 64
+    xp: 250
+    points: 2
+    icon: CRAFTING_TABLE
+  playtime:
+    name: "&b성실한 모험가"
+    description: "서버에서 활동하세요. (잠수 제외)"
+    type: PLAYTIME
+    targets: [ANY]
+    amount: 60
+    xp: 400
+    points: 3
+    icon: CLOCK
+  eater:
+    name: "&c대식가"
+    description: "음식을 먹으세요."
+    type: CONSUME
+    targets: [ANY]
+    amount: 15
+    xp: 200
+    points: 1
+    icon: BREAD
+
+season:
+  daily_master:
+    name: "&6성실함의 증표"
+    description: "일일 퀘스트를 완료하세요."
+    type: COMPLETE_DAILY
+    targets: [ANY]
+    amount: 100
+    xp: 6000
+    points: 60
+    icon: NETHER_STAR
+  diamond_miner:
+    name: "&b다이아몬드 광맥"
+    description: "다이아몬드 광석을 캐세요."
+    type: BREAK_BLOCK
+    targets: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE]
+    amount: 64
+    xp: 4000
+    points: 40
+    icon: DIAMOND_ORE
+  debris_miner:
+    name: "&4고대의 잔해"
+    description: "고대 잔해를 캐세요."
+    type: BREAK_BLOCK
+    targets: [ANCIENT_DEBRIS]
+    amount: 16
+    xp: 5000
+    points: 50
+    icon: ANCIENT_DEBRIS
+  deep_miner:
+    name: "&8지하 개척자"
+    description: "돌 계열 블록을 캐세요."
+    type: BREAK_BLOCK
+    targets: [STONE, DEEPSLATE, COBBLESTONE, COBBLED_DEEPSLATE, ANDESITE, DIORITE, GRANITE, TUFF, NETHERRACK, BLACKSTONE, BASALT]
+    amount: 10000
+    xp: 4000
+    points: 40
+    icon: DIAMOND_PICKAXE
+  forest_keeper:
+    name: "&2숲의 지배자"
+    description: "나무 원목을 베세요."
+    type: BREAK_BLOCK
+    targets: ["*_LOG", "*_STEM"]
+    amount: 2000
+    xp: 3000
+    points: 30
+    icon: OAK_LOG
+  great_farmer:
+    name: "&a대농장주"
+    description: "다 자란 농작물을 수확하세요."
+    type: BREAK_BLOCK
+    targets: [WHEAT, CARROTS, POTATOES, BEETROOTS, NETHER_WART, MELON, PUMPKIN, SUGAR_CANE]
+    amount: 3000
+    xp: 3000
+    points: 30
+    icon: HAY_BLOCK
+  slayer:
+    name: "&c학살자"
+    description: "적대적 몹을 처치하세요."
+    type: KILL_MOB
+    targets: [HOSTILE]
+    amount: 1500
+    xp: 5000
+    points: 50
+    icon: DIAMOND_SWORD
+  enderman_hunter:
+    name: "&5공허의 사냥꾼"
+    description: "엔더맨을 처치하세요."
+    type: KILL_MOB
+    targets: [ENDERMAN]
+    amount: 100
+    xp: 3000
+    points: 30
+    icon: ENDER_PEARL
+  blaze_hunter:
+    name: "&6화염의 사냥꾼"
+    description: "블레이즈를 처치하세요."
+    type: KILL_MOB
+    targets: [BLAZE]
+    amount: 64
+    xp: 3000
+    points: 30
+    icon: BLAZE_ROD
+  wither_skeleton_hunter:
+    name: "&8요새 정복자"
+    description: "위더 스켈레톤을 처치하세요."
+    type: KILL_MOB
+    targets: [WITHER_SKELETON]
+    amount: 60
+    xp: 3500
+    points: 35
+    icon: WITHER_SKELETON_SKULL
+  wither_slayer:
+    name: "&0위더 토벌"
+    description: "위더를 처치하세요."
+    type: KILL_MOB
+    targets: [WITHER]
+    amount: 1
+    xp: 5000
+    points: 50
+    icon: NETHER_STAR
+  dragon_slayer:
+    name: "&d드래곤 슬레이어"
+    description: "엔더 드래곤을 처치하세요."
+    type: KILL_MOB
+    targets: [ENDER_DRAGON]
+    amount: 1
+    xp: 5000
+    points: 50
+    icon: DRAGON_HEAD
+  master_fisher:
+    name: "&3바다의 왕"
+    description: "낚시로 무언가를 낚으세요."
+    type: FISH
+    targets: [ANY]
+    amount: 300
+    xp: 3000
+    points: 30
+    icon: COD
+  archmage:
+    name: "&5대마법사"
+    description: "마법부여대로 마법부여를 하세요."
+    type: ENCHANT
+    targets: [ANY]
+    amount: 60
+    xp: 3500
+    points: 35
+    icon: ENCHANTED_BOOK
+  rancher:
+    name: "&d대목장"
+    description: "동물을 번식시키세요."
+    type: BREED
+    targets: [ANY]
+    amount: 200
+    xp: 2500
+    points: 25
+    icon: LEAD
+  veteran:
+    name: "&b베테랑 모험가"
+    description: "서버에서 활동하세요. (분, 잠수 제외)"
+    type: PLAYTIME
+    targets: [ANY]
+    amount: 1800
+    xp: 6000
+    points: 60
+    icon: COMPASS

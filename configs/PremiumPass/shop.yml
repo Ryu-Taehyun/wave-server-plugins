@@ -7,181 +7,165 @@ items:
   exp_bottle:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 32
+      DataVersion: 4671
       id: minecraft:experience_bottle
-      DataVersion: 1
+      count: 32
+      schema_version: 1
     cost: 20
     limit: 0
   golden_apple:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 4
+      DataVersion: 4671
       id: minecraft:golden_apple
-      DataVersion: 1
+      count: 4
+      schema_version: 1
     cost: 25
     limit: 0
   diamond:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 4
+      DataVersion: 4671
       id: minecraft:diamond
-      DataVersion: 1
+      count: 4
+      schema_version: 1
     cost: 30
     limit: 0
   ender_pearl:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 16
+      DataVersion: 4671
       id: minecraft:ender_pearl
-      DataVersion: 1
+      count: 16
+      schema_version: 1
     cost: 30
     limit: 0
   firework:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: FIREWORK
-        effects: []
-      count: 64
+      DataVersion: 4671
       id: minecraft:firework_rocket
-      DataVersion: 1
+      count: 64
+      schema_version: 1
     cost: 40
     limit: 0
   iron_block:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 16
+      DataVersion: 4671
       id: minecraft:iron_block
-      DataVersion: 1
+      count: 16
+      schema_version: 1
     cost: 40
     limit: 0
   name_tag:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 3
+      DataVersion: 4671
       id: minecraft:name_tag
-      DataVersion: 1
+      count: 3
+      schema_version: 1
     cost: 30
     limit: 0
   saddle:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:saddle
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 20
     limit: 0
   shulker_box:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: TILE_ENTITY
-        blockMaterial: SHULKER_BOX
-      count: 1
+      DataVersion: 4671
       id: minecraft:shulker_box
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 120
     limit: 0
   totem:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:totem_of_undying
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 150
     limit: 0
   netherite_scrap:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:netherite_scrap
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 200
     limit: 0
   book_efficiency:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: ENCHANTED
-        stored-enchantments:
-          efficiency: 5
-      count: 1
+      DataVersion: 4671
       id: minecraft:enchanted_book
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:stored_enchantments: '{"minecraft:efficiency":5}'
+      schema_version: 1
     cost: 150
     limit: 0
   book_fortune:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: ENCHANTED
-        stored-enchantments:
-          fortune: 3
-      count: 1
+      DataVersion: 4671
       id: minecraft:enchanted_book
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:stored_enchantments: '{"minecraft:fortune":3}'
+      schema_version: 1
     cost: 200
     limit: 0
   book_protection:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: ENCHANTED
-        stored-enchantments:
-          protection: 4
-      count: 1
+      DataVersion: 4671
       id: minecraft:enchanted_book
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:stored_enchantments: '{"minecraft:protection":4}'
+      schema_version: 1
     cost: 150
     limit: 0
   book_mending:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: ENCHANTED
-        stored-enchantments:
-          mending: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:enchanted_book
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:stored_enchantments: '{"minecraft:mending":1}'
+      schema_version: 1
     cost: 250
     limit: 0
   enchanted_golden_apple:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:enchanted_golden_apple
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 300
     limit: 5
   cash_10k:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"구매 시 캐시가 바로 지급됩니다."}'
-        minecraft:custom_name: '{"color":"yellow","text":"10,000 캐시"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:gold_ingot
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"구매 시 캐시가 바로 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"yellow","text":"10,000 캐시","italic":false}'
+      schema_version: 1
     cost: 250
     limit: 10
     commands:
@@ -189,15 +173,13 @@ items:
   key_enderpearl:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"계정에 키 1개가 지급됩니다."}'
-        minecraft:custom_name: '{"color":"red","text":"천국과 지옥 룰렛 키"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:gray_dye
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"계정에 키 1개가 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"red","text":"천국과 지옥 룰렛 키","italic":false}'
+      schema_version: 1
     cost: 300
     limit: 5
     commands:
@@ -205,15 +187,13 @@ items:
   key_combat:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"계정에 키 1개가 지급됩니다."}'
-        minecraft:custom_name: '{"color":"aqua","text":"다양한 무기 룰렛 키"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:pink_dye
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"계정에 키 1개가 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"aqua","text":"다양한 무기 룰렛 키","italic":false}'
+      schema_version: 1
     cost: 500
     limit: 5
     commands:
@@ -221,15 +201,13 @@ items:
   altar_ticket:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"천공의 심판자에게 도전할 수 있습니다."}'
-        minecraft:custom_name: '{"color":"yellow","text":"천공의 제단 이동권"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:paper
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"천공의 심판자에게 도전할 수 있습니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"yellow","text":"천공의 제단 이동권","italic":false}'
+      schema_version: 1
     cost: 600
     limit: 3
     premium-only: true
@@ -238,15 +216,13 @@ items:
   key_echoes:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"계정에 키 1개가 지급됩니다."}'
-        minecraft:custom_name: '{"color":"green","text":"The Echoes of Natural 키"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:lime_dye
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"계정에 키 1개가 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"green","text":"The Echoes of Natural 키","italic":false}'
+      schema_version: 1
     cost: 800
     limit: 2
     premium-only: true
@@ -255,15 +231,13 @@ items:
   key_sealed:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"계정에 키 1개가 지급됩니다."}'
-        minecraft:custom_name: '{"color":"aqua","text":"Sealed Master Power 키"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:light_blue_dye
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"계정에 키 1개가 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"aqua","text":"Sealed Master Power 키","italic":false}'
+      schema_version: 1
     cost: 800
     limit: 2
     premium-only: true
@@ -272,15 +246,13 @@ items:
   key_ruiner:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: UNSPECIFIC
-        minecraft:lore:
-        - '{"color":"gray","text":"계정에 키 1개가 지급됩니다."}'
-        minecraft:custom_name: '{"color":"red","text":"The Ruiner''s Grudge 키"}'
-      count: 1
+      DataVersion: 4671
       id: minecraft:red_dye
-      DataVersion: 1
+      count: 1
+      components:
+        minecraft:lore: '[{"color":"gray","text":"계정에 키 1개가 지급됩니다.","italic":false}]'
+        minecraft:custom_name: '{"color":"red","text":"The Ruiner''s Grudge 키","italic":false}'
+      schema_version: 1
     cost: 800
     limit: 2
     premium-only: true
@@ -289,32 +261,29 @@ items:
   netherite_template:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:netherite_upgrade_smithing_template
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 350
     limit: 0
   beacon:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      components:
-        meta-type: TILE_ENTITY
-        blockMaterial: BEACON
-      count: 1
+      DataVersion: 4671
       id: minecraft:beacon
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 600
     limit: 1
     premium-only: true
   elytra:
     item:
       ==: org.bukkit.inventory.ItemStack
-      schema_version: 1
-      count: 1
+      DataVersion: 4671
       id: minecraft:elytra
-      DataVersion: 1
+      count: 1
+      schema_version: 1
     cost: 1000
     limit: 1
     premium-only: true

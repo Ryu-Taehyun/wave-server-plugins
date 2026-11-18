@@ -49,12 +49,20 @@ weapons:
     min-interval-ms: 450     # 이보다 빠른 연타는 낙인이 쌓이지 않음
     burst-damage: 4.0        # 폭발 추가 피해 (4 = 하트 2칸)
     fire-seconds: 3
-  # 그림자 송곳 (보조 무기): 왼손에 들고 주 무기로 적중 시 확률적으로 추가 피해
+  # Umbral Chain (보조 무기): 들고 때리면 확률적으로 대상을 끌어당기고 묶음
   shade:
-    chance: 0.20
-    damage: 3.0              # 3 = 하트 1.5칸
-    slow-seconds: 1
-    cooldown-ms: 1000
+    chance: 0.275            # Time piecer Wind 와 같은 확률
+    pull-strength: 1.1       # 끌어당기는 힘 (거리에 따라 줄어듦)
+    bind-seconds: 1.5        # 묶임 (구속) 시간
+    slow-level: 3            # 구속 단계
+    cooldown-ms: 0           # 0 = 재사용 대기 없음 (확률만)
+  # Echo Bell (보조 무기): 들고 때리면 확률적으로 어둠 + 멀미 + 밀쳐내기
+  bell:
+    chance: 0.275
+    darkness-seconds: 2.5
+    nausea-seconds: 4
+    knockback: 0.9
+    cooldown-ms: 0
   claymore-splash:
     radius: 4.0
     damage: 3.0              # 2 = 하트 1칸
