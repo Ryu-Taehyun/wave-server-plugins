@@ -112,7 +112,7 @@ public class WeaponModule extends Module {
     /** 사망 시 드롭되지 않고 리스폰 때 돌려받는 아이템 */
     public static boolean isKeepOnDeath(ItemStack it) {
         String n = Msg.name(it);
-        return n.contains(Items.N_CLAYMORE_SD) || n.contains(Items.N_FROST) || n.contains(Items.N_NEW_CHAR);
+        return n.contains(Items.N_CLAYMORE_SD) || n.contains(Items.N_FROST) || Items.isNewChar(n);
     }
 
     @Override
@@ -754,8 +754,14 @@ public class WeaponModule extends Module {
             later(300, () -> {
                 if (p.isOnline()) Msg.send(p, "&c모래 폭풍이 끝났습니다.");
             });
-        } else if (n.contains(Items.N_NEW_CHAR) && hand.getType() == Material.MUSIC_DISC_5) {
+        } else if (Items.isNewChar(n) && hand.getType() == Material.MUSIC_DISC_5) {
             e.setCancelled(true);
+            if (n.contains(Items.N_NEW_CHAR_OLD)) {   // 예전 이름 -> 새 이름/설명
+                ItemMeta nm = hand.getItemMeta(), fm = Items.newCharacteristic().getItemMeta();
+                nm.displayName(fm.displayName());
+                nm.lore(fm.lore());
+                hand.setItemMeta(nm);
+            }
             if (!p.isSneaking()) {
                 if (newCharCd1.getOrDefault(id, 0L) > now) {
                     Msg.send(p, "&c아직 사용 할 수 없습니다.");
@@ -927,7 +933,7 @@ public class WeaponModule extends Module {
             } else if (tool.contains(Items.N_ETERNAL_CHRONOS)) {
                 String l = left(chronosCd, id, now);
                 Msg.actionBar(p, "<gradient:#BFA66E:#B2D6B6><italic:false><bold:true>[Time]</gradient> " + (l != null ? "&c&l모래 폭풍 쿨타임 : &7" + l + "초 남음" : "&e&l모래 폭풍을 사용할 수 있습니다."));
-            } else if (tool.contains(Items.N_NEW_CHAR)) {
+            } else if (Items.isNewChar(tool)) {
                 String l1 = left(newCharCd1, id, now);
                 String l2 = left(newCharCd2, id, now);
                 Msg.actionBar(p, "&5&l[🌙] &71번 스킬 : " + (l1 != null ? "&c" + l1 + "초 &7남음" : "&e사용 가능")

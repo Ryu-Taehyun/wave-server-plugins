@@ -59,7 +59,13 @@ public final class Items {
     public static final String N_CHRONOS = "[Time] [Lv.↗] 크로노스의 칼날";
     public static final String N_TIME_SHARD = "[Time] 시간의 파편";
     public static final String N_RUINER_ESSENCE = "[✦] 파멸자의 봉인된 정수";
-    public static final String N_NEW_CHAR = "[🌙] [Lv.DD] The New Characteristic";
+    /** 새 시대의 각인 (예전 이름 The New Characteristic 도 같은 무기로 인식, 우클릭하면 새 이름으로 바뀜) */
+    public static final String N_NEW_CHAR = "[🌙] [Lv.DD] 새 시대의 각인";
+    public static final String N_NEW_CHAR_OLD = "The New Characteristic";
+
+    public static boolean isNewChar(String plainName) {
+        return plainName.contains(N_NEW_CHAR) || plainName.contains(N_NEW_CHAR_OLD);
+    }
     public static final String N_CLAYMORE_SD = "[⚡] [Lv.sd] 천공의 심판자 클레이모어";
     public static final String N_FROST = "[❆] [Lv.DD] 프로스트 그레이브";
     /** 보조 무기 3종 (한국어 이름). 예전 영어 이름의 아이템도 같은 무기로 인식하고, 쓰는 순간 새 이름으로 바뀜 */
@@ -196,7 +202,7 @@ public final class Items {
     public static ItemStack mythicVoucher() {
         return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
                 .name("<b><gradient:#FFF176:#FFB732><italic:false>[👑] 전설의 무기 교환권</gradient></b>")
-                .lore("%nl%&7우클릭하면 전설의 무기 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- The New Characteristic%nl%&8- 천공의 심판자 클레이모어%nl%&8- 프로스트 그레이브").build();
+                .lore("%nl%&7우클릭하면 전설의 무기 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- 새 시대의 각인%nl%&8- 천공의 심판자 클레이모어%nl%&8- 프로스트 그레이브").build();
     }
 
     /** 설정 파일에서 이름으로 부르는 서버 아이템 (상자 보상, 보스 전리품 등). 없으면 null */
@@ -482,7 +488,7 @@ public final class Items {
         return It.of(Material.DIAMOND_SWORD).unbreakable().ench(Enchantment.SHARPNESS, 7).name(FROST_NAME).lore(FROST_LORE).build();
     }
 
-    public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> The New</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> Characteristic</b></gradient>";
+    public static final String NEW_CHAR_NAME = "<gradient:#1E2586:#C8B0B0><italic:false><b>[🌙] [Lv.</b><obf><b></b></obf><obf><b>DD</b></obf><b>]</b><b> 새 시대의</b></gradient><gradient:#FAD4D4:#C8B0B0><italic:false><b> 각인</b></gradient>";
     public static final String NEW_CHAR_LORE = "%nl%&7등급 : <gradient:#1E2586:#FAD4D4><italic:false><b>INSCRIBE</b></gradient><gradient:#FAD4D4:#FAD4D4><italic:false><b>D</b></gradient>%nl%&7S4 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%%nl%<gradient:#1E2586:#00FBFF><italic:false><b>[새로운 시대의 </b><b>각인</b></gradient><gradient:#00FBFF:#00FBFF><italic:false><b>]</b></gradient>%nl%<color:#313798><b>>></b></color> &7우클릭 시 &a힘 III&7를 &f20초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%<color:#313798><b>>></b></color> &7웅크리기 + 우클릭 시 &a재생 V&7를 &f6초&7간 부여받습니다 &8(쿨타임 1분 30초)%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.";
 
     public static ItemStack newCharacteristic() {
