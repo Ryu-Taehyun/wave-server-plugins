@@ -493,7 +493,7 @@ public final class Items {
     public static ItemStack ruinerScythe() {
         return It.of(Material.NETHERITE_HOE).unbreakable().ench(Enchantment.INFINITY, 1)
                 .name("<italic:false><b><gradient:#FF0000:#530427>[Ruiner] [Lv.✕] 파괴의 낫</gradient></b>")
-                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c4&7로 고정됩니다%nl%&8&l>> &7타격 시 <color:#E0464E>구속 I</color>&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
+                .lore(LEGENDARY + "<italic:false><b><gradient:#FF0000:#551010>무엇을 베어내든 결국 부서진 파편만이 남으리라.</gradient></b>%nl%%nl%<gradient:#FF0000:#DC051F><italic:false><bold:true>[Lv.Unknown 특성]</gradient>%nl%&8&l>> &7무기 기본 데미지가 &c6&7으로 고정됩니다%nl%&8&l>> &7타격 시 <color:#E0464E>구속 I</color>&7을 부여합니다%nl%&8&l>> &7일정 확률로 &c적의 체력을 흡수&7합니다" + SEASON_KEEP).build();
     }
 
     public static ItemStack ruinerPants() {
@@ -517,7 +517,7 @@ public final class Items {
     public static ItemStack thunderAxe() {
         return It.of(Material.IRON_AXE).unbreakable().ench(Enchantment.CHANNELING, 5)
                 .name("<gradient:#C2D93F:#AFEEF8><italic:false><b>[⚡] [Lv.L</b><b>] 천</b><b>둥의 심판</b></gradient>")
-                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 1칸)").build();
+                .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#C2D93F:#AFEEF8><italic:false><b>[Lv.Light</b><b>nin</b><b>g 특성]</b></gradient>%nl%&8&l>> &7타격 시 일정 확률로 &e번개&7를 소환합니다 &c(고정 피해 2칸)").build();
     }
 
     private static final String CHAOS_HEAD = "%nl%&7등급 : <gradient:#1F1F1F:#BCBCBC><italic:false><b>Catastrop</b><b>he</b></gradient><gradient:#BCBCBC:#727272><italic:false><b> </b><b>of Chaos</b></gradient>%nl%&7스페셜 테마 상자에서만 휙득할 수 있는 아이템입니다.%nl%%nl%<gradient:#1F1F1F:#BCBCBC><italic:false><b>[다크니스의 재앙</b><b>]</b></gradient>%nl%";

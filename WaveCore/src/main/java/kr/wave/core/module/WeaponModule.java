@@ -335,34 +335,9 @@ public class WeaponModule extends Module {
         e.setHealth(Math.max(0, e.getHealth() - amount));
     }
 
-    /** 처치 마무리 중 (이 타격으로는 무기 효과를 다시 쓰지 않음) */
-    private boolean finishing;
-
-    /**
-     * 타격에 얹는 추가 피해 (방어구 무시). 이 피해로 죽게 되면 체력을 거의 0으로 만들고
-     * 지금 들어가는 타격이 마무리하게 해서 처치자 · 킬 알림 · 처치 수 · 죽음 거부가 정상으로 처리되게 함
-     */
-    private void extraHit(LivingEntity victim, Player attacker, double amount) {
-        if (victim.getHealth() > amount) {
-            hurt(victim, amount);
-            return;
-        }
-        victim.setHealth(Math.min(victim.getHealth(), 0.01));
-        // 방패 등으로 본 타격이 0이 되면 다음 틱에 공격자 이름으로 마무리
-        later(1, () -> {
-            if (!victim.isValid() || victim.isDead() || victim.getHealth() > 0.02 || !attacker.isOnline()) return;
-            finishing = true;
-            try {
-                victim.damage(1.0, attacker);
-            } finally {
-                finishing = false;
-            }
-        });
-    }
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
-        if (probing || finishing) return;
+        if (probing) return;
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
@@ -400,7 +375,7 @@ public class WeaponModule extends Module {
                 Fx.p(mid, Particle.LAVA, 8, 0.5, 0.05);
                 Fx.p(mid, Particle.SWEEP_ATTACK, 2, 0.3, 0);
                 if (chance(0.20)) {
-                    extraHit(victim, attacker, 2.5);
+                    hurt(victim, 2.5);
                     attacker.setHealth(Math.min(maxHealth(attacker), attacker.getHealth() + 5));
                     // 생명 흡수
                     Fx.p(mid, Particle.DAMAGE_INDICATOR, 10, 0.3, 0.1);
@@ -435,7 +410,7 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
-                extraHit(victim, attacker, 2);
+                hurt(victim, 2);
                 // 천둥의 심판: 번개 기둥 + 전기 스파크
                 Fx.pillar(vl, 6, THUNDER, Particle.ELECTRIC_SPARK);
                 Fx.burst(vl.clone().add(0, 1, 0), Particle.ELECTRIC_SPARK, 40, 0.4);
