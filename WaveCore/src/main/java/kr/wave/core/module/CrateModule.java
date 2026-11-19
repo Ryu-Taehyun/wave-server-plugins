@@ -292,7 +292,9 @@ public class CrateModule extends Module {
 
     /** "상자 이름 + 키" (교환권으로 부르는 상자는 설정 Key-Label 로 바꿀 수 있음) */
     public String keyLabel(Crate c) {
-        return c.name + " &7" + (c.keyLabel == null ? "키" : c.keyLabel);
+        String label = c.keyLabel == null ? "키" : c.keyLabel;
+        if (Msg.plainOf(c.name).trim().endsWith(label)) return c.name;   // 이름이 이미 '... 키' 로 끝나면 한 번만
+        return c.name + " &7" + label;
     }
 
     /** 상점 판매 아이콘: 실물 키 아이템이 아니라 계정에 쌓이는 키임을 표시 */
