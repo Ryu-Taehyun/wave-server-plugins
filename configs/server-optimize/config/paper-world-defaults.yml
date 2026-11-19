@@ -1,0 +1,100 @@
+# ── 야생 약탈 서버 최적화 (Purpur 1.21.11) ──
+# 경로: 서버폴더/config/paper-world-defaults.yml
+# !! 덮어쓰지 마세요 !!  파일 맨 위의 _version 값이 지워지면 설정이 꼬일 수 있습니다.
+# 기존 파일에서 아래 항목을 찾아 값만 바꿔 주세요. (없는 항목은 그 위치에 추가)
+
+chunks:
+  auto-save-interval: default
+  delay-chunk-unloads-by: 10s
+  max-auto-save-chunks-per-tick: 8
+  prevent-moving-into-unloaded-chunks: true
+  # 청크 하나에 저장되는 투사체 수 제한 (화살·진주 쌓아서 렉 거는 것 방지)
+  entity-per-chunk-save-limit:
+    arrow: 16
+    ender_pearl: 8
+    experience_orb: 16
+    fireball: 8
+    small_fireball: 8
+    snowball: 8
+    egg: 8
+    spectral_arrow: 16
+    trident: 8
+    wither_skull: 4
+    llama_spit: 3
+    dragon_fireball: 3
+    shulker_bullet: 8
+    wind_charge: 8
+    breeze_wind_charge: 8
+
+collisions:
+  max-entity-collisions: 2
+  fix-climbing-bypassing-cramming-rule: true
+
+entities:
+  armor-stands:
+    do-collision-entity-lookups: false
+    tick: false                          # 장식용 갑옷 거치대는 움직이지 않음 (플러그인 홀로그램은 영향 없음)
+  spawning:
+    per-player-mob-spawns: true
+    despawn-ranges:
+      ambient:      { soft: 28, hard: 56 }
+      axolotls:     { soft: 28, hard: 56 }
+      creature:     { soft: 28, hard: 56 }
+      misc:         { soft: 28, hard: 56 }
+      monster:      { soft: 28, hard: 56 }
+      underground_water_creature: { soft: 28, hard: 56 }
+      water_ambient: { soft: 28, hard: 32 }
+      water_creature: { soft: 28, hard: 56 }
+    # 캐다가 떨어진 돌 · 흙 등은 15초 뒤에 사라짐 (기본 5분)
+    alt-item-despawn-rate:
+      enabled: true
+      items:
+        cobblestone: 300
+        cobbled_deepslate: 300
+        netherrack: 300
+        dirt: 300
+        gravel: 300
+        sand: 300
+        andesite: 300
+        diorite: 300
+        granite: 300
+        tuff: 300
+        blackstone: 300
+        basalt: 300
+        end_stone: 300
+        rotten_flesh: 300
+        bone: 300
+        string: 300
+        spider_eye: 300
+        kelp: 300
+  behavior:
+    disable-chest-cat-detection: true
+
+environment:
+  optimize-explosions: true              # 폭발 계산 최적화 (결과는 같음)
+  treasure-maps:
+    enabled: true
+    find-already-discovered:
+      loot-tables: true                  # 보물 지도가 새 구조물을 찾으러 지형을 만들지 않음
+      villager-trade: true
+
+hopper:
+  cooldown-when-full: true
+  disable-move-event: false              # 보호 플러그인이 쓰므로 false 유지
+  ignore-occluding-blocks: true
+
+misc:
+  redstone-implementation: ALTERNATE_CURRENT   # 레드스톤 계산이 훨씬 가벼움 (동작은 거의 같음)
+  update-pathfinding-on-block-update: false
+
+tick-rates:
+  container-update: 1
+  grass-spread: 4
+  mob-spawner: 2
+  behavior:
+    villager:
+      validatenearbypoi: 60
+  sensor:
+    villager:
+      secondarypoisensor: 80
+      nearestbedsensor: 80

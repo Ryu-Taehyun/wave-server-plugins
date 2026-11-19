@@ -1,0 +1,41 @@
+# ── 야생 약탈 서버 최적화 (Purpur 1.21.11) ──
+# 경로: 서버폴더/bukkit.yml  (덮어쓰기)
+# 빠진 항목은 서버가 켜질 때 기본값으로 자동으로 채워집니다.
+settings:
+  allow-end: true
+  warn-on-overload: true
+  permissions-file: permissions.yml
+  update-folder: update
+  plugin-profiling: false
+  connection-throttle: 4000
+  query-plugins: false
+  deprecated-verbose: default
+  shutdown-message: 서버가 종료되었습니다.
+  minimum-api: none
+  use-map-color-cache: true
+
+# 청크당이 아니라 '플레이어 주변'마다 생기는 몹 수 상한 (기본: 몬스터 70, 동물 10)
+spawn-limits:
+  monsters: 50
+  animals: 8
+  water-animals: 3
+  water-ambient: 5
+  water-underground-creature: 3
+  axolotls: 3
+  ambient: 1
+
+chunk-gc:
+  period-in-ticks: 400
+
+# 몹 생성 시도 간격 (틱). 몬스터는 매 2틱, 나머지는 드물게
+ticks-per:
+  animal-spawns: 400
+  monster-spawns: 2
+  water-spawns: 400
+  water-ambient-spawns: 400
+  water-underground-creature-spawns: 400
+  axolotl-spawns: 400
+  ambient-spawns: 400
+  autosave: 6000
+
+aliases: now-in-commands.yml

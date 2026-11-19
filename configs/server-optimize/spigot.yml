@@ -1,0 +1,126 @@
+# ── 야생 약탈 서버 최적화 (Purpur 1.21.11) ──
+# 경로: 서버폴더/spigot.yml  (덮어쓰기)
+# 빠진 항목은 서버가 켜질 때 기본값으로 자동으로 채워집니다.
+config-version: 12
+
+settings:
+  save-user-cache-on-stop-only: true   # 접속할 때마다 usercache 를 쓰지 않음
+  restart-on-crash: false
+  timeout-time: 60
+  bungeecord: false
+  netty-threads: 4
+  log-villager-deaths: false
+  log-named-deaths: false
+  moved-wrongly-threshold: 0.0625
+  moved-too-quickly-multiplier: 10.0
+  player-shuffle: 0
+  user-cache-size: 1000
+  sample-count: 12
+
+commands:
+  log: true
+  tab-complete: 0
+  send-namespaced: false              # /minecraft:give 같은 이름 숨김
+  spam-exclusions:
+    - /skill
+  silent-commandblock-console: true
+  replace-commands:
+    - setblock
+    - summon
+    - testforblock
+    - tellraw
+
+advancements:
+  disable-saving: false
+  disabled:
+    - minecraft:story/disabled
+
+players:
+  disable-saving: false
+
+stats:
+  disable-saving: false
+  forced-stats: {}
+
+world-settings:
+  default:
+    verbose: false
+    # 같은 아이템 / 경험치끼리 합쳐지는 거리 (기본 2.5 / 3.0)
+    merge-radius:
+      item: 3.5
+      exp: 4.0
+    item-despawn-rate: 6000
+    arrow-despawn-rate: 300
+    trident-despawn-rate: 1200
+    view-distance: default
+    simulation-distance: default
+    mob-spawn-range: 6                  # 시뮬레이션 거리 6 에 맞춤
+    # 스포너 몹 AI 끄기: 농장 렉 감소. 스포너 경험치 농장이 이상하게 느껴지면 false
+    nerf-spawner-mobs: true
+    hopper-amount: 1
+    hopper-can-load-chunks: false
+    ticks-per:
+      hopper-transfer: 8
+      hopper-check: 1
+    dragon-death-sound-radius: 0
+    wither-spawn-sound-radius: 0
+    end-portal-sound-radius: 0
+    # 멀리 있는 몹은 덜 움직이게 (기본 animals 32, monsters 32, misc 16)
+    entity-activation-range:
+      animals: 16
+      monsters: 24
+      raiders: 48
+      misc: 8
+      water: 8
+      villagers: 16
+      flying-monsters: 48
+      wake-up-inactive:
+        animals-max-per-tick: 4
+        animals-every: 1200
+        animals-for: 100
+        monsters-max-per-tick: 8
+        monsters-every: 400
+        monsters-for: 100
+        villagers-max-per-tick: 4
+        villagers-every: 600
+        villagers-for: 100
+        flying-monsters-max-per-tick: 8
+        flying-monsters-every: 200
+        flying-monsters-for: 100
+      villagers-work-immunity-after: 100
+      villagers-work-immunity-for: 20
+      villagers-active-for-panic: true
+      tick-inactive-villagers: false
+      ignore-spectators: true
+    # 다른 엔티티가 보이는 거리. PvP 서버라 플레이어는 넓게 유지
+    entity-tracking-range:
+      players: 64
+      animals: 48
+      monsters: 48
+      misc: 32
+      display: 64
+      other: 64
+    max-tnt-per-tick: 100
+    growth:
+      cactus-modifier: 100
+      cane-modifier: 100
+      melon-modifier: 100
+      mushroom-modifier: 100
+      pumpkin-modifier: 100
+      sapling-modifier: 100
+      beetroot-modifier: 100
+      carrot-modifier: 100
+      potato-modifier: 100
+      torchflower-modifier: 100
+      wheat-modifier: 100
+      netherwart-modifier: 100
+      vine-modifier: 100
+      cocoa-modifier: 100
+      bamboo-modifier: 100
+      sweetberry-modifier: 100
+      kelp-modifier: 100
+      twistingvines-modifier: 100
+      weepingvines-modifier: 100
+      cavevines-modifier: 100
+      glowberry-modifier: 100
+      pitcherplant-modifier: 100

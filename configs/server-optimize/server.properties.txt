@@ -1,0 +1,14 @@
+# ── 야생 약탈 서버 최적화 (Purpur 1.21.11) ──
+# 경로: 서버폴더/server.properties
+# !! 덮어쓰지 마세요 !! (포트, 서버 이름, 시드 등이 지워집니다)
+# 기존 파일에서 아래 줄들의 값만 바꿔 주세요.
+
+view-distance=8
+simulation-distance=6
+max-players=150
+network-compression-threshold=256
+sync-chunk-writes=false
+entity-broadcast-range-percentage=100
+spawn-protection=0
+max-tick-time=-1
+allow-flight=false

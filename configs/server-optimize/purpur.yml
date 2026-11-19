@@ -1,0 +1,21 @@
+# ── 야생 약탈 서버 최적화 (Purpur 1.21.11) ──
+# 경로: 서버폴더/purpur.yml
+#  - purpur.yml 을 따로 고친 적이 없으면: 덮어쓰기
+#  - 고친 적이 있으면: 아래 항목만 기존 파일에 옮겨 적기
+# 빠진 항목은 서버가 켜질 때 기본값으로 자동으로 채워집니다.
+settings:
+  # 접속 유지 패킷을 따로 처리해 렉 때문에 튕기는 일을 줄임
+  use-alternate-keepalive: true
+
+world-settings:
+  default:
+    mobs:
+      villager:
+        # 움직일 수 없는 주민(거래소 칸 안)은 AI 를 꺼서 렉 감소. 거래는 그대로 됨
+        lobotomize:
+          enabled: true
+          check-interval: 100
+      dolphin:
+        disable-treasure-searching: true     # 돌고래가 보물 위치를 찾느라 청크를 뒤지지 않음
+      zombie:
+        aggressive-towards-villager-when-lagging: false
