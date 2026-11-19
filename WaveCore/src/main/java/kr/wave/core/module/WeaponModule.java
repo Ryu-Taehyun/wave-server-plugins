@@ -370,7 +370,7 @@ public class WeaponModule extends Module {
                 }
             }
             if (tool.contains(Items.N_RUINER_SCYTHE)) {
-                e.setDamage(4);
+                e.setDamage(6);
                 effect(victim, PotionEffectType.SLOWNESS, 2.5, 1);
                 Location mid = vl.clone().add(0, 1, 0);
                 Fx.p(mid, Particle.FLAME, 20, 0.6, 0.05);
@@ -412,7 +412,7 @@ public class WeaponModule extends Module {
             }
             if (tool.contains(Items.N_THUNDER) && chance(0.10)) {
                 Fx.lightning(vl);
-                hurt(victim, 2);
+                hurt(victim, 4);   // 고정 피해 2칸
                 // 천둥의 심판: 번개 기둥 + 전기 스파크
                 Fx.pillar(vl, 6, THUNDER, Particle.ELECTRIC_SPARK);
                 Fx.burst(vl.clone().add(0, 1, 0), Particle.ELECTRIC_SPARK, 40, 0.4);
