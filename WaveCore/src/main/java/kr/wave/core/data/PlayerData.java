@@ -50,6 +50,10 @@ public class PlayerData {
 
     /* 보관 */
     public final List<ItemStack> mailbox = new ArrayList<>();
+    /** 시즌이 지나도 남는 아이템의 사본 (접속 종료 · 5분마다 갱신). 월드 플레이어 데이터가 사라졌을 때 되돌려 줌 */
+    public final List<ItemStack> keepItems = new ArrayList<>();
+    /** 시즌 초기화로 인벤토리를 비워야 하는데 그때 접속하지 않았던 경우 (다음 접속 때 처리). 비어 있으면 없음 */
+    public String pendingWipe = "";
     /** 배낭 (최대 3줄 = 27칸 저장, 보이는 줄 수는 backpackRows) */
     public ItemStack[] backpack = new ItemStack[27];
     public int backpackRows = 2;
@@ -108,6 +112,8 @@ public class PlayerData {
         crownKill = y.getBoolean("crown-kill");
         crownOwned = y.getBoolean("crown-owned", crownKill);
         readItems(y.getList("mailbox"), mailbox);
+        readItems(y.getList("keep-items"), keepItems);
+        pendingWipe = y.getString("pending-wipe", "");
         backpackRows = Math.max(2, Math.min(3, y.getInt("backpack-rows", 2)));
         for (Object o : y.getList("overlord-claimed", new ArrayList<>())) if (o instanceof Number n) overlordClaimed.add(n.intValue());
         collected.addAll(y.getStringList("collected"));
@@ -159,6 +165,8 @@ public class PlayerData {
         y.set("crown-kill", crownKill);
         y.set("crown-owned", crownOwned);
         y.set("mailbox", new ArrayList<>(mailbox));
+        y.set("keep-items", new ArrayList<>(keepItems));
+        y.set("pending-wipe", pendingWipe);
         for (int i = 0; i < backpack.length; i++) if (backpack[i] != null) y.set("backpack." + i, backpack[i]);
         y.set("backpack-rows", backpackRows);
         y.set("overlord-claimed", new ArrayList<>(overlordClaimed));

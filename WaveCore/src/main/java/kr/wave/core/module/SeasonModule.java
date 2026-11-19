@@ -55,10 +55,11 @@ public class SeasonModule extends Module {
         MONEY("money", true, "일반 캐시 (보유 · 누적)"),
         EXMONEY("exmoney", false, "유료 캐시 (보유 · 누적 · 랭크 진행)"),
         LEVEL("level", true, "레벨 · 경험치"),
+        INVENTORIES("inventories", true, "인벤토리 · 엔더 상자 · 바닐라 경험치 (시즌 유지 아이템은 남김)"),
         MARKET("market", true, "장터 매물 (판매자 우편함으로 돌려줌)"),
         COLLECTIONS("collections", false, "컬렉션 수집 · 보상 수령 기록"),
-        BACKPACK("backpack", false, "배낭"),
-        TEAM_STORAGE("team-storage", false, "팀 창고"),
+        BACKPACK("backpack", false, "배낭 (시즌 유지 아이템은 남김)"),
+        TEAM_STORAGE("team-storage", false, "팀 창고 (시즌 유지 아이템은 남김)"),
         BET_LIMIT("bet-limit", true, "오늘 도박 베팅 누적");
 
         final String key, label;
@@ -123,6 +124,8 @@ public class SeasonModule extends Module {
         line(s, Part.MONEY, "합계 " + Msg.num(money[0]) + "원");
         line(s, Part.EXMONEY, "합계 " + Msg.num(ex[0]));
         line(s, Part.LEVEL, lv[0] + "명");
+        int online = Bukkit.getOnlinePlayers().size();
+        line(s, Part.INVENTORIES, "접속 중 " + online + "명은 바로, 나머지 " + Math.max(0, n - online) + "명은 다음 접속 때");
         line(s, Part.MARKET, g.market.size() + "개");
         line(s, Part.COLLECTIONS, col[0] + "명");
         line(s, Part.BACKPACK, bp[0] + "명");
@@ -177,11 +180,14 @@ public class SeasonModule extends Module {
             done.add("장터 " + n + "개 반환");
         }
         if (on(Part.TEAM_STORAGE)) {
-            for (GlobalData.Team t : g.teams.values()) t.storage = new ItemStack[54];
+            for (GlobalData.Team t : g.teams.values()) t.storage = keepOnly(t.storage, 54);
             done.add("팀 창고");
         }
         plugin.store().saveGlobal();
         // 3. 플레이어 데이터
+        String resetId = LocalDateTime.now().format(FILE_TIME);
+        // 접속 중인 사람의 인벤토리는 바로 비움 (시즌 유지 아이템은 다시 넣어 줌)
+        if (on(Part.INVENTORIES)) for (Player p : Bukkit.getOnlinePlayers()) wipe(p, data(p), true);
         int players = plugin.store().forAll(d -> {
             if (on(Part.MONEY)) {
                 d.money = 0;
@@ -199,7 +205,8 @@ public class SeasonModule extends Module {
                 d.collected.clear();
                 d.collectionClaimed.clear();
             }
-            if (on(Part.BACKPACK)) d.backpack = new ItemStack[27];
+            if (on(Part.BACKPACK)) d.backpack = keepOnly(d.backpack, 27);
+            if (on(Part.INVENTORIES) && Bukkit.getPlayer(d.uuid) == null) d.pendingWipe = resetId;   // 다음 접속 때 비움
             if (on(Part.BET_LIMIT)) {
                 d.betDay = "";
                 d.betToday = 0;
@@ -226,6 +233,88 @@ public class SeasonModule extends Module {
             Msg.sound(p, "ui.toast.challenge_complete", 0.8f, 1f);
         }
         Msg.send(s, "&a[!] 시즌 초기화를 마쳤습니다. &7(플레이어 " + players + "명, 백업: backups/" + backup.getName() + ")");
+    }
+
+    /* ---------------- 시즌 유지 아이템 ---------------- */
+
+    /** 칸 배열에서 시즌 유지 아이템만 앞에서부터 남긴 새 배열 */
+    private static ItemStack[] keepOnly(ItemStack[] from, int size) {
+        ItemStack[] out = new ItemStack[size];
+        int i = 0;
+        for (ItemStack it : kr.wave.core.Items.seasonKeepIn(from)) if (i < size) out[i++] = it;
+        return out;
+    }
+
+    /** 지금 들고 있는 시즌 유지 아이템 (가방 · 핫바 · 갑옷 · 왼손 · 엔더 상자, 셜커 상자 안 포함) */
+    private static List<ItemStack> keepItemsOf(Player p) {
+        List<ItemStack> out = new ArrayList<>(kr.wave.core.Items.seasonKeepIn(p.getInventory().getContents()));
+        out.addAll(kr.wave.core.Items.seasonKeepIn(p.getEnderChest().getContents()));
+        return out;
+    }
+
+    /** 사본 갱신: 월드 플레이어 데이터가 사라졌을 때 되돌려 줄 목록 */
+    private void snapshot(Player p) {
+        PlayerData d = data(p);
+        d.keepItems.clear();
+        d.keepItems.addAll(keepItemsOf(p));
+    }
+
+    /** 시즌 초기화로 인벤토리 비우기: 시즌 유지 아이템만 다시 넣어 주고 (넘치면 우편함) 나머지는 비움 */
+    private void wipe(Player p, PlayerData d, boolean now) {
+        List<ItemStack> keep = keepItemsOf(p);
+        p.getInventory().clear();
+        p.getEnderChest().clear();
+        p.setLevel(0);
+        p.setExp(0);
+        p.setTotalExperience(0);
+        int mailed = 0;
+        for (ItemStack it : keep) {
+            for (ItemStack rest : p.getInventory().addItem(it).values()) {
+                plugin.module(MailModule.class).send(p.getUniqueId(), rest);
+                mailed++;
+            }
+        }
+        d.pendingWipe = "";
+        snapshot(p);
+        plugin.store().save(d);
+        Msg.send(p, TAG + "&f" + (now ? "새 시즌이 시작되어" : "지난 접속 이후 새 시즌이 시작되어") + " 인벤토리가 초기화되었습니다.");
+        if (!keep.isEmpty()) Msg.send(p, TAG + "&7시즌이 지나도 남는 아이템 &f" + keep.size() + "개&7는 그대로 돌려드렸습니다."
+                + (mailed > 0 ? " &8(" + mailed + "개는 우편함)" : ""));
+    }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.NORMAL)
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        PlayerData d = data(p);
+        // 월드의 플레이어 데이터가 사라진 채로 들어옴 (새 월드 · playerdata 삭제 등): 사본으로 시즌 유지 아이템을 되돌려 줌
+        if (!p.hasPlayedBefore() && !d.keepItems.isEmpty()) {
+            for (ItemStack it : d.keepItems) plugin.module(MailModule.class).send(p.getUniqueId(), it.clone());
+            Msg.send(p, TAG + "&f월드 데이터가 초기화되어, 시즌이 지나도 남는 아이템 &e" + d.keepItems.size() + "개&f를 &e우편함&f으로 돌려드렸습니다. &7(/우편함)");
+            plugin.getLogger().info("[시즌 유지 아이템] " + p.getName() + " 님의 월드 데이터가 없어 " + d.keepItems.size() + "개를 우편함으로 복구");
+            d.keepItems.clear();
+            d.pendingWipe = "";
+            plugin.store().save(d);
+            return;
+        }
+        if (!d.pendingWipe.isEmpty()) later(1, () -> {
+            if (p.isOnline()) wipe(p, d, false);
+        });
+    }
+
+    /** 나갈 때 사본 갱신 (Store 가 저장하기 전에) */
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent e) {
+        snapshot(e.getPlayer());
+    }
+
+    private int snapTimer;
+
+    /** 5분마다 접속 중인 사람의 사본 갱신 (서버가 갑자기 꺼져도 최근 상태로) */
+    @Override
+    public void secondTick() {
+        if (++snapTimer < 300) return;
+        snapTimer = 0;
+        for (Player p : Bukkit.getOnlinePlayers()) snapshot(p);
     }
 
     /** playerdata 폴더 + global.yml + config.yml 을 zip 으로 */

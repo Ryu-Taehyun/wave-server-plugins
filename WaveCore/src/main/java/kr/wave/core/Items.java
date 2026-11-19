@@ -20,6 +20,35 @@ public final class Items {
     private static final String LEGENDARY = "%nl%&7등급 : <gradient:#29FF00:#EEEEEE><bold:true>Legendary</gradient>%nl%%nl%";
     private static final String SEASON_KEEP = "%nl%%nl%&c&l해당 아이템은 시즌이 지나도 유지됩니다.";
 
+    /** 시즌이 지나도 남는 아이템인지 (설명에 "시즌이 지나도" 문구가 있는 아이템 전부) */
+    public static boolean isSeasonKeep(ItemStack it) {
+        if (it == null || it.getType().isAir() || !it.hasItemMeta()) return false;
+        java.util.List<net.kyori.adventure.text.Component> lore = it.getItemMeta().lore();
+        if (lore == null) return false;
+        for (net.kyori.adventure.text.Component c : lore) if (Msg.plain(c).contains("시즌이 지나도")) return true;
+        return false;
+    }
+
+    /**
+     * 칸 목록에서 시즌 유지 아이템만 골라 사본으로 모음.
+     * 셜커 상자 안에 든 시즌 유지 아이템도 꺼내서 모음 (셜커 상자 자체가 유지 아이템이면 통째로)
+     */
+    public static java.util.List<ItemStack> seasonKeepIn(ItemStack[] slots) {
+        java.util.List<ItemStack> out = new java.util.ArrayList<>();
+        if (slots == null) return out;
+        for (ItemStack it : slots) {
+            if (it == null || it.getType().isAir()) continue;
+            if (isSeasonKeep(it)) {
+                out.add(it.clone());
+                continue;
+            }
+            if (it.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta bsm && bsm.getBlockState() instanceof org.bukkit.block.ShulkerBox box) {
+                for (ItemStack in : box.getInventory().getContents()) if (isSeasonKeep(in)) out.add(in.clone());
+            }
+        }
+        return out;
+    }
+
     /** 이미 지급된 아이템에도 '시즌이 지나도 유지됩니다' 문구를 붙임. 바뀌었으면 true */
     public static boolean ensureSeasonKeep(ItemStack it) {
         if (it == null || !it.hasItemMeta()) return false;
