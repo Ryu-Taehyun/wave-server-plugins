@@ -151,59 +151,157 @@ public class EconomyModule extends Module {
 
     /* ---------------- 도박 ---------------- */
 
+    /* ---------------- 도박 (홀짝) GUI ---------------- */
+
+    /** 플레이어별 현재 베팅 금액 */
+    private final java.util.Map<UUID, Long> bets = new java.util.HashMap<>();
+    /** 플레이어별 최근 결과 (최신이 앞) */
+    private final java.util.Map<UUID, java.util.Deque<String>> history = new java.util.HashMap<>();
+
+    private long minBet() {
+        return Math.max(1, plugin.getConfig().getLong("gamble.min-bet", 1000));
+    }
+
+    private long maxBet() {
+        return Math.max(minBet(), plugin.getConfig().getLong("gamble.max-bet", 1_000_000));
+    }
+
+    /** /도박 : 창 열기. /도박 <금액> 이면 그 금액으로 맞춰서 열기 */
     private void gambleCmd(CommandSender s, String l, String[] a) {
         if (!Cmd.isPlayer(s)) return;
         Player p = (Player) s;
-        Long amount = Cmd.num(Cmd.arg(a, 1));
-        String pick = Cmd.arg(a, 0);
-        if (amount == null || pick == null || !(pick.equals("홀") || pick.equals("짝"))) {
-            Msg.send(p, "&6[Gambling] &c사용법: /도박 <홀/짝> <금액>");
-            return;
+        Long amount = null;
+        for (String x : a) {
+            Long n = Cmd.num(x);
+            if (n != null) amount = n;
         }
-        if (amount < 1000) {
-            Msg.send(p, "&6[Gambling] &c최소 1,000원부터 도박이 가능합니다.");
-            return;
+        if (amount != null) bets.put(p.getUniqueId(), Math.max(minBet(), Math.min(maxBet(), amount)));
+        gambleGui(p);
+    }
+
+    private long bet(Player p) {
+        long b = bets.getOrDefault(p.getUniqueId(), minBet());
+        return Math.max(minBet(), Math.min(maxBet(), b));
+    }
+
+    private static final String G_TAG = "&6&l[Gambling] ";
+
+    public void gambleGui(Player p) {
+        UUID id = p.getUniqueId();
+        PlayerData d = data(p);
+        boolean rolling = gambling.contains(id);
+        long bet = bet(p);
+        kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(5, "&8&l홀짝 도박");
+        g.put("gamble", true);
+        g.set(4, It.of(org.bukkit.Material.PLAYER_HEAD).skull(p).name("&e" + p.getName())
+                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원").build());
+        long[] steps = {-100_000, -10_000, -1_000, 0, 1_000, 10_000, 100_000};
+        for (int i = 0; i < steps.length; i++) {
+            long st = steps[i];
+            int slot = 10 + i;
+            if (st == 0) {
+                g.set(slot, It.of(org.bukkit.Material.GOLD_INGOT).name("&6&l베팅 금액 : &e&l" + Msg.num(bet) + "원")
+                        .lore("", "&7맞히면 &a+" + Msg.num(bet) + "원&7, 틀리면 &c-" + Msg.num(bet) + "원", "", "&8좌우 버튼으로 금액을 조절합니다.").build());
+                continue;
+            }
+            boolean plus = st > 0;
+            g.set(slot, It.of(plus ? org.bukkit.Material.LIME_STAINED_GLASS_PANE : org.bukkit.Material.RED_STAINED_GLASS_PANE)
+                    .name((plus ? "&a&l+" : "&c&l-") + Msg.num(Math.abs(st)) + "원").lore("", "&e» 좌클릭 &f베팅 " + (plus ? "늘리기" : "줄이기")).build(), e -> {
+                if (gambling.contains(id)) return;
+                bets.put(id, Math.max(minBet(), Math.min(maxBet(), bet(p) + st)));
+                Msg.sound(p, "ui.button.click", 0.5f, plus ? 1.4f : 0.9f);
+                gambleGui(p);
+            });
         }
-        if (data(p).money < amount) {
-            Msg.send(p, "&6[Gambling] &c소지금이 부족합니다.");
-            return;
-        }
-        if (!gambling.add(p.getUniqueId())) {
-            Msg.send(p, "&6[Gambling] &c이미 결과를 기다리는 중입니다.");
-            return;
-        }
-        Msg.send(p, "&6[Gambling] &e결과를 확인하는 중... 3초 뒤 공개됩니다....");
-        Msg.soundAt(p.getLocation(), "block.note_block.pling", 1, 0.5f);
-        later(20, () -> {
-            if (p.isOnline()) Msg.soundAt(p.getLocation(), "block.note_block.pling", 1, 0.7f);
+        g.set(20, It.of(org.bukkit.Material.IRON_NUGGET).name("&f&l최소 금액").lore("", "&7" + Msg.num(minBet()) + "원으로 맞춥니다.", "", "&e» 좌클릭 &f적용").build(), e -> {
+            if (gambling.contains(id)) return;
+            bets.put(id, minBet());
+            gambleGui(p);
         });
-        later(40, () -> {
-            if (p.isOnline()) Msg.soundAt(p.getLocation(), "block.note_block.pling", 1, 1.0f);
+        long all = Math.max(minBet(), Math.min(maxBet(), d.money));
+        g.set(24, It.of(org.bukkit.Material.GOLD_BLOCK).name("&6&l최대 금액").lore("", "&7보유 캐시 안에서 최대 " + Msg.num(all) + "원으로 맞춥니다.", "", "&e» 좌클릭 &f적용").build(), e -> {
+            if (gambling.contains(id)) return;
+            bets.put(id, Math.max(minBet(), Math.min(maxBet(), data(p).money)));
+            gambleGui(p);
         });
-        later(60, () -> {
-            gambling.remove(p.getUniqueId());
-            PlayerData d = data(p);
-            if (d.money < amount) {
-                Msg.send(p, "&6[Gambling] &c소지금이 부족합니다.");
+        g.set(22, It.of(rolling ? org.bukkit.Material.CLOCK : org.bukkit.Material.ENDER_EYE).name(rolling ? "&e&l결과를 확인하는 중..." : "&f&l홀 또는 짝을 고르세요")
+                .lore("", "&7홀과 짝은 각각 &f50%&7 확률입니다.").build());
+        // 최근 결과
+        java.util.Deque<String> h = history.getOrDefault(id, new java.util.ArrayDeque<>());
+        It book = It.of(org.bukkit.Material.BOOK).name("&f&l최근 결과").lore("");
+        if (h.isEmpty()) book.lore("&8아직 기록이 없습니다.");
+        for (String r : h) book.lore(r);
+        g.set(31, book.build());
+        g.set(29, pickButton(p, "홀", rolling), e -> roll(p, "홀"));
+        g.set(33, pickButton(p, "짝", rolling), e -> roll(p, "짝"));
+        g.nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
+    }
+
+    private ItemStack pickButton(Player p, String pick, boolean rolling) {
+        boolean odd = pick.equals("홀");
+        return It.of(odd ? org.bukkit.Material.QUARTZ_BLOCK : org.bukkit.Material.COAL_BLOCK)
+                .name((odd ? "&f&l" : "&8&l") + "[ " + pick + " ]")
+                .lore("", rolling ? "&7결과를 기다리는 중입니다." : "&f베팅 : &e" + Msg.num(bet(p)) + "원", "", rolling ? "&8잠시만 기다려 주세요" : "&e» 좌클릭 &f" + pick + "에 걸기").build();
+    }
+
+    private void roll(Player p, String pick) {
+        UUID id = p.getUniqueId();
+        if (gambling.contains(id)) return;
+        long amount = bet(p);
+        PlayerData d = data(p);
+        if (d.money < amount) {
+            Msg.send(p, G_TAG + "&c소지금이 부족합니다. &7(보유 " + Msg.num(d.money) + "원)");
+            Msg.sound(p, "entity.villager.no", 0.8f, 1f);
+            return;
+        }
+        // 베팅금을 먼저 빼 두고, 이기면 두 배로 돌려줌 (창을 닫거나 나가도 결과는 그대로 처리)
+        d.money -= amount;
+        plugin.store().save(d);
+        gambling.add(id);
+        gambleGui(p);
+        boolean odd = ThreadLocalRandom.current().nextBoolean();
+        String result = odd ? "홀" : "짝";
+        int[] tick = {0};
+        org.bukkit.scheduler.BukkitTask[] task = new org.bukkit.scheduler.BukkitTask[1];
+        task[0] = org.bukkit.Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            tick[0] += 4;
+            if (tick[0] < 60) {   // 3초 동안 홀 / 짝 번갈아 표시
+                boolean show = (tick[0] / 4) % 2 == 0;
+                if (p.isOnline()) {
+                    var top = p.getOpenInventory().getTopInventory();
+                    if (top != null && top.getHolder() instanceof kr.wave.core.util.Gui gg && gg.get("gamble") != null)
+                        gg.set(22, It.of(show ? org.bukkit.Material.QUARTZ_BLOCK : org.bukkit.Material.COAL_BLOCK).name(show ? "&f&l[ 홀 ]" : "&8&l[ 짝 ]").lore("", "&7결과를 확인하는 중...").build());
+                    Msg.sound(p, "block.note_block.hat", 0.6f, 0.8f + tick[0] / 60f);
+                }
                 return;
             }
-            boolean odd = ThreadLocalRandom.current().nextBoolean();
-            String result = odd ? "홀" : "짝";
-            if (result.equals(pick)) {
-                d.money += amount;
-                if (p.isOnline()) {
-                    Msg.soundAt(p.getLocation(), "entity.experience_orb.pickup", 1, 1.5f);
-                    Msg.send(p, "&6[Gambling] &a승리! &f결과: " + result + "! &e+" + amount + "원");
-                }
+            task[0].cancel();
+            gambling.remove(id);
+            PlayerData dd = data(p);
+            boolean win = result.equals(pick);
+            if (win) dd.money += amount * 2;
+            plugin.store().saveAuto(dd);
+            java.util.Deque<String> h = history.computeIfAbsent(id, k -> new java.util.ArrayDeque<>());
+            h.addFirst((win ? "&a승리 " : "&c패배 ") + "&7" + pick + " → " + result + " &8(" + (win ? "+" : "-") + Msg.num(amount) + "원)");
+            while (h.size() > 7) h.removeLast();
+            if (!p.isOnline()) return;
+            if (win) {
+                Msg.send(p, G_TAG + "&a승리! &f결과: " + result + " &e+" + Msg.num(amount) + "원 &7(보유 " + Msg.num(dd.money) + "원)");
+                Msg.sound(p, "entity.player.levelup", 0.7f, 1.4f);
             } else {
-                d.money -= amount;
-                if (p.isOnline()) {
-                    Msg.soundAt(p.getLocation(), "block.anvil.land", 0.5f, 0.8f);
-                    Msg.send(p, "&6[Gambling] &c패배... &f결과: " + result + "! &e-" + amount + "원");
-                }
+                Msg.send(p, G_TAG + "&c패배... &f결과: " + result + " &e-" + Msg.num(amount) + "원 &7(보유 " + Msg.num(dd.money) + "원)");
+                Msg.sound(p, "block.anvil.land", 0.5f, 0.8f);
             }
-            plugin.store().saveAuto(d);
-        });
+            var top = p.getOpenInventory().getTopInventory();
+            if (top != null && top.getHolder() instanceof kr.wave.core.util.Gui og && og.get("gamble") != null) {
+                gambleGui(p);
+                var t2 = p.getOpenInventory().getTopInventory();
+                if (t2.getHolder() instanceof kr.wave.core.util.Gui gg)
+                    gg.set(22, It.of(odd ? org.bukkit.Material.QUARTZ_BLOCK : org.bukkit.Material.COAL_BLOCK).ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1).hide()
+                            .name((win ? "&a&l승리! " : "&c&l패배 ") + "&f결과 : " + (odd ? "&f&l홀" : "&8&l짝"))
+                            .lore("", win ? "&a+" + Msg.num(amount) + "원" : "&c-" + Msg.num(amount) + "원", "", "&7다시 홀 또는 짝을 고르면 바로 시작합니다.").build());
+            }
+        }, 4L, 4L);
     }
 
     /* ---------------- 최고급 수박 조각 ---------------- */

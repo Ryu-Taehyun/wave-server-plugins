@@ -140,6 +140,11 @@ special-shop:
     price-1: 5000
     price-10: 45000
 
+# 홀짝 도박 (/도박)
+gamble:
+  min-bet: 1000
+  max-bet: 1000000
+
 # 스킬 사용 제한 (우클릭 스킬: 혼돈의 아포칼립스, 다크니스 웨이브, 얼어붙은 제왕의 검, 이터널 크로노스, 초승달의 서약)
 skills:
   block-in-spawn: true          # 스폰 월드(worlds.spawn)에서 금지

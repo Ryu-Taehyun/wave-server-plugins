@@ -33,7 +33,7 @@ public class InfoModule extends Module {
                     .hoverEvent(HoverEvent.showText(Msg.c("&a다음 페이지 열기"))));
         }, "help", "h");
         cmd("도움말2", null, (s, l, a) -> Msg.send(s,
-                "%nl%&a/스탯 , /stats [플레이어] &7- &f플레이어의 장비와 랭크를 확인할 수 있습니다.%nl%&a/장터 &7- &f유저 장터를 오픈합니다%nl%&a/대전 [플레이어] &7- &f플레이어에게 대전 신청을 보냅니다.%nl%&a/채널, /ch [global/local/team] &7- &f채팅 채널을 변경합니다.%nl%&a/도박 [홀/짝] [금액] &7- &f도박을 할수 있습니다.%nl%%nl%"));
+                "%nl%&a/스탯 , /stats [플레이어] &7- &f플레이어의 장비와 랭크를 확인할 수 있습니다.%nl%&a/장터 &7- &f유저 장터를 오픈합니다%nl%&a/대전 [플레이어] &7- &f플레이어에게 대전 신청을 보냅니다.%nl%&a/채널, /ch [global/local/team] &7- &f채팅 채널을 변경합니다.%nl%&a/도박 &7- &f홀짝 도박 창을 엽니다.%nl%%nl%"));
         cmd("마인리스트", null, (s, l, a) -> {
             if (!Cmd.isPlayer(s)) return;
             Player p = (Player) s;

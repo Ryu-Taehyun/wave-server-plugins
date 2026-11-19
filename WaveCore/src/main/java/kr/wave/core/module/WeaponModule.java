@@ -129,6 +129,14 @@ public class WeaponModule extends Module {
         cmd("아이템", ADMIN, this::giveCommand, (snd, a) -> a.length <= 1 ? new java.util.ArrayList<>(giveIds().keySet())
                 : a.length == 2 ? Bukkit.getOnlinePlayers().stream().map(Player::getName).toList()
                 : a.length == 3 ? java.util.List.of("1", "5", "10", "64") : java.util.List.<String>of(), "특수아이템", "wgive");
+        cmd("전체지급", ADMIN, this::giveAllCommand, (snd, a) -> {
+            if (a.length <= 1) {
+                java.util.List<String> l = new java.util.ArrayList<>(java.util.List.of("손"));
+                l.addAll(giveIds().keySet());
+                return l;
+            }
+            return a.length == 2 ? java.util.List.of("1", "5", "10", "64") : a.length == 3 ? java.util.List.of("우편") : java.util.List.<String>of();
+        }, "모두지급", "giveall");
         cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.darknessWave(), Items.chaosHelmet()));
         cmd("epicitems", ADMIN, (s, l, a) -> give(s, Items.vibranium(), Items.quantumMatter(), Items.quantumSword(), Items.auroraBoots(), Items.voidChest(), Items.voidBow(),
                 Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronosBoots(), Items.chronos(0), Items.natureBoots()));
@@ -298,6 +306,102 @@ public class WeaponModule extends Module {
         String n = plain.replaceAll("^(\\s*\\[[^\\]]*\\])+\\s*", "").replace("•", "").replace(" ", "");
         return n.isEmpty() ? plain.replace(" ", "") : n;
     }
+
+    /** 우편 전체 지급 확인 대기: 실행자 -> (명령어 내용, 만료 시각) */
+    private final Map<String, Long> giveAllConfirm = new HashMap<>();
+
+    /**
+     * /전체지급 <손|특수아이템이름> [개수] [우편]
+     * - 기본: 지금 접속 중인 모든 플레이어 인벤토리에 지급 (가득 차면 남는 건 우편함으로)
+     * - 우편: 접속하지 않은 사람까지 서버에 기록된 모든 플레이어의 우편함으로 지급 (같은 명령을 10초 안에 한 번 더 입력해야 실행)
+     */
+    private void giveAllCommand(org.bukkit.command.CommandSender s, String l, String[] a) {
+        if (a.length == 0) {
+            Msg.send(s, "&e/" + l + " <손|이름> [개수] [우편]");
+            Msg.send(s, "&7- &f손 &7: 손에 든 아이템을 그대로 지급   &7- &f이름 &7: /아이템 과 같은 특수 아이템 이름 (Tab)");
+            Msg.send(s, "&7- &f우편 &7: 오프라인 포함 전체 플레이어 우편함으로 지급 (한 번 더 입력해 확인)");
+            return;
+        }
+        ItemStack sample;
+        if (a[0].equals("손")) {
+            if (!(s instanceof Player sp) || It.isAir(sp.getInventory().getItemInMainHand())) {
+                Msg.send(s, "&c손에 지급할 아이템을 들고 사용하세요. &7(콘솔에서는 아이템 이름을 적어 주세요)");
+                return;
+            }
+            sample = sp.getInventory().getItemInMainHand().clone();
+        } else {
+            java.util.function.Supplier<ItemStack> sup = giveIds().get(a[0]);
+            if (sup == null) for (var en : giveIds().entrySet()) if (en.getKey().equalsIgnoreCase(a[0])) sup = en.getValue();
+            if (sup == null) {
+                Msg.send(s, "&c알 수 없는 아이템입니다: &f" + a[0] + " &7(Tab 으로 이름을 확인하세요)");
+                return;
+            }
+            sample = sup.get();
+        }
+        int count = a[0].equals("손") ? sample.getAmount() : 1;
+        if (a.length >= 2 && !a[1].equals("우편")) {
+            try {
+                count = Math.max(1, Math.min(2304, Integer.parseInt(a[1])));
+            } catch (NumberFormatException ex) {
+                Msg.send(s, "&c개수는 숫자로 적어 주세요.");
+                return;
+            }
+        }
+        boolean mail = java.util.Arrays.asList(a).contains("우편");
+        sample.setAmount(1);
+        String label = Items.describeShort(sample) + " &7x " + count;
+        if (mail) {
+            String key = s.getName() + "|" + String.join(" ", a);
+            long now = System.currentTimeMillis();
+            Long until = giveAllConfirm.get(s.getName());
+            String pending = giveAllPending.get(s.getName());
+            if (until == null || until < now || !key.equals(pending)) {
+                giveAllConfirm.put(s.getName(), now + 10_000);
+                giveAllPending.put(s.getName(), key);
+                Msg.send(s, "&e[!] &f서버에 기록된 &e모든 플레이어&f의 우편함으로 " + label + " &f를 보냅니다.");
+                Msg.send(s, "&e[!] &7맞으면 &f10초 안에 같은 명령어를 한 번 더 &7입력하세요.");
+                return;
+            }
+            giveAllConfirm.remove(s.getName());
+            giveAllPending.remove(s.getName());
+            final int c = count;
+            int n = plugin.store().forAll(d -> {
+                int left = c, max = Math.max(1, sample.getMaxStackSize());
+                while (left > 0) {
+                    ItemStack part = sample.clone();
+                    part.setAmount(Math.min(max, left));
+                    left -= part.getAmount();
+                    d.mailbox.add(part);
+                }
+            });
+            for (Player o : Bukkit.getOnlinePlayers()) Msg.send(o, "&a&l[전체 지급] &f" + label + " &f이(가) &e우편함&f으로 지급되었습니다. &7(/우편함)");
+            Msg.send(s, "&a[!] &f" + n + "명의 우편함으로 " + label + " &f지급을 마쳤습니다.");
+            plugin.getLogger().info("[전체 지급] " + s.getName() + " -> 우편 " + n + "명 : " + Msg.plainOf(label));
+            return;
+        }
+        int n = 0, mailed = 0;
+        for (Player o : Bukkit.getOnlinePlayers()) {
+            int left = count, max = Math.max(1, sample.getMaxStackSize());
+            boolean toMail = false;
+            while (left > 0) {
+                ItemStack part = sample.clone();
+                part.setAmount(Math.min(max, left));
+                left -= part.getAmount();
+                for (ItemStack rest : o.getInventory().addItem(part).values()) {   // 가득 차면 우편함으로
+                    plugin.module(MailModule.class).send(o.getUniqueId(), rest);
+                    toMail = true;
+                }
+            }
+            if (toMail) mailed++;
+            n++;
+            Msg.send(o, "&a&l[전체 지급] &f" + label + " &f이(가) 지급되었습니다." + (toMail ? " &7(인벤토리가 가득 차 일부는 우편함으로)" : ""));
+            Msg.sound(o, "entity.player.levelup", 0.6f, 1.6f);
+        }
+        Msg.send(s, "&a[!] &f접속 중인 " + n + "명에게 " + label + " &f지급했습니다." + (mailed > 0 ? " &7(" + mailed + "명은 일부 우편함으로)" : ""));
+        plugin.getLogger().info("[전체 지급] " + s.getName() + " -> 접속자 " + n + "명 : " + Msg.plainOf(label));
+    }
+
+    private final Map<String, String> giveAllPending = new HashMap<>();
 
     private void giveCommand(org.bukkit.command.CommandSender s, String l, String[] a) {
         if (a.length == 0) {
