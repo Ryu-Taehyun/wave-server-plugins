@@ -82,7 +82,7 @@ public class Hooks {
         return false;
     }
 
-    /** 이 위치에서 WorldGuard 가 PvP 를 막는지 (pvp: deny). WorldGuard 가 없거나 확인 실패 시 false */
+    /** 이 위치에서 WorldGuard 구역이 PvP 를 막는지 (pvp 플래그가 deny 로 정해진 곳만). WorldGuard 가 없거나 확인 실패 시 false */
     public boolean pvpDenied(Location loc) {
         if (!Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) return false;
         try {
@@ -99,9 +99,11 @@ public class Hooks {
             java.lang.reflect.Array.set(arr, 0, pvp);
             Class<?> assoc = Class.forName("com.sk89q.worldguard.protection.association.RegionAssociable", true, cl);
             Class<?> weLocClass = Class.forName("com.sk89q.worldedit.util.Location", true, cl);
-            Method m = query.getClass().getMethod("testState", weLocClass, assoc, arr.getClass());
+            // queryState: 구역이 pvp 를 정하지 않았으면 null, 정했으면 ALLOW / DENY.
+            // (testState 는 아무도 정하지 않은 곳도 false 를 돌려줘서, 일반 야생까지 PvP 금지로 잘못 판단했음)
+            Method m = query.getClass().getMethod("queryState", weLocClass, assoc, arr.getClass());
             Object r = m.invoke(query, weLoc, null, arr);
-            return Boolean.FALSE.equals(r);
+            return r != null && "DENY".equals(r.toString());
         } catch (Exception | LinkageError e) {
             Log.once("hook:wg-pvp", "WorldGuard PvP 확인에 실패했습니다. PvP 금지 구역 스킬 제한이 동작하지 않습니다: " + e);
             return false;

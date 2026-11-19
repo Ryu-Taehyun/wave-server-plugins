@@ -2912,10 +2912,13 @@ public class WaveTest {
         drain(p);
         server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInteractEvent(p, org.bukkit.event.block.Action.RIGHT_CLICK_AIR, p.getInventory().getItemInMainHand(), null, org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND));
         assertFalse(p.hasPotionEffect(org.bukkit.potion.PotionEffectType.STRENGTH), "스폰에서는 스킬 안 나감");
-        String msg = drain(p);
-        assertTrue(msg.contains("스킬을 사용할 수 없습니다"), msg);
+        String bar = "";
+        net.kyori.adventure.text.Component ab;
+        while ((ab = p.nextActionBar()) != null) bar += Msg.plain(ab);
+        assertTrue(bar.contains("스폰에서는 스킬을 사용할 수 없습니다"), "액션바로 안내: " + bar);
+        assertFalse(drain(p).contains("스킬을 사용할 수 없습니다"), "채팅에는 안 남김");
         server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInteractEvent(p, org.bukkit.event.block.Action.RIGHT_CLICK_AIR, p.getInventory().getItemInMainHand(), null, org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND));
-        assertFalse(drain(p).contains("스킬을 사용할 수 없습니다"), "연타 시 안내는 한 번");
+        assertFalse(drain(p).contains("스킬을 사용할 수 없습니다"), "연타해도 채팅이 밀리지 않음");
         p.teleport(new org.bukkit.Location(server.getWorld("world"), 0, 64, 0));
         assertFalse(wm.skillBlocked(p), "야생은 가능");
         server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInteractEvent(p, org.bukkit.event.block.Action.RIGHT_CLICK_AIR, p.getInventory().getItemInMainHand(), null, org.bukkit.block.BlockFace.SELF, org.bukkit.inventory.EquipmentSlot.HAND));

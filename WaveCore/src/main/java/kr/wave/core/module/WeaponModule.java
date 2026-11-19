@@ -917,6 +917,16 @@ public class WeaponModule extends Module {
 
     private final Map<UUID, Long> skillBlockMsg = new HashMap<>();
 
+    /** 왜 막혔는지 (안내 문구용) */
+    private String skillBlockReason(Player p) {
+        var cfg = plugin.getConfig();
+        if (cfg.getBoolean("skills.block-in-spawn", true) && inWorld(p, "spawn")) return "스폰";
+        for (String r : cfg.getStringList("skills.blocked-regions").isEmpty()
+                ? java.util.List.of(cfg.getString("protect-region", "protect")) : cfg.getStringList("skills.blocked-regions"))
+            if (plugin.hooks().inRegion(p.getLocation(), r)) return "보호구역";
+        return "PvP 금지 구역";
+    }
+
     /** 스폰 월드 · 보호구역 · PvP 금지 구역(WorldGuard)에서는 스킬 사용 불가 */
     public boolean skillBlocked(Player p) {
         var cfg = plugin.getConfig();
@@ -942,9 +952,10 @@ public class WeaponModule extends Module {
                 || n.contains(Items.N_ETERNAL_CHRONOS) || Items.isNewChar(n);
         if (skillItem && skillBlocked(p)) {
             e.setCancelled(true);
-            if (now - skillBlockMsg.getOrDefault(id, 0L) > 1500) {   // 연타해도 안내는 한 번씩
+            // 채팅이 아니라 액션바로 (연타해도 채팅이 밀리지 않게), 소리는 3초에 한 번
+            Msg.actionBar(p, "&c&l[!] &c" + skillBlockReason(p) + "에서는 스킬을 사용할 수 없습니다.");
+            if (now - skillBlockMsg.getOrDefault(id, 0L) > 3000) {
                 skillBlockMsg.put(id, now);
-                Msg.send(p, "&c&l[!] &c스폰과 보호구역에서는 스킬을 사용할 수 없습니다.");
                 Msg.sound(p, "block.note_block.bass", 0.6f, 0.8f);
             }
             return;
@@ -1460,7 +1471,8 @@ public class WeaponModule extends Module {
                 bar = skill(p, "<gradient:#FFF200:#FFFCD4><b>⚡ 심판의 빛</b></gradient>", claymoreCd, now,
                         (long) (plugin.getConfig().getDouble("weapons.claymore.judgment-cooldown-seconds", 30) * 1000), "&e", "타격 시 발동", 12);
             }
-            if (bar != null) Msg.actionBar(p, bar);
+            // 스킬 금지 안내를 막 띄웠으면 2초 동안 무기 액션바로 덮지 않음
+            if (bar != null && System.currentTimeMillis() - skillBlockMsg.getOrDefault(id, 0L) > 2000) Msg.actionBar(p, bar);
 
             // 최대 체력 / 이동 속도 (기본 하트 5칸, 특수 무기 소지 시 +5칸)
             boolean claymore = hasClaymore(p);
