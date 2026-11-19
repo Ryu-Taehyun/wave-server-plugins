@@ -206,6 +206,20 @@ skills:
     - "protect"
   block-where-pvp-denied: true  # WorldGuard 로 PvP 가 막힌 곳에서도 금지
 
+# 시즌 초기화 (/시즌 초기화 -> 미리보기, 60초 안에 /시즌 초기화 확인 -> 실행)
+# 실행 전에 plugins/WaveCore/backups/season-날짜.zip 으로 전체 백업을 만들고, logs/season-reset.log 에 기록합니다.
+# true = 초기화, false = 유지
+season-reset:
+  money: true          # 일반 캐시 (보유 · 누적)
+  exmoney: false       # 유료 캐시 (보유 · 누적 · 랭크 진행). 결제한 금액이므로 보통 false
+  level: true          # 레벨 · 경험치
+  market: true         # 장터 매물 (판매자 우편함으로 돌려줌)
+  collections: false   # 컬렉션 수집 · 보상 수령 기록
+  backpack: false      # 배낭
+  team-storage: false  # 팀 창고
+  bet-limit: true      # 오늘 도박 베팅 누적
+  commands: []         # 초기화 뒤 콘솔에서 실행할 명령어. 예: ["passadmin season next 시즌 7"]
+
 # 상자 잠금 (점검): /상자 잠금 <상자> [사유] 로 잠그면 여기에 저장되고, /상자 해제 <상자> 로 풉니다.
 # 잠긴 상자는 열 수 없고 상점의 교환권 판매도 멈춥니다. 플레이어가 가진 키는 그대로 남습니다.
 crate-locks: {}

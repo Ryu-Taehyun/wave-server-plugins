@@ -107,6 +107,46 @@ public class Store implements Listener {
         return ids.size();
     }
 
+    /** 저장된 모든 플레이어 데이터를 읽기만 함 (저장 · 캐시 변경 없음, 미리보기용) */
+    public int scanAll(java.util.function.Consumer<PlayerData> action) {
+        java.util.Set<UUID> ids = new java.util.HashSet<>(cache.keySet());
+        File[] files = folder.listFiles((dir, n) -> n.endsWith(".yml"));
+        if (files != null) for (File f : files) {
+            try {
+                ids.add(UUID.fromString(f.getName().substring(0, f.getName().length() - 4)));
+            } catch (IllegalArgumentException ignored) {   // 플레이어 파일이 아님 (forAll 에서 경고)
+            }
+        }
+        for (UUID id : ids) {
+            PlayerData d = cache.get(id);
+            action.accept(d != null ? d : load(id));
+        }
+        return ids.size();
+    }
+
+    /** 지금까지 맡긴 저장이 모두 끝날 때까지 기다림 (백업 직전용). 시간 안에 끝나면 true */
+    public boolean flush(long seconds) {
+        try {
+            io.submit(() -> {
+            }).get(seconds, TimeUnit.SECONDS);
+            return true;
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            return true;   // 이미 종료 중: 저장은 바로바로 쓰였음
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "저장 대기 중 오류", e);
+            return false;
+        }
+    }
+
+    /** playerdata 폴더 · global.yml 위치 (백업용) */
+    public File folder() {
+        return folder;
+    }
+
+    public File globalFile() {
+        return globalFile;
+    }
+
     public void save(PlayerData d) {
         String content = d.toYaml();
         File f = file(d.uuid);

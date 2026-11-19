@@ -3229,6 +3229,68 @@ public class WaveTest {
     }
 
     @Test
+    void seasonReset() throws Exception {
+        PlayerMock admin = server.addPlayer("SeasonAdm");
+        admin.setOp(true);
+        PlayerMock p = server.addPlayer("Seasoner");
+        PlayerMock seller = server.addPlayer("Seller");
+        server.getScheduler().performTicks(5);
+        var d = plugin.store().get(p);
+        d.money = 50_000;
+        d.moneyTotal = 80_000;
+        d.exMoney = 30_000;
+        d.exMoneyTotal = 30_000;
+        d.level = 12;
+        d.exp = 500;
+        d.collected.add("glacier");
+        d.betDay = java.time.LocalDate.now().toString();
+        d.betToday = 400_000;
+        var li = new kr.wave.core.data.GlobalData.Listing();
+        li.id = 1;
+        li.seller = seller.getUniqueId();
+        li.sellerName = "Seller";
+        li.price = 1000;
+        li.item = new ItemStack(Material.DIAMOND, 3);
+        plugin.store().global().market.add(li);
+        int sellerMail = plugin.store().get(seller).mailbox.size();
+        // 미리보기 없이 확인하면 거부
+        drain(admin);
+        assertTrue(admin.performCommand("시즌 초기화 확인"));
+        assertTrue(drain(admin).contains("먼저"));
+        assertEquals(50_000, d.money);
+        // 미리보기: 아무것도 안 바뀜
+        assertTrue(admin.performCommand("시즌 초기화"));
+        String pv = drain(admin);
+        assertTrue(pv.contains("미리보기") && pv.contains("장터") && pv.contains("1개"), pv);
+        assertEquals(50_000, d.money, "미리보기는 바꾸지 않음");
+        // 실행
+        assertTrue(admin.performCommand("시즌 초기화 확인"));
+        assertEquals(0, d.money);
+        assertEquals(0, d.moneyTotal);
+        assertEquals(30_000, d.exMoney, "유료 캐시는 기본으로 유지");
+        assertEquals(30_000, d.exMoneyTotal);
+        assertEquals(1, d.level);
+        assertEquals(0, d.exp);
+        assertTrue(d.collected.contains("glacier"), "컬렉션은 기본으로 유지");
+        assertEquals(0, d.betToday);
+        assertTrue(plugin.store().global().market.isEmpty(), "장터 비움");
+        assertEquals(sellerMail + 1, plugin.store().get(seller).mailbox.size(), "매물은 판매자 우편함으로");
+        var backups = new java.io.File(plugin.getDataFolder(), "backups").listFiles((dir, n) -> n.startsWith("season-") && n.endsWith(".zip"));
+        assertNotNull(backups);
+        assertEquals(1, backups.length, "백업 생성");
+        try (var z = new java.util.zip.ZipFile(backups[0])) {
+            assertNotNull(z.getEntry("global.yml"));
+            assertTrue(z.stream().anyMatch(en -> en.getName().startsWith("playerdata/")));
+        }
+        assertTrue(new java.io.File(plugin.getDataFolder(), "logs/season-reset.log").exists());
+        assertNotNull(plugin.getConfig().getString("season-reset.last"));
+        // 한 번 더 확인만 입력하면 거부 (미리보기 다시 필요)
+        drain(admin);
+        admin.performCommand("시즌 초기화 확인");
+        assertTrue(drain(admin).contains("먼저"));
+    }
+
+    @Test
     void ruinerPantsRework() {
         plugin.getConfig().set("weapons.ruiner-pants.deny-death-chance", 1.0);
         PlayerMock p = server.addPlayer("Ruined");
