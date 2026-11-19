@@ -23,10 +23,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -121,12 +119,8 @@ public class EventModule extends Module {
             if (by != null) Msg.send(by, "&c알맞은 위치를 찾지 못했습니다. 다시 시도해 주세요.");
             return false;
         }
-        spot.setType(Material.CHEST);
-        if (spot.getState() instanceof Chest chest) {
-            chest.customName(Msg.c("<gradient:#FFB347:#FFE29A><b>보급 상자</b></gradient>"));
-            chest.update();
-            fill(((Chest) spot.getState()).getBlockInventory());
-        }
+        spot.setType(Material.CHEST);   // 겉모습만 상자. 열면 보급 상자 창(4줄)이 열림
+        dropGui = buildGui();
         drop = spot;
         dropOpened = false;
         dropLeft = cfg.getInt("supply-drop.despawn-minutes", 15) * 60;
@@ -167,19 +161,62 @@ public class EventModule extends Module {
         return null;
     }
 
-    /** config supply-drop.loot 에서 rolls 번 뽑아 빈 칸에 무작위로 */
-    private void fill(Inventory inv) {
+    /** 보급품이 들어가는 칸 (4줄 창의 안쪽 2줄, 왼쪽 위부터 순서대로) */
+    static final int[] LOOT_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+
+    private kr.wave.core.util.Gui dropGui;
+
+    /** 4줄 창: 테두리는 판유리, 보급품은 안쪽 칸에 순서대로. 여러 명이 같은 창을 봄 */
+    private kr.wave.core.util.Gui buildGui() {
+        kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(4, "<gradient:#FFB347:#FFE29A><b>보급 상자</b></gradient>");
+        g.put("supply", true);
+        List<ItemStack> loot = rollLoot();
+        for (int i = 0; i < LOOT_SLOTS.length; i++) {
+            int slot = LOOT_SLOTS[i];
+            if (i < loot.size()) g.set(slot, loot.get(i));
+            g.on(slot, e -> take(e, g, slot));
+            g.quiet(slot);
+        }
+        ItemStack border = kr.wave.core.util.It.pane(Material.ORANGE_STAINED_GLASS_PANE, " ");
+        for (int i = 0; i < 36; i++) {
+            boolean inner = false;
+            for (int s2 : LOOT_SLOTS) if (s2 == i) inner = true;
+            if (!inner) g.set(i, border);
+        }
+        return g;
+    }
+
+    /** 칸을 클릭하면 그 아이템을 가져감 (인벤토리가 차면 남는 만큼 그대로 둠) */
+    private void take(org.bukkit.event.inventory.InventoryClickEvent e, kr.wave.core.util.Gui g, int slot) {
+        if (!(e.getWhoClicked() instanceof Player p) || g != dropGui) return;
+        ItemStack it = g.getInventory().getItem(slot);
+        if (it == null || it.getType().isAir()) return;
+        var left = p.getInventory().addItem(it.clone());
+        if (left.isEmpty()) g.getInventory().setItem(slot, null);
+        else {
+            g.getInventory().setItem(slot, left.values().iterator().next());
+            Msg.send(p, "&c인벤토리가 가득 찼습니다.");
+        }
+        Msg.sound(p, "entity.item.pickup", 0.6f, 1.2f);
+        boolean empty = true;
+        for (int s2 : LOOT_SLOTS) {
+            ItemStack x = g.getInventory().getItem(s2);
+            if (x != null && !x.getType().isAir()) empty = false;
+        }
+        if (empty) later(1, () -> endDrop(DROP_TAG + "&e" + p.getName() + "&f님이 보급 상자를 모두 가져갔습니다."));
+    }
+
+    /** config supply-drop.loot 에서 rolls 번 뽑기 (최대 14묶음) */
+    private List<ItemStack> rollLoot() {
+        List<ItemStack> out = new ArrayList<>();
         var cfg = plugin.getConfig();
         List<Map<?, ?>> pool = cfg.getMapList("supply-drop.loot");
-        if (pool.isEmpty()) return;
+        if (pool.isEmpty()) return out;
         double total = 0;
         for (Map<?, ?> m : pool) total += num(m.get("weight"), 1);
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        List<Integer> slots = new ArrayList<>();
-        for (int i = 0; i < inv.getSize(); i++) slots.add(i);
-        java.util.Collections.shuffle(slots);
-        int rolls = Math.max(1, cfg.getInt("supply-drop.rolls", 6));
-        for (int k = 0; k < rolls && k < slots.size(); k++) {
+        int rolls = Math.max(1, Math.min(LOOT_SLOTS.length, cfg.getInt("supply-drop.rolls", 6)));
+        for (int k = 0; k < rolls; k++) {
             double pick = r.nextDouble(total);
             Map<?, ?> chosen = pool.get(pool.size() - 1);
             for (Map<?, ?> m : pool) {
@@ -190,8 +227,18 @@ public class EventModule extends Module {
                 }
             }
             ItemStack it = lootItem(chosen);
-            if (it != null) inv.setItem(slots.get(k), it);
+            if (it == null) continue;
+            boolean merged = false;   // 같은 아이템이 또 나오면 한 칸에 합침 (최대 묶음 수까지)
+            for (ItemStack o : out) {
+                if (o.isSimilar(it) && o.getAmount() + it.getAmount() <= o.getMaxStackSize()) {
+                    o.setAmount(o.getAmount() + it.getAmount());
+                    merged = true;
+                    break;
+                }
+            }
+            if (!merged) out.add(it);
         }
+        return out;
     }
 
     private static double num(Object o, double def) {
@@ -229,7 +276,10 @@ public class EventModule extends Module {
         if (drop == null) return;
         Block b = drop;
         drop = null;
-        if (b.getState() instanceof Chest c) c.getBlockInventory().clear();
+        if (dropGui != null) {
+            for (var v : new ArrayList<>(dropGui.getInventory().getViewers())) v.closeInventory();
+            dropGui = null;
+        }
         b.setType(Material.AIR);
         Fx.burst(b.getLocation().add(0.5, 0.5, 0.5), Particle.CLOUD, 20, 0.3);
         if (msg != null) Msg.broadcast(msg);
@@ -238,21 +288,16 @@ public class EventModule extends Module {
     @EventHandler(priority = EventPriority.HIGH)
     public void onDropOpen(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK || !isDrop(e.getClickedBlock())) return;
+        e.setCancelled(true);   // 진짜 상자 창 대신 보급 상자 창
+        Player p = e.getPlayer();
+        if (dropGui != null) dropGui.open(p);
         if (dropOpened) return;
         dropOpened = true;
-        Player p = e.getPlayer();
         Msg.broadcast(DROP_TAG + "&e" + p.getName() + "&f님이 보급 상자를 열었습니다!");
         Msg.soundAt(drop.getLocation(), "block.chest.open", 1, 0.8f);
         Fx.burst(drop.getLocation().add(0.5, 1, 0.5), Particle.TOTEM_OF_UNDYING, 40, 0.4);
         // 연 뒤에는 2분 안에 회수 (남은 시간이 더 짧으면 그대로)
         dropLeft = Math.min(dropLeft, plugin.getConfig().getInt("supply-drop.after-open-seconds", 120));
-    }
-
-    /** 다 비우면 상자 사라짐 */
-    @EventHandler
-    public void onDropClose(InventoryCloseEvent e) {
-        if (drop == null || !(e.getInventory().getHolder() instanceof Chest c) || !c.getBlock().equals(drop)) return;
-        if (c.getBlockInventory().isEmpty()) later(1, () -> endDrop(null));
     }
 
     @EventHandler(ignoreCancelled = true)
