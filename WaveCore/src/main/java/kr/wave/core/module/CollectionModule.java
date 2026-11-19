@@ -205,6 +205,36 @@ public class CollectionModule extends Module {
             Fx.helix(p, Fx.rgb(0xD580FF), Fx.rgb(0xFFFFFF), 0.8, 2.4, 24);
             later(1, () -> sub(p, c));
         });
+        // 천공의 심판자 클레이모어 · 프로스트 그레이브: 전용 킬 알림 / 파티클 켜고 끄기
+        String weapon = c.key().equals("arbiter") ? "claymore" : c.key().equals("glacier") ? "frost" : null;
+        if (weapon != null) {
+            String wname = weapon.equals("claymore") ? "천공의 심판자 클레이모어" : "프로스트 그레이브";
+            boolean log = !d.killLogOff.contains(weapon), fx = !d.fxOff.contains(weapon);
+            It logBtn = It.of(log ? Material.NAME_TAG : Material.PAPER).name((log ? "&a&l" : "&7&l") + "전용 킬 알림 : " + (log ? "켜짐" : "꺼짐"))
+                    .lore("", "&7" + wname + "&7로 처치하면 나오는", "&7무기 전용 두 줄 킬 알림입니다.", "&7끄면 일반 킬 알림으로 나옵니다.", "",
+                            "&e» 클릭 &f" + (log ? "끄기" : "켜기"));
+            if (log) logBtn.ench(Enchantment.UNBREAKING, 1);
+            g.set(29, logBtn.hide().build(), e -> {
+                if (!d.killLogOff.remove(weapon)) d.killLogOff.add(weapon);
+                plugin.store().save(d);
+                boolean now = !d.killLogOff.contains(weapon);
+                Msg.send(p, "&e[!] &7" + wname + " &7전용 킬 알림이" + (now ? " &a켜졌습니다." : " &c꺼졌습니다. &7(일반 킬 알림으로 표시)"));
+                Msg.sound(p, now ? "entity.player.levelup" : "block.note_block.bass", 0.6f, now ? 1.8f : 1f);
+                later(1, () -> sub(p, c));
+            });
+            It fxBtn = It.of(fx ? Material.BLAZE_POWDER : Material.GUNPOWDER).name((fx ? "&a&l" : "&7&l") + "무기 파티클 : " + (fx ? "켜짐" : "꺼짐"))
+                    .lore("", "&7" + wname + "&7를 들고 있을 때 · 타격할 때", "&7나오는 파티클 연출입니다.", "&7끄면 능력은 그대로, 파티클만 나오지 않습니다.", "",
+                            "&e» 클릭 &f" + (fx ? "끄기" : "켜기"));
+            if (fx) fxBtn.ench(Enchantment.UNBREAKING, 1);
+            g.set(33, fxBtn.hide().build(), e -> {
+                if (!d.fxOff.remove(weapon)) d.fxOff.add(weapon);
+                plugin.store().save(d);
+                boolean now = !d.fxOff.contains(weapon);
+                Msg.send(p, "&e[!] &7" + wname + " &7파티클이" + (now ? " &a켜졌습니다." : " &c꺼졌습니다. &7(능력은 그대로)"));
+                Msg.sound(p, now ? "entity.player.levelup" : "block.note_block.bass", 0.6f, now ? 1.8f : 1f);
+                later(1, () -> sub(p, c));
+            });
+        }
         g.nav(p, () -> collection(p)).fill().open(p);
     }
 

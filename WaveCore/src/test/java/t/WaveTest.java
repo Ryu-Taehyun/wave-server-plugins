@@ -3449,6 +3449,84 @@ public class WaveTest {
     }
 
     @Test
+    void shareShulkerAndWeaponToggles() {
+        PlayerMock p = server.addPlayer("ShulkerSharer");
+        PlayerMock w = server.addPlayer("ShulkerViewer");
+        server.getScheduler().performTicks(5);
+        // [inv] 연두색
+        var share = plugin.module(kr.wave.core.module.ShareModule.class);
+        net.kyori.adventure.text.Component inv = share.render(p, "[inv]");
+        java.util.List<net.kyori.adventure.text.Component> all = new java.util.ArrayList<>(java.util.List.of(inv));
+        for (int i = 0; i < all.size(); i++) all.addAll(all.get(i).children());
+        assertTrue(all.stream().anyMatch(c -> net.kyori.adventure.text.format.NamedTextColor.GREEN.equals(c.color()) && Msg.plain(c).contains("인벤토리")), "연두색");
+        // 엔더 상자 속 셜커 상자 -> 클릭하면 안이 보임
+        ItemStack shulker = new ItemStack(Material.SHULKER_BOX);
+        var bsm = (org.bukkit.inventory.meta.BlockStateMeta) shulker.getItemMeta();
+        var box = (org.bukkit.block.ShulkerBox) bsm.getBlockState();
+        box.getInventory().setItem(4, Items.chaosHelmet());
+        bsm.setBlockState(box);
+        shulker.setItemMeta(bsm);
+        p.getEnderChest().setItem(2, shulker);
+        net.kyori.adventure.text.Component ec = share.render(p, "[ec]");
+        String cmd = null;
+        java.util.List<net.kyori.adventure.text.Component> q = new java.util.ArrayList<>(java.util.List.of(ec));
+        for (int i = 0; i < q.size(); i++) {
+            if (q.get(i).clickEvent() != null) cmd = q.get(i).clickEvent().value();
+            q.addAll(q.get(i).children());
+        }
+        assertNotNull(cmd);
+        assertTrue(w.performCommand(cmd.substring(1)));
+        assertTrue(allText(w.getOpenInventory().getTopInventory()).contains("안에 든 아이템 보기"));
+        click(w, 2, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertEquals("셜커 상자 안", title(w));
+        assertTrue(Msg.name(w.getOpenInventory().getTopInventory().getItem(4)).contains("종말의 투구"));
+        GuiSnapshot.save(w, "share_shulker.json");
+        click(w, 27, ClickType.LEFT);   // 뒤로
+        server.getScheduler().performTicks(2);
+        assertTrue(title(w).contains("엔더 상자"));
+        // 컬렉션: 천공의 심판자 화면에서 클레이모어 킬 알림 · 파티클 끄기
+        var d = plugin.store().get(p);
+        p.closeInventory();
+        assertTrue(p.performCommand("컬렉션"));
+        click(p, 22, ClickType.LEFT);   // Arbiter of Heaven
+        server.getScheduler().performTicks(2);
+        assertTrue(title(p).contains("Arbiter of Heaven"), title(p));
+        var top = p.getOpenInventory().getTopInventory();
+        assertTrue(Msg.name(top.getItem(29)).contains("전용 킬 알림 : 켜짐"));
+        assertTrue(Msg.name(top.getItem(33)).contains("무기 파티클 : 켜짐"));
+        GuiSnapshot.save(p, "collection_toggles.json");
+        click(p, 29, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        click(p, 33, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(d.killLogOff.contains("claymore") && d.fxOff.contains("claymore"));
+        assertFalse(d.killLogOff.contains("frost"), "무기별로 따로");
+        assertTrue(Msg.name(p.getOpenInventory().getTopInventory().getItem(29)).contains("꺼짐"));
+        // 킬 알림: 끄면 일반 형식 (한 줄, 무기 이름 괄호)
+        PlayerMock v = server.addPlayer("ToggleVictim");
+        PlayerMock obs = server.addPlayer("ToggleObs");
+        p.getInventory().setItemInMainHand(Items.claymoreSd());
+        v.setKiller(p);
+        drain(obs);
+        server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(v, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(p).withDirectEntity(p).build(), new java.util.ArrayList<>(), 0, null));
+        String log = drain(obs);
+        assertTrue(log.lines().anyMatch(l -> l.contains("ShulkerSharer") && l.contains("ToggleVictim") && l.contains("( ") && l.contains("클레이모어")), "일반 킬 알림: " + log);
+        // 다시 켜면 전용 형식 (두 줄)
+        d.killLogOff.remove("claymore");
+        drain(obs);
+        server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(v, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(p).withDirectEntity(p).build(), new java.util.ArrayList<>(), 0, null));
+        String log2 = drain(obs);
+        assertFalse(log2.lines().anyMatch(l -> l.contains("ShulkerSharer") && l.contains("( ")), "전용 형식: " + log2);
+        // 저장 · 불러오기
+        var y = new org.bukkit.configuration.file.YamlConfiguration();
+        try { y.loadFromString(d.toYaml()); } catch (Exception ex) { throw new RuntimeException(ex); }
+        var re = new kr.wave.core.data.PlayerData(p.getUniqueId());
+        re.load(y);
+        assertTrue(re.fxOff.contains("claymore"));
+    }
+
+    @Test
     void ruinerPantsRework() {
         plugin.getConfig().set("weapons.ruiner-pants.deny-death-chance", 1.0);
         PlayerMock p = server.addPlayer("Ruined");

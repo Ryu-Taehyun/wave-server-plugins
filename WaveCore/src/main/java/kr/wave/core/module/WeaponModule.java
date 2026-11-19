@@ -543,6 +543,8 @@ public class WeaponModule extends Module {
                 Fx.p(mid, Particle.WHITE_ASH, 30, 0.6, 0.02);
                 Fx.fade(mid, SAND, SAND_P, 1.2f, 16, 0.6);
             }
+            // 클레이모어 · 프로스트 그레이브 파티클 (컬렉션 화면에서 무기별로 끌 수 있음)
+            boolean fx = !data(attacker).fxOff.contains(tool.equals(Items.N_FROST) ? "frost" : "claymore");
             if (tool.equals(Items.N_CLAYMORE_SD)) {
                 // 플레이어 타격: 방어구를 무시하고 체력을 바로 깎음 (기본 20 = 하트 10칸)
                 // 남은 체력이 그 이하라면 하트 1칸(min-health)만 남김, 이미 1칸 이하면 일반 공격으로 마무리
@@ -559,17 +561,17 @@ public class WeaponModule extends Module {
                 }
                 long now = System.currentTimeMillis();
                 if (claymoreCd.getOrDefault(attacker.getUniqueId(), 0L) <= now) {
-                    Fx.lightning(vl);
+                    if (fx) Fx.lightning(vl);
                     effect(victim, PotionEffectType.BLINDNESS, 3, 1);
                     effect(victim, PotionEffectType.SLOWNESS, 3, 10);
                     claymoreCd.put(attacker.getUniqueId(), now + (long) (plugin.getConfig().getDouble("weapons.claymore.judgment-cooldown-seconds", 30) * 1000));
                     Msg.soundAt(vl, "entity.lightning_bolt.impact", 1, 1);
-                    Fx.p(vl.clone().add(0, 1.5, 0), Particle.TOTEM_OF_UNDYING, 200, 1.5, 0.05, 1.5, 0.5);
+                    if (fx) Fx.p(vl.clone().add(0, 1.5, 0), Particle.TOTEM_OF_UNDYING, 200, 1.5, 0.05, 1.5, 0.5);
                     // 심판의 빛: 하늘에서 내려오는 황금 기둥 + 충격파
-                    Fx.pillar(vl, 12, ARBITER, Particle.END_ROD);
-                    Fx.shockwave(vl.clone().add(0, 0.1, 0), ARBITER, 4.0, 10);
-                    Fx.ring(vl.clone().add(0, 2.4, 0), 0.5, 16, ARBITER_L, 1.2f);
-                    Fx.burst(vl.clone().add(0, 1, 0), Particle.ENCHANTED_HIT, 40, 0.5);
+                    if (fx) Fx.pillar(vl, 12, ARBITER, Particle.END_ROD);
+                    if (fx) Fx.shockwave(vl.clone().add(0, 0.1, 0), ARBITER, 4.0, 10);
+                    if (fx) Fx.ring(vl.clone().add(0, 2.4, 0), 0.5, 16, ARBITER_L, 1.2f);
+                    if (fx) Fx.burst(vl.clone().add(0, 1, 0), Particle.ENCHANTED_HIT, 40, 0.5);
                     double jd = plugin.getConfig().getDouble("weapons.claymore.judgment-damage", 6);
                     double keepJ = plugin.getConfig().getDouble("weapons.claymore.min-health", 2);
                     if (victim.getHealth() <= jd + keepJ) victim.setHealth(Math.min(keepJ, victim.getHealth()));   // 심판의 빛으로는 죽지 않음
@@ -581,15 +583,15 @@ public class WeaponModule extends Module {
                 effect(victim, PotionEffectType.SLOWNESS, 3, 2);
                 effect(victim, PotionEffectType.WEAKNESS, 3, 1);
                 Location mid = vl.clone().add(0, 1, 0);
-                Fx.p(mid, Particle.SNOWFLAKE, 14, 0.4, 0.03);
-                Fx.fade(mid, FROST, FROST_L, 1.2f, 12, 0.4);
+                if (fx) Fx.p(mid, Particle.SNOWFLAKE, 14, 0.4, 0.03);
+                if (fx) Fx.fade(mid, FROST, FROST_L, 1.2f, 12, 0.4);
                 if (!(victim instanceof Player) && chance(0.15)) {
                     e.setDamage(999999);
                     // 아이스 블래스트: 얼음 폭발 + 눈보라 충격파
-                    Fx.block(mid, Particle.BLOCK, Material.BLUE_ICE.createBlockData(), 60, 0.5);
-                    Fx.burst(mid, Particle.SNOWFLAKE, 70, 0.25);
-                    Fx.shockwave(vl.clone().add(0, 0.1, 0), FROST, 3.5, 8);
-                    Fx.sphere(mid, 1.3, 40, FROST_L, 1.1f);
+                    if (fx) Fx.block(mid, Particle.BLOCK, Material.BLUE_ICE.createBlockData(), 60, 0.5);
+                    if (fx) Fx.burst(mid, Particle.SNOWFLAKE, 70, 0.25);
+                    if (fx) Fx.shockwave(vl.clone().add(0, 0.1, 0), FROST, 3.5, 8);
+                    if (fx) Fx.sphere(mid, 1.3, 40, FROST_L, 1.1f);
                     Msg.actionBar(attacker, "<gradient:#39C7FF:#D2FFF8:#00FFFF><italic:false><b>[❆] 즉시 처치가 발동되었습니다.</b></gradient>");
                     Msg.sound(attacker, "block.glass.break", 1, 1.5f);
                 }
@@ -1477,8 +1479,8 @@ public class WeaponModule extends Module {
             // 최대 체력 / 이동 속도 (기본 하트 5칸, 특수 무기 소지 시 +5칸)
             boolean claymore = hasClaymore(p);
             boolean frost = hasFrost(p);
-            if (tool.contains("천공의 심판자 클레이모어")) Fx.dust(p.getLocation().add(0, 1.2, 0), ARBITER, 0.8f, 3, 0.35);
-            if (tool.contains("프로스트 그레이브")) Fx.dust(p.getLocation().add(0, 1.2, 0), FROST_SKY, 0.8f, 3, 0.35);
+            if (tool.contains("천공의 심판자 클레이모어") && !data(p).fxOff.contains("claymore")) Fx.dust(p.getLocation().add(0, 1.2, 0), ARBITER, 0.8f, 3, 0.35);
+            if (tool.contains("프로스트 그레이브") && !data(p).fxOff.contains("frost")) Fx.dust(p.getLocation().add(0, 1.2, 0), FROST_SKY, 0.8f, 3, 0.35);
             // 두 무기를 모두 가지고 있으면 더 큰 값 하나만 적용
             double target = base + Math.max(claymore ? claymoreBonus : 0, frost ? frostBonus : 0);
             AttributeInstance ai = MAX_HEALTH == null ? null : p.getAttribute(MAX_HEALTH);

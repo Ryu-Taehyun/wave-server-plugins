@@ -47,6 +47,10 @@ public class PlayerData {
     /** 크라운 처치 알림 표식: 보유 여부 / 켜짐 여부 */
     public boolean crownOwned;
     public boolean crownKill;
+    /** 전용 킬 알림을 끈 무기 (claymore / frost). 끄면 일반 킬 알림 */
+    public final Set<String> killLogOff = new HashSet<>();
+    /** 파티클 연출을 끈 무기 (claymore / frost). 능력은 그대로 */
+    public final Set<String> fxOff = new HashSet<>();
 
     /* 보관 */
     public final List<ItemStack> mailbox = new ArrayList<>();
@@ -112,6 +116,8 @@ public class PlayerData {
         ranks.addAll(y.getStringList("ranks"));
         killEffect = y.getInt("kill-effect");
         crownKill = y.getBoolean("crown-kill");
+        killLogOff.addAll(y.getStringList("kill-log-off"));
+        fxOff.addAll(y.getStringList("fx-off"));
         crownOwned = y.getBoolean("crown-owned", crownKill);
         readItems(y.getList("mailbox"), mailbox);
         readItems(y.getList("keep-items"), keepItems);
@@ -166,6 +172,8 @@ public class PlayerData {
         y.set("ranks", new ArrayList<>(ranks));
         y.set("kill-effect", killEffect);
         y.set("crown-kill", crownKill);
+        y.set("kill-log-off", new java.util.ArrayList<>(killLogOff));
+        y.set("fx-off", new java.util.ArrayList<>(fxOff));
         y.set("crown-owned", crownOwned);
         y.set("mailbox", new ArrayList<>(mailbox));
         y.set("keep-items", new ArrayList<>(keepItems));

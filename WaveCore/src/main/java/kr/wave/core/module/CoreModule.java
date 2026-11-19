@@ -697,14 +697,14 @@ public class CoreModule extends Module {
             Component v = nameTag(victim, "&7" + victim.getName());
             // 크라운 표식: 클레이모어 · 프로스트 그레이브 킬로그는 왕관 없이 화살표와 좌표만 금빛
             String arrow = kd.crownKill ? "<color:#FFB732><b>»</b></color>" : "&8»";
-            if (plain.equals(Items.N_CLAYMORE_SD)) {
+            if (plain.equals(Items.N_CLAYMORE_SD) && !kd.killLogOff.contains("claymore")) {
                 Msg.broadcast(" ");
                 Msg.broadcastFill("<gold><obf>D</obf></gold> %killer% " + arrow + " %victim% <gold><obf>D</obf></gold>", "%killer%", k, "%victim%", v);
                 Msg.broadcastItem("<gold><obf>D</obf></gold> " + Msg.ITEM + " " + posText(kd, pos) + " <gold><obf>D</obf></gold>", Msg.hoverItem(tool,
                         "&6&l[&a&l⚡&6&l] <gradient:#FFF200:#F6E47C:#FFFCD4><italic:false><b>[Lv.</b><obf><b>sd</b></obf><b>] 천</b><b>공의 </b><b>심판자 클레이모어</b></gradient>"));
                 Msg.broadcast(" ");
                 if (kd.crownKill) crownFx(killer, victim.getLocation());   // 크라운 표식: 무기와 관계없이 왕관 연출
-            } else if (plain.equals(Items.N_FROST)) {
+            } else if (plain.equals(Items.N_FROST) && !kd.killLogOff.contains("frost")) {
                 Msg.broadcast(" ");
                 Msg.broadcastFill("<color:#B0E4F8><obf>D</obf></color> %killer% " + arrow + " %victim% <color:#B0E4F8><obf>D</obf></color>", "%killer%", k, "%victim%", v);
                 Msg.broadcastItem("<color:#B0E4F8><obf>D</obf></color> " + Msg.ITEM + " " + posText(kd, pos) + " <color:#B0E4F8><obf>D</obf></color>", Msg.hoverItem(tool,

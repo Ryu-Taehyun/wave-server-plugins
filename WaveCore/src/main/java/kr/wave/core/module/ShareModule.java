@@ -112,7 +112,7 @@ public class ShareModule extends Module {
         String id = Long.toString(System.nanoTime(), 36) + Integer.toString(p.getName().hashCode() & 0xffff, 36);
         shared.put(id, new Snapshot(p.getName(), ender, items, org.bukkit.Bukkit.getCurrentTick()));
         String label = ender ? "[" + p.getName() + "의 엔더 상자]" : "[" + p.getName() + "의 인벤토리]";
-        return Component.text(label, ender ? NamedTextColor.LIGHT_PURPLE : NamedTextColor.AQUA)
+        return Component.text(label, ender ? NamedTextColor.LIGHT_PURPLE : NamedTextColor.GREEN)
                 .decoration(TextDecoration.ITALIC, false)
                 .hoverEvent(HoverEvent.showText(Msg.c("&e클릭하여 보기%nl%&7보낸 순간의 모습입니다. (10분 동안)").replaceText(b -> b.matchLiteral("%nl%").replacement("\n"))))
                 .clickEvent(ClickEvent.runCommand("/공유보기 " + id));
@@ -134,7 +134,7 @@ public class ShareModule extends Module {
         ItemStack pane = It.pane(Material.GRAY_STAINED_GLASS_PANE, " ");
         if (sn.ender) {
             Gui g = new Gui(4, "&8&l" + sn.owner + "의 엔더 상자");
-            for (int i = 0; i < 27 && i < sn.items.length; i++) g.set(i, sn.items[i]);
+            for (int i = 0; i < 27 && i < sn.items.length; i++) slot(g, viewer, i, sn.items[i], () -> open(viewer, id));
             for (int i = 27; i < 36; i++) g.set(i, pane);
             g.set(31, It.of(Material.BARRIER).name("&c닫기").build(), e -> viewer.closeInventory());
             g.open(viewer);
@@ -151,9 +151,33 @@ public class ShareModule extends Module {
         g.set(5, off != null ? off : It.pane(Material.BLACK_STAINED_GLASS_PANE, "&7왼손"));
         for (int i : new int[]{4, 6, 7, 8}) g.set(i, pane);
         // 가방 (9~35) -> 9~35, 핫바 (0~8) -> 45~53
-        for (int i = 9; i < 36; i++) g.set(i, sn.items[i]);
+        for (int i = 9; i < 36; i++) slot(g, viewer, i, sn.items[i], () -> open(viewer, id));
         for (int i = 36; i < 45; i++) g.set(i, It.pane(Material.BLACK_STAINED_GLASS_PANE, "&7▼ 핫바"));
-        for (int i = 0; i < 9; i++) g.set(45 + i, sn.items[i]);
+        for (int i = 0; i < 9; i++) slot(g, viewer, 45 + i, sn.items[i], () -> open(viewer, id));
+        g.open(viewer);
+    }
+
+    /** 칸 채우기: 셜커 상자면 클릭해서 안을 볼 수 있게 */
+    private void slot(Gui g, Player viewer, int slot, ItemStack it, Runnable back) {
+        if (it != null && it.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta bsm && bsm.getBlockState() instanceof org.bukkit.block.ShulkerBox box) {
+            ItemStack shown = it.clone();
+            var meta = shown.getItemMeta();
+            meta.lore(Msg.append(meta.lore(), "&e» 클릭 &f안에 든 아이템 보기"));
+            shown.setItemMeta(meta);
+            ItemStack[] inside = clone(box.getInventory().getContents());
+            Component title = meta.hasDisplayName() ? meta.displayName() : Component.translatable(it.translationKey());
+            g.set(slot, shown, e -> later(1, () -> openShulker(viewer, title, inside, back)));
+        } else g.set(slot, it);
+    }
+
+    /** 셜커 상자 안 (보기 전용) */
+    private void openShulker(Player viewer, Component title, ItemStack[] inside, Runnable back) {
+        Gui g = new Gui(4, "&8&l셜커 상자 안");
+        for (int i = 0; i < 27 && i < inside.length; i++) slot(g, viewer, i, inside[i], back);
+        ItemStack pane = It.pane(Material.GRAY_STAINED_GLASS_PANE, " ");
+        for (int i = 27; i < 36; i++) g.set(i, pane);
+        g.set(27, It.of(Material.OAK_DOOR).name("&f뒤로 가기").lore("", "&7공유한 창으로 돌아갑니다.").build(), e -> later(1, back));
+        g.set(31, It.of(Material.BARRIER).name("&c닫기").build(), e -> viewer.closeInventory());
         g.open(viewer);
     }
 
