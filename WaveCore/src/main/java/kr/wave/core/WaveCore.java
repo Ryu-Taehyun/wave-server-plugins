@@ -72,6 +72,7 @@ public class WaveCore extends JavaPlugin {
         modules.add(new BossModule(this));
         modules.add(new CrateModule(this));
         modules.add(new OverlordModule(this));
+        modules.add(new EventModule(this));          // 보급 상자 낙하, 채팅 퀴즈
         modules.add(new TutorialModule(this));      // 튜토리얼      // 오버 로드 (Peerless 이후 휘장 보상)         // 상자(뽑기): CrazyCrates 설정 파일 사용          // 보스 '천공의 심판자' + 주사위 분배
 
         for (Module m : modules) {

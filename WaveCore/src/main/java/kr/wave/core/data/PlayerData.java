@@ -21,6 +21,9 @@ public class PlayerData {
     public long moneyTotal;
     public long exMoney;
     public long exMoneyTotal;
+    /** 도박 하루 베팅 누적 (betDay 날짜 기준, 날짜가 바뀌면 0부터) */
+    public String betDay = "";
+    public long betToday;
 
     /* 레벨 */
     public int level = 1;
@@ -90,6 +93,8 @@ public class PlayerData {
         moneyTotal = y.getLong("money-total");
         exMoney = y.getLong("exmoney");
         exMoneyTotal = y.getLong("exmoney-total");
+        betDay = y.getString("bet-day", "");
+        betToday = y.getLong("bet-today");
         level = Math.max(1, y.getInt("level", 1));
         exp = y.getLong("exp");
         nickColor = y.getInt("nick-color");
@@ -139,6 +144,8 @@ public class PlayerData {
         y.set("money-total", moneyTotal);
         y.set("exmoney", exMoney);
         y.set("exmoney-total", exMoneyTotal);
+        y.set("bet-day", betDay);
+        y.set("bet-today", betToday);
         y.set("level", level);
         y.set("exp", exp);
         y.set("nick-color", nickColor);

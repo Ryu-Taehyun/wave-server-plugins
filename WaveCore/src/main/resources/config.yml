@@ -144,11 +144,60 @@ special-shop:
 gamble:
   min-bet: 1000
   max-bet: 1000000
+  daily-bet-limit: 1000000   # 하루 베팅 총액 한도 (홀짝 + 바카라 합산, 0 = 제한 없음). 매일 0시 초기화
+  # 도박은 일반 캐시로만 합니다. 유료 캐시는 사용하지 않습니다.
 
 # 바카라 (/바카라). 베팅 범위는 위 gamble 값을 같이 씀
 baccarat:
   banker-commission: 0.05   # 뱅커로 이기면 수수료 5% (0.95배)
   tie-payout: 8             # 타이에 걸어 비기면 8배
+
+# 보급 상자 낙하: 일정 시간마다 야생 무작위 좌표에 보급 상자. 먼저 연 사람이 차지 (관리자: /보급 지금 · 정보 · 취소)
+supply-drop:
+  enabled: true
+  interval-minutes: 60       # 몇 분마다
+  min-players: 5             # 접속자가 이보다 적으면 건너뜀
+  world: "world"             # 떨어지는 월드 (야생)
+  min-radius: 300            # 월드 스폰에서 최소 거리
+  max-radius: 3000           # 월드 스폰에서 최대 거리 (미리 생성해 둔 범위 안으로)
+  despawn-minutes: 15        # 아무도 안 열면 회수
+  after-open-seconds: 120    # 처음 연 뒤 이 시간 뒤 회수 (다 비우면 바로 사라짐)
+  rolls: 6                   # 상자에 들어가는 아이템 묶음 수
+  loot:                      # weight 가 클수록 자주 나옴. material 또는 special(서버 아이템) 사용
+    - { material: diamond, min: 4, max: 10, weight: 20 }
+    - { material: emerald, min: 8, max: 24, weight: 18 }
+    - { material: iron_ingot, min: 16, max: 32, weight: 20 }
+    - { material: golden_apple, min: 2, max: 6, weight: 15 }
+    - { material: ender_pearl, min: 4, max: 12, weight: 15 }
+    - { material: experience_bottle, min: 16, max: 32, weight: 15 }
+    - { material: netherite_scrap, min: 1, max: 3, weight: 6 }
+    - { material: enchanted_golden_apple, min: 1, max: 1, weight: 2 }
+    - { special: time_shard, min: 1, max: 2, weight: 5 }
+    - { special: quantum_matter, min: 1, max: 1, weight: 3 }
+
+# 채팅 퀴즈 · 타자 대결: 일정 시간마다 문제, 먼저 맞힌 사람에게 일반 캐시 (관리자: /퀴즈 지금 · 취소)
+chat-quiz:
+  enabled: true
+  interval-minutes: 15
+  min-players: 3
+  time-seconds: 30
+  reward-min: 1000
+  reward-max: 5000
+  words:                     # 타자 대결 문장 (띄어쓰기는 무시하고 비교)
+    - "약탈은 빠르게 도망은 더 빠르게"
+    - "보급 상자는 먼저 여는 사람이 임자"
+    - "오늘도 네더라이트 캐러 갑니다"
+    - "혼돈의 아포칼립스"
+    - "얼어붙은 제왕의 검"
+    - "다이아몬드 곡괭이"
+    - "엔더 드래곤을 잡으러 가자"
+    - "크리퍼가 뒤에 있어요"
+  questions:                 # 상식 문제 (q = 문제, a = 정답)
+    - { q: "엔더맨이 싫어하는 액체는?", a: "물" }
+    - { q: "네더라이트 주괴를 만드는 데 필요한 고대 잔해 수는?", a: "4" }
+    - { q: "크리퍼를 죽이면 떨어지는 아이템은?", a: "화약" }
+    - { q: "불사의 토템을 주는 몹은?", a: "소환사" }
+    - { q: "엔더의 눈을 만드는 데 필요한 두 아이템 중 엔더 진주가 아닌 것은?", a: "블레이즈 가루" }
 
 # 스킬 사용 제한 (우클릭 스킬: 혼돈의 아포칼립스, 다크니스 웨이브, 얼어붙은 제왕의 검, 이터널 크로노스, 초승달의 서약)
 skills:

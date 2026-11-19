@@ -188,6 +188,41 @@ public class EconomyModule extends Module {
         gambleGui(p);
     }
 
+    /** 하루 베팅 한도 (일반 캐시 기준). 0 이하면 제한 없음 */
+    private long dailyLimit() {
+        return plugin.getConfig().getLong("gamble.daily-bet-limit", 1_000_000);
+    }
+
+    /** 오늘 베팅한 총액 (날짜가 바뀌었으면 0) */
+    private long betToday(PlayerData d) {
+        String today = java.time.LocalDate.now().toString();
+        if (!today.equals(d.betDay)) {
+            d.betDay = today;
+            d.betToday = 0;
+        }
+        return d.betToday;
+    }
+
+    /** 베팅 가능하면 오늘 누적에 더하고 true. 한도를 넘으면 안내 후 false */
+    private boolean useDaily(Player p, PlayerData d, long amount, String tag) {
+        long limit = dailyLimit();
+        if (limit <= 0) return true;
+        long used = betToday(d);
+        if (used + amount > limit) {
+            Msg.send(p, tag + "&c하루 베팅 한도를 넘습니다. &7(오늘 " + Msg.num(used) + " / " + Msg.num(limit) + "원, 남은 한도 " + Msg.num(Math.max(0, limit - used)) + "원)");
+            Msg.send(p, tag + "&7한도는 매일 0시에 초기화됩니다.");
+            Msg.sound(p, "entity.villager.no", 0.8f, 1f);
+            return false;
+        }
+        d.betToday = used + amount;
+        return true;
+    }
+
+    private String dailyLine(PlayerData d) {
+        long limit = dailyLimit();
+        return limit <= 0 ? "&7하루 베팅 한도 : &f없음" : "&7오늘 베팅 : &f" + Msg.num(betToday(d)) + " &7/ " + Msg.num(limit) + "원";
+    }
+
     private long bet(Player p) {
         long b = bets.getOrDefault(p.getUniqueId(), minBet());
         return Math.max(minBet(), Math.min(maxBet(), b));
@@ -203,7 +238,8 @@ public class EconomyModule extends Module {
         kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(5, "&8&l홀짝 도박");
         g.put("gamble", true);
         g.set(4, It.of(org.bukkit.Material.PLAYER_HEAD).skull(p).name("&e" + p.getName())
-                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원").build());
+                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원",
+                        dailyLine(d), "", "&8일반 캐시로만 할 수 있습니다. (유료 캐시 사용 불가)").build());
         long[] steps = {-100_000, -10_000, -1_000, 0, 1_000, 10_000, 100_000};
         for (int i = 0; i < steps.length; i++) {
             long st = steps[i];
@@ -266,6 +302,7 @@ public class EconomyModule extends Module {
             Msg.sound(p, "entity.villager.no", 0.8f, 1f);
             return;
         }
+        if (!useDaily(p, d, amount, G_TAG)) return;
         // 베팅금을 먼저 빼 두고, 이기면 두 배로 돌려줌 (창을 닫거나 나가도 결과는 그대로 처리)
         d.money -= amount;
         plugin.store().save(d);
@@ -390,7 +427,8 @@ public class EconomyModule extends Module {
         kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(6, "&8&l바카라");
         g.put("baccarat", true);
         g.set(4, It.of(org.bukkit.Material.PLAYER_HEAD).skull(p).name("&e" + p.getName())
-                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원").build());
+                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원",
+                        dailyLine(d), "", "&8일반 캐시로만 할 수 있습니다. (유료 캐시 사용 불가)").build());
         int[][] table = baccaratTable.get(id);
         drawTable(g, table);
         // 베팅 금액
@@ -478,6 +516,7 @@ public class EconomyModule extends Module {
             Msg.sound(p, "entity.villager.no", 0.8f, 1f);
             return;
         }
+        if (!useDaily(p, d, amount, "&d&l[Baccarat] ")) return;
         d.money -= amount;   // 베팅금 먼저 차감
         plugin.store().save(d);
         gambling.add(id);
