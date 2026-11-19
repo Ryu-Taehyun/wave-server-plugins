@@ -58,6 +58,15 @@ public class EconomyModule extends Module {
             if (!t.isOnline()) plugin.store().saveRelease(d);
         });
         cmd("도박", null, this::gambleCmd);
+        cmd("바카라", null, (snd, l, a) -> {
+            if (!Cmd.isPlayer(snd)) return;
+            Player p = (Player) snd;
+            for (String x : a) {
+                Long n = Cmd.num(x);
+                if (n != null) bets.put(p.getUniqueId(), Math.max(minBet(), Math.min(maxBet(), n)));
+            }
+            baccaratGui(p);
+        }, "baccarat");
     }
 
     private void give(CommandSender s, String[] a, boolean paid) {
@@ -234,6 +243,9 @@ public class EconomyModule extends Module {
         g.set(31, book.build());
         g.set(29, pickButton(p, "홀", rolling), e -> roll(p, "홀"));
         g.set(33, pickButton(p, "짝", rolling), e -> roll(p, "짝"));
+        g.set(44, It.of(org.bukkit.Material.PAPER).name("&d&l바카라로 이동").lore("", "&7플레이어 · 뱅커 · 타이에 거는 카드 게임", "", "&e» 좌클릭 &f열기").build(), e -> {
+            if (!gambling.contains(id)) later(1, () -> baccaratGui(p));
+        });
         g.nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
     }
 
@@ -302,6 +314,235 @@ public class EconomyModule extends Module {
                             .lore("", win ? "&a+" + Msg.num(amount) + "원" : "&c-" + Msg.num(amount) + "원", "", "&7다시 홀 또는 짝을 고르면 바로 시작합니다.").build());
             }
         }, 4L, 4L);
+    }
+
+    /* ---------------- 바카라 (플레이어 / 뱅커 / 타이) ---------------- */
+
+    /** 카드 0~51 : 숫자 = c % 13 + 1 (A=1, J=11, Q=12, K=13), 무늬 = c / 13 */
+    static int cardPoint(int c) {
+        int r = c % 13 + 1;
+        return r >= 10 ? 0 : r;
+    }
+
+    static int handPoint(java.util.List<Integer> h) {
+        int t = 0;
+        for (int c : h) t += cardPoint(c);
+        return t % 10;
+    }
+
+    /** 바카라 한 판: 표준 세 번째 카드 규칙. 결과 [0] = 플레이어 카드, [1] = 뱅커 카드 (나눠 준 순서대로) */
+    static java.util.List<java.util.List<Integer>> baccaratDeal(java.util.function.IntSupplier draw) {
+        java.util.List<Integer> pl = new java.util.ArrayList<>(), bk = new java.util.ArrayList<>();
+        pl.add(draw.getAsInt());
+        bk.add(draw.getAsInt());
+        pl.add(draw.getAsInt());
+        bk.add(draw.getAsInt());
+        int p = handPoint(pl), b = handPoint(bk);
+        if (p < 8 && b < 8) {   // 내추럴(8, 9)이 아니면 세 번째 카드
+            Integer third = null;
+            if (p <= 5) {
+                third = draw.getAsInt();
+                pl.add(third);
+            }
+            boolean bankerDraws;
+            if (third == null) bankerDraws = b <= 5;
+            else {
+                int t = cardPoint(third);
+                bankerDraws = switch (b) {
+                    case 0, 1, 2 -> true;
+                    case 3 -> t != 8;
+                    case 4 -> t >= 2 && t <= 7;
+                    case 5 -> t >= 4 && t <= 7;
+                    case 6 -> t == 6 || t == 7;
+                    default -> false;
+                };
+            }
+            if (bankerDraws) bk.add(draw.getAsInt());
+        }
+        return java.util.List.of(pl, bk);
+    }
+
+    private static final String[] SUITS = {"♠", "♥", "♦", "♣"};
+    private static final String[] RANKS = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+
+    private static ItemStack cardItem(int c) {
+        int suit = c / 13, rank = c % 13;
+        boolean red = suit == 1 || suit == 2;
+        return It.of(org.bukkit.Material.PAPER, Math.min(10, rank + 1)).name((red ? "&c&l" : "&f&l") + SUITS[suit] + " " + RANKS[rank])
+                .lore("", "&7점수 : &f" + cardPoint(c)).build();
+    }
+
+    private static ItemStack hiddenCard() {
+        return It.of(org.bukkit.Material.MAP).name("&8&l?").lore("", "&7아직 나오지 않은 카드").build();
+    }
+
+    private final java.util.Map<UUID, java.util.Deque<String>> baccaratHistory = new java.util.HashMap<>();
+    /** 진행 중인 판의 화면 상태 (다시 열어도 보이도록) */
+    private final java.util.Map<UUID, int[][]> baccaratTable = new java.util.HashMap<>();
+
+    private static final int[] P_SLOTS = {12, 13, 14}, B_SLOTS = {21, 22, 23};
+
+    public void baccaratGui(Player p) {
+        UUID id = p.getUniqueId();
+        PlayerData d = data(p);
+        boolean rolling = gambling.contains(id);
+        long bet = bet(p);
+        kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(6, "&8&l바카라");
+        g.put("baccarat", true);
+        g.set(4, It.of(org.bukkit.Material.PLAYER_HEAD).skull(p).name("&e" + p.getName())
+                .lore("", "&f보유 캐시 : &e" + Msg.num(d.money) + "원", "", "&7베팅 범위 : &f" + Msg.num(minBet()) + " ~ " + Msg.num(maxBet()) + "원").build());
+        int[][] table = baccaratTable.get(id);
+        drawTable(g, table);
+        // 베팅 금액
+        long[] steps = {-100_000, -10_000, -1_000, 0, 1_000, 10_000, 100_000};
+        for (int i = 0; i < steps.length; i++) {
+            long st = steps[i];
+            int slot = 28 + i;
+            if (st == 0) {
+                g.set(slot, It.of(org.bukkit.Material.GOLD_INGOT).name("&6&l베팅 금액 : &e&l" + Msg.num(bet) + "원")
+                        .lore("", "&8좌우 버튼으로 금액을 조절합니다.").build());
+                continue;
+            }
+            boolean plus = st > 0;
+            g.set(slot, It.of(plus ? org.bukkit.Material.LIME_STAINED_GLASS_PANE : org.bukkit.Material.RED_STAINED_GLASS_PANE)
+                    .name((plus ? "&a&l+" : "&c&l-") + Msg.num(Math.abs(st)) + "원").lore("", "&e» 좌클릭 &f베팅 " + (plus ? "늘리기" : "줄이기")).build(), e -> {
+                if (gambling.contains(id)) return;
+                bets.put(id, Math.max(minBet(), Math.min(maxBet(), bet(p) + st)));
+                Msg.sound(p, "ui.button.click", 0.5f, plus ? 1.4f : 0.9f);
+                baccaratGui(p);
+            });
+        }
+        double com = plugin.getConfig().getDouble("baccarat.banker-commission", 0.05);
+        int tie = plugin.getConfig().getInt("baccarat.tie-payout", 8);
+        long bankerWin = (long) Math.floor(bet * (1 - com));
+        g.set(38, betButton(org.bukkit.Material.BLUE_CONCRETE, "&9&l[ 플레이어 ]", rolling,
+                "&7플레이어가 이기면 &a+" + Msg.num(bet) + "원 &8(1배)", "&7타이면 베팅금을 돌려받습니다."), e -> baccaratPlay(p, 'P'));
+        g.set(40, betButton(org.bukkit.Material.LIME_CONCRETE, "&a&l[ 타이 ]", rolling,
+                "&7비기면 &a+" + Msg.num(bet * tie) + "원 &8(" + tie + "배)", "&7그 외에는 베팅금을 잃습니다."), e -> baccaratPlay(p, 'T'));
+        g.set(42, betButton(org.bukkit.Material.RED_CONCRETE, "&c&l[ 뱅커 ]", rolling,
+                "&7뱅커가 이기면 &a+" + Msg.num(bankerWin) + "원 &8(수수료 " + Math.round(com * 100) + "%)", "&7타이면 베팅금을 돌려받습니다."), e -> baccaratPlay(p, 'B'));
+        java.util.Deque<String> h = baccaratHistory.getOrDefault(id, new java.util.ArrayDeque<>());
+        It book = It.of(org.bukkit.Material.BOOK).name("&f&l최근 결과").lore("");
+        if (h.isEmpty()) book.lore("&8아직 기록이 없습니다.");
+        for (String r : h) book.lore(r);
+        g.set(16, book.build());
+        g.set(25, It.of(org.bukkit.Material.KNOWLEDGE_BOOK).name("&f&l규칙").lore("",
+                "&7두 쪽에 카드를 2~3장씩 나눠 줍니다.", "&7카드 점수 합의 &f일의 자리&7가 9에 가까운 쪽이 이깁니다.",
+                "&8A = 1, 2~9 = 숫자 그대로, 10 · J · Q · K = 0", "&8세 번째 카드는 표준 바카라 규칙대로 자동으로 받습니다.").build());
+        g.set(53, It.of(org.bukkit.Material.QUARTZ_BLOCK).name("&f&l홀짝으로 이동").lore("", "&e» 좌클릭 &f열기").build(), e -> {
+            if (!gambling.contains(id)) later(1, () -> gambleGui(p));
+        });
+        g.nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
+    }
+
+    private ItemStack betButton(org.bukkit.Material m, String name, boolean rolling, String... lines) {
+        It b = It.of(m).name(name).lore("");
+        for (String l : lines) b.lore(l);
+        b.lore("", rolling ? "&8카드를 나눠 주는 중입니다" : "&e» 좌클릭 &f여기에 걸기");
+        return b.build();
+    }
+
+    /** table: [0] = 플레이어 카드, [1] = 뱅커 카드, [2] = 공개된 장 수 {p, b}, [3] = 결과 {-1 진행 중, 0 P, 1 B, 2 T} */
+    private void drawTable(kr.wave.core.util.Gui g, int[][] t) {
+        int pShown = t == null ? 0 : t[2][0], bShown = t == null ? 0 : t[2][1];
+        java.util.List<Integer> ph = new java.util.ArrayList<>(), bh = new java.util.ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            if (t != null && i < pShown) {
+                g.set(P_SLOTS[i], cardItem(t[0][i]));
+                ph.add(t[0][i]);
+            } else g.set(P_SLOTS[i], i < 2 || (t != null && t[0].length > 2 && t[3][0] < 0) ? hiddenCard() : It.pane(org.bukkit.Material.BLACK_STAINED_GLASS_PANE, " "));
+            if (t != null && i < bShown) {
+                g.set(B_SLOTS[i], cardItem(t[1][i]));
+                bh.add(t[1][i]);
+            } else g.set(B_SLOTS[i], i < 2 || (t != null && t[1].length > 2 && t[3][0] < 0) ? hiddenCard() : It.pane(org.bukkit.Material.BLACK_STAINED_GLASS_PANE, " "));
+        }
+        int res = t == null ? -1 : t[3][0];
+        if (t == null) res = -2;   // 아직 한 판도 안 함
+        It pIcon = It.of(org.bukkit.Material.BLUE_WOOL).name("&9&l플레이어 &f: " + (ph.isEmpty() ? "-" : handPoint(ph) + "점"))
+                .lore("", res == 0 ? "&a&l승리!" : res == 2 ? "&a&l타이" : res == 1 ? "&8패배" : res == -2 ? "&7아래에서 걸 곳을 고르세요" : "&7카드를 기다리는 중");
+        It bIcon = It.of(org.bukkit.Material.RED_WOOL).name("&c&l뱅커 &f: " + (bh.isEmpty() ? "-" : handPoint(bh) + "점"))
+                .lore("", res == 1 ? "&a&l승리!" : res == 2 ? "&a&l타이" : res == 0 ? "&8패배" : res == -2 ? "&7아래에서 걸 곳을 고르세요" : "&7카드를 기다리는 중");
+        if (res == 0 || res == 2) pIcon.ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1);
+        if (res == 1 || res == 2) bIcon.ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1);
+        g.set(10, pIcon.hide().build());
+        g.set(19, bIcon.hide().build());
+    }
+
+    private void baccaratPlay(Player p, char side) {
+        UUID id = p.getUniqueId();
+        if (gambling.contains(id)) return;
+        long amount = bet(p);
+        PlayerData d = data(p);
+        if (d.money < amount) {
+            Msg.send(p, "&d&l[Baccarat] &c소지금이 부족합니다. &7(보유 " + Msg.num(d.money) + "원)");
+            Msg.sound(p, "entity.villager.no", 0.8f, 1f);
+            return;
+        }
+        d.money -= amount;   // 베팅금 먼저 차감
+        plugin.store().save(d);
+        gambling.add(id);
+        var deal = baccaratDeal(() -> ThreadLocalRandom.current().nextInt(52));
+        java.util.List<Integer> pl = deal.get(0), bk = deal.get(1);
+        int pp = handPoint(pl), bp = handPoint(bk);
+        int result = pp > bp ? 0 : bp > pp ? 1 : 2;
+        int[][] t = {pl.stream().mapToInt(Integer::intValue).toArray(), bk.stream().mapToInt(Integer::intValue).toArray(), {0, 0}, {-1}};
+        baccaratTable.put(id, t);
+        // 공개 순서: P1 B1 P2 B2 (P3) (B3)
+        java.util.List<int[]> order = new java.util.ArrayList<>(java.util.List.of(new int[]{0}, new int[]{1}, new int[]{0}, new int[]{1}));
+        if (pl.size() > 2) order.add(new int[]{0});
+        if (bk.size() > 2) order.add(new int[]{1});
+        refreshBaccarat(p);
+        for (int i = 0; i < order.size(); i++) {
+            int side2 = order.get(i)[0];
+            later(12L * (i + 1), () -> {
+                t[2][side2]++;
+                if (p.isOnline()) {
+                    Msg.sound(p, "item.book.page_turn", 0.9f, side2 == 0 ? 1.1f : 0.9f);
+                    refreshBaccarat(p);
+                }
+            });
+        }
+        later(12L * (order.size() + 1) + 6, () -> {
+            t[3][0] = result;
+            gambling.remove(id);
+            double com = plugin.getConfig().getDouble("baccarat.banker-commission", 0.05);
+            int tie = plugin.getConfig().getInt("baccarat.tie-payout", 8);
+            long back;   // 돌려받는 총액 (베팅금 포함)
+            if (result == 2) back = side == 'T' ? amount * (tie + 1L) : amount;          // 타이: 플레이어·뱅커 베팅은 돌려줌
+            else if (side == 'P') back = result == 0 ? amount * 2 : 0;
+            else if (side == 'B') back = result == 1 ? amount + (long) Math.floor(amount * (1 - com)) : 0;
+            else back = 0;
+            PlayerData dd = data(p);
+            dd.money += back;
+            plugin.store().saveAuto(dd);
+            long net = back - amount;
+            String rName = result == 0 ? "&9플레이어" : result == 1 ? "&c뱅커" : "&a타이";
+            String sName = side == 'P' ? "플레이어" : side == 'B' ? "뱅커" : "타이";
+            java.util.Deque<String> h = baccaratHistory.computeIfAbsent(id, k -> new java.util.ArrayDeque<>());
+            h.addFirst((net > 0 ? "&a승리 " : net < 0 ? "&c패배 " : "&7무승부 ") + "&7" + sName + " 선택 → " + rName + " &8(" + pp + " : " + bp + ", "
+                    + (net >= 0 ? "+" : "-") + Msg.num(Math.abs(net)) + "원)");
+            while (h.size() > 7) h.removeLast();
+            if (!p.isOnline()) return;
+            String tag = "&d&l[Baccarat] ";
+            if (net > 0) {
+                Msg.send(p, tag + "&a승리! &f" + Msg.plainOf(rName) + " 승 (" + pp + " : " + bp + ") &e+" + Msg.num(net) + "원 &7(보유 " + Msg.num(dd.money) + "원)");
+                Msg.sound(p, "entity.player.levelup", 0.7f, 1.4f);
+            } else if (net == 0) {
+                Msg.send(p, tag + "&7타이 (" + pp + " : " + bp + ") &f베팅금을 돌려받았습니다. &7(보유 " + Msg.num(dd.money) + "원)");
+                Msg.sound(p, "block.note_block.chime", 0.7f, 1f);
+            } else {
+                Msg.send(p, tag + "&c패배... &f" + Msg.plainOf(rName) + " 승 (" + pp + " : " + bp + ") &e-" + Msg.num(amount) + "원 &7(보유 " + Msg.num(dd.money) + "원)");
+                Msg.sound(p, "block.anvil.land", 0.5f, 0.8f);
+            }
+            refreshBaccarat(p);
+        });
+    }
+
+    /** 바카라 창이 열려 있으면 다시 그림 */
+    private void refreshBaccarat(Player p) {
+        if (!p.isOnline()) return;
+        var top = p.getOpenInventory().getTopInventory();
+        if (top != null && top.getHolder() instanceof kr.wave.core.util.Gui g && g.get("baccarat") != null) baccaratGui(p);
     }
 
     /* ---------------- 최고급 수박 조각 ---------------- */

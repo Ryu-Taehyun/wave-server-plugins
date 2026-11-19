@@ -145,6 +145,11 @@ gamble:
   min-bet: 1000
   max-bet: 1000000
 
+# 바카라 (/바카라). 베팅 범위는 위 gamble 값을 같이 씀
+baccarat:
+  banker-commission: 0.05   # 뱅커로 이기면 수수료 5% (0.95배)
+  tie-payout: 8             # 타이에 걸어 비기면 8배
+
 # 스킬 사용 제한 (우클릭 스킬: 혼돈의 아포칼립스, 다크니스 웨이브, 얼어붙은 제왕의 검, 이터널 크로노스, 초승달의 서약)
 skills:
   block-in-spawn: true          # 스폰 월드(worlds.spawn)에서 금지
