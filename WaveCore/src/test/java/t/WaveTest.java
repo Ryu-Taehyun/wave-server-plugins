@@ -3379,6 +3379,73 @@ public class WaveTest {
     }
 
     @Test
+    void chatItemInventoryEnderShare() {
+        PlayerMock p = server.addPlayer("Sharer");
+        PlayerMock w = server.addPlayer("Viewer");
+        server.getScheduler().performTicks(5);
+        p.getInventory().clear();
+        p.getInventory().setItemInMainHand(Items.chaosHelmet());
+        p.getInventory().setItem(20, new ItemStack(Material.DIAMOND, 7));
+        p.getInventory().setHelmet(Items.russellHelmet());
+        p.getEnderChest().setItem(0, Items.claymoreSd());
+        drain(w);
+        var msg = net.kyori.adventure.text.Component.text("내 템 [item] 이랑 인벤 [inv], 엔더상자 [ec] 봐");
+        server.getPluginManager().callEvent(new io.papermc.paper.event.player.AsyncChatEvent(false, p, new java.util.HashSet<>(),
+                io.papermc.paper.chat.ChatRenderer.defaultRenderer(), msg, msg, null));
+        server.getScheduler().performTicks(2);
+        net.kyori.adventure.text.Component got = null, c;
+        while ((c = w.nextComponentMessage()) != null) if (Msg.plain(c).contains("Sharer")) got = c;
+        assertNotNull(got);
+        String plain = Msg.plain(got);
+        assertTrue(plain.contains("내 템 [") && plain.contains("종말의 투구") && plain.contains("이랑 인벤 [Sharer의 인벤토리], 엔더상자 [Sharer의 엔더 상자] 봐"), plain);
+        // 아이템 마우스 정보 · 클릭 명령어
+        java.util.List<String> cmds = new java.util.ArrayList<>();
+        java.util.Map<String, String> byLabel = new java.util.HashMap<>();
+        boolean[] itemHover = {false};
+        java.util.function.Consumer<net.kyori.adventure.text.Component>[] walk = new java.util.function.Consumer[1];
+        walk[0] = comp -> {
+            if (comp.clickEvent() != null) {
+                cmds.add(comp.clickEvent().value());
+                byLabel.put(Msg.plain(comp).contains("엔더") ? "ec" : "inv", comp.clickEvent().value());
+            }
+            if (comp.hoverEvent() != null && comp.clickEvent() == null) itemHover[0] = true;   // 아이템 설명 (보기 링크 제외)
+            comp.children().forEach(walk[0]);
+        };
+        walk[0].accept(got);
+        assertTrue(itemHover[0], "[item] 에 아이템 설명");
+        assertEquals(2, cmds.stream().filter(x -> x.startsWith("/공유보기 ")).count(), cmds.toString());
+        // 공유 후 내용이 바뀌어도 보낸 순간 모습
+        p.getEnderChest().clear();
+        String ecCmd = byLabel.get("ec").substring(1);
+        assertTrue(w.performCommand(ecCmd));
+        assertEquals("Sharer의 엔더 상자", title(w));
+        var top = w.getOpenInventory().getTopInventory();
+        assertTrue(Msg.name(top.getItem(0)).contains("클레이모어"), "보낸 순간의 엔더 상자");
+        // 보기 전용: 클릭해도 못 꺼냄
+        var ev = new InventoryClickEvent(w.getOpenInventory(), InventoryType.SlotType.CONTAINER, 0, ClickType.LEFT, InventoryAction.PICKUP_ALL);
+        server.getPluginManager().callEvent(ev);
+        assertTrue(ev.isCancelled(), "꺼낼 수 없음");
+        assertTrue(w.performCommand(byLabel.get("inv").substring(1)));
+        assertEquals("Sharer의 인벤토리", title(w));
+        top = w.getOpenInventory().getTopInventory();
+        assertTrue(Msg.name(top.getItem(0)).contains("러셀의 패러독스"), "투구 칸");
+        assertEquals(Material.DIAMOND, top.getItem(20).getType(), "가방 칸 그대로");
+        assertTrue(Msg.name(top.getItem(45)).contains("종말의 투구"), "핫바는 맨 아래 줄");
+        GuiSnapshot.save(w, "share_inv.json");
+        // 10분 뒤 만료
+        server.getScheduler().performTicks(20 * 60 * 11);
+        drain(w);
+        w.closeInventory();
+        w.performCommand(ecCmd);
+        assertTrue(drain(w).contains("10분이 지나"));
+        // 한 메시지 최대 3개
+        var shareMod = plugin.module(kr.wave.core.module.ShareModule.class);
+        String many = Msg.plain(shareMod.render(p, "[i][i][i][i]"));
+        assertEquals(3, many.split("종말의 투구", -1).length - 1, "앞의 3개만 아이템으로: " + many);
+        assertTrue(many.endsWith("[i]"), "4번째는 글자 그대로: " + many);
+    }
+
+    @Test
     void ruinerPantsRework() {
         plugin.getConfig().set("weapons.ruiner-pants.deny-death-chance", 1.0);
         PlayerMock p = server.addPlayer("Ruined");

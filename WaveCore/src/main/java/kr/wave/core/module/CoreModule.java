@@ -375,6 +375,9 @@ public class CoreModule extends Module {
         String head = team != null
                 ? channel + "&f" + Msg.esc(team.display) + " &7| " + prefix + " &7- %name% &f: "
                 : channel + prefix + " &7- %name% &f: ";
+        // [item] [inv] [ec] 등을 아이템 · 보기 링크로 (ShareModule)
+        ShareModule share = plugin.module(ShareModule.class);
+        if (share != null) message = share.render(p, Msg.plain(message));
         Component line = Msg.fill(head, "%name%", nameTag(p, nickName(d.nickColor, p.getName(), "&f"))).append(message);
         for (Player t : targets) t.sendMessage(line);
         Bukkit.getConsoleSender().sendMessage(line);
