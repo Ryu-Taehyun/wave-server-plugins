@@ -92,7 +92,8 @@ public class RewardManager {
         return r;
     }
 
-    public void save() {
+    /** 저장. 실패하면 콘솔에 남기고 false (관리자가 직접 바꾼 경우 호출한 쪽에서 알려 줌) */
+    public boolean save() {
         YamlConfiguration y = new YamlConfiguration();
         y.options().setHeader(List.of(
                 "프리미엄 패스 레벨 보상 (free = 무료 트랙, premium = 프리미엄 트랙)",
@@ -113,8 +114,10 @@ public class RewardManager {
         }
         try {
             y.save(file);
+            return true;
         } catch (IOException ex) {
             plugin.getLogger().log(Level.SEVERE, "rewards.yml 저장 실패", ex);
+            return false;
         }
     }
 
@@ -126,16 +129,16 @@ public class RewardManager {
         return map(t).computeIfAbsent(level, k -> new LevelReward());
     }
 
-    public void setItems(Track t, int level, List<ItemStack> items) {
+    public boolean setItems(Track t, int level, List<ItemStack> items) {
         LevelReward r = getOrCreate(t, level);
         r.items.clear();
         r.items.addAll(items);
-        save();
+        return save();
     }
 
-    public void clear(Track t, int level) {
+    public boolean clear(Track t, int level) {
         map(t).remove(level);
-        save();
+        return save();
     }
 
     public static boolean isEmpty(LevelReward r) {

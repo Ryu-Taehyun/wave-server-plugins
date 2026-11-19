@@ -29,7 +29,8 @@ public class WaveCore extends JavaPlugin {
     /**
      * private.yml: 공개 저장소에 올리지 않는 값 (IP 잠금, 관리자 닉네임, 문의처, 홍보 링크 등)
      * plugins/WaveCore/private.yml 이 있으면 그 값이 config.yml 보다 우선합니다.
-     * 처음 실행 시 jar 안에 private.yml 이 들어 있으면 꺼내 둡니다 (로컬 빌드에만 포함, git 에는 제외).
+     * 서버의 plugins/WaveCore/private.yml 에 직접 두세요. (jar 에 넣어 빌드하면 jar 를 공유할 때 값이 함께 나가므로 권장하지 않음.
+     *  예전 방식대로 jar 안에 들어 있으면 처음 실행 때 꺼내 둡니다.)
      */
     private void applyPrivate() {
         java.io.File f = new java.io.File(getDataFolder(), "private.yml");

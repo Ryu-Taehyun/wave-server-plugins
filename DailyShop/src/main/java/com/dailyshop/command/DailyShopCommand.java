@@ -67,7 +67,10 @@ public class DailyShopCommand implements TabExecutor {
                 int limit = a.length >= 5 ? Integer.parseInt(a[4]) : 1;
                 int weight = a.length >= 6 ? Integer.parseInt(a[5]) : 10;
                 boolean premiumOnly = a.length >= 7 && (a[6].equalsIgnoreCase("premium") || a[6].equalsIgnoreCase("true"));
-                shop.put(a[2], hand, cost, limit, weight, premiumOnly);
+                if (!shop.put(a[2], hand, cost, limit, weight, premiumOnly)) {
+                    Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
+                    return;
+                }
                 Text.send(s, "&a상품 '" + a[2] + "' 등록: " + Items.describe(hand) + " &a" + shop.money(cost) + ", 하루 "
                         + (limit > 0 ? limit + "회" : "무제한") + ", 가중치 " + weight + (premiumOnly ? ", 프리미엄 전용" : ""));
             }

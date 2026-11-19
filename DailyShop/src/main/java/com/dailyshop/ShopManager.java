@@ -115,7 +115,8 @@ public class ShopManager {
         broadcast = c.getBoolean("broadcast-refresh", true);
         try {
             zone = ZoneId.of(c.getString("timezone", "Asia/Seoul"));
-        } catch (Exception e) {
+        } catch (java.time.DateTimeException e) {   // 없는 시간대 이름 · 잘못된 형식
+            plugin.getLogger().warning("config.yml timezone 값이 올바르지 않습니다 (" + e.getMessage() + "). Asia/Seoul 을 사용합니다.");
             zone = ZoneId.of("Asia/Seoul");
         }
         resetHour = Math.floorMod(c.getInt("reset-hour", 0), 24);
@@ -198,7 +199,8 @@ public class ShopManager {
         return new ItemCurrency(item);
     }
 
-    public void savePool() {
+    /** 저장. 실패하면 콘솔에 남기고 false (관리자가 직접 바꾼 경우 호출한 쪽에서 알려 줌) */
+    public boolean savePool() {
         YamlConfiguration y = new YamlConfiguration();
         y.options().setHeader(List.of(
                 "일일 상점 상품 목록",
@@ -217,8 +219,10 @@ public class ShopManager {
         }
         try {
             y.save(poolFile);
+            return true;
         } catch (IOException ex) {
             plugin.getLogger().log(Level.SEVERE, "shop.yml 저장 실패", ex);
+            return false;
         }
     }
 
@@ -236,7 +240,16 @@ public class ShopManager {
 
     private void saveState() {
         final String content = stateYaml();
-        io.submit(() -> write(content));
+        submit(() -> write(content));
+    }
+
+    /** 저장 스레드에 맡김. 서버 종료로 이미 멈췄으면 바로 씀 (파일 쓰기는 잠금으로 한 번에 하나) */
+    private void submit(Runnable job) {
+        try {
+            io.submit(job);
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            job.run();
+        }
     }
 
     /** 파일 쓰기는 한 번에 하나만 (저장 스레드와 종료 시 메인 스레드가 겹치지 않게) */
@@ -398,9 +411,10 @@ public class ShopManager {
         return pool.get(id);
     }
 
-    public void put(String id, ItemStack item, long cost, int limit, int weight, boolean premiumOnly) {
+    /** 상품 등록. 저장에 실패하면 false */
+    public boolean put(String id, ItemStack item, long cost, int limit, int weight, boolean premiumOnly) {
         pool.put(id, new Entry(id, item.clone(), cost, limit, weight, premiumOnly));
-        savePool();
+        return savePool();
     }
 
     public boolean remove(String id) {

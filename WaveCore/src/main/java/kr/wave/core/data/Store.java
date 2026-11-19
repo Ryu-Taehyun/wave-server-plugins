@@ -109,7 +109,7 @@ public class Store implements Listener {
     public void save(PlayerData d) {
         String content = d.toYaml();
         File f = file(d.uuid);
-        io.submit(() -> write(f, content));
+        submit(() -> write(f, content));
     }
 
     /** 오프라인 플레이어 데이터를 수정한 뒤 호출: 저장하고 캐시에서 내림 */
@@ -117,7 +117,7 @@ public class Store implements Listener {
         String content = d.toYaml();
         File f = file(d.uuid);
         UUID id = d.uuid;
-        io.submit(() -> {
+        submit(() -> {
             write(f, content);
             if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin, () -> {
                 if (Bukkit.getPlayer(id) == null) cache.remove(id);
@@ -133,12 +133,21 @@ public class Store implements Listener {
 
     public void saveGlobal() {
         String content = global.toYaml();
-        io.submit(() -> write(globalFile, content));
+        submit(() -> write(globalFile, content));
     }
 
     public void saveAll() {
         for (PlayerData d : cache.values()) save(d);
         saveGlobal();
+    }
+
+    /** 저장 스레드에 맡김. 서버 종료로 이미 멈췄으면 바로 씀 (파일 쓰기는 잠금으로 한 번에 하나) */
+    private void submit(Runnable job) {
+        try {
+            io.submit(job);
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            job.run();
+        }
     }
 
     /** 파일 쓰기는 한 번에 하나만 (저장 스레드와 종료 시 메인 스레드가 겹치지 않게) */

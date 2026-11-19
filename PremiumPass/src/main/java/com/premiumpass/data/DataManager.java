@@ -31,7 +31,8 @@ public class DataManager implements Listener {
 
     private final PremiumPass plugin;
     private final File folder;
-    private final Map<UUID, PlayerData> cache = new HashMap<>();
+    /** 접속 전 미리 읽기(비동기)와 메인 스레드가 같이 쓰므로 스레드 안전한 맵 */
+    private final Map<UUID, PlayerData> cache = new java.util.concurrent.ConcurrentHashMap<>();
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "PremiumPass-IO");
         t.setDaemon(true);
@@ -76,7 +77,16 @@ public class DataManager implements Listener {
     public void save(PlayerData d) {
         final String content = d.toYaml();
         final File f = file(d.uuid);
-        io.submit(() -> write(f, content));
+        submit(() -> write(f, content));
+    }
+
+    /** 저장 스레드에 맡김. 서버 종료로 이미 멈췄으면 바로 씀 (파일 쓰기는 잠금으로 한 번에 하나) */
+    private void submit(Runnable job) {
+        try {
+            io.submit(job);
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            job.run();
+        }
     }
 
     /** 저장 후, 접속 중이 아니면 캐시에서 제거 */
@@ -85,7 +95,7 @@ public class DataManager implements Listener {
         if (d == null) return;
         final String content = d.toYaml();
         final File f = file(id);
-        io.submit(() -> {
+        submit(() -> {
             write(f, content);
             if (plugin.isEnabled()) {
                 Bukkit.getScheduler().runTask(plugin, () -> {
@@ -136,6 +146,17 @@ public class DataManager implements Listener {
             Thread.currentThread().interrupt();
         }
         for (PlayerData d : cache.values()) write(file(d.uuid), d.toYaml());
+    }
+
+    /** 접속 전에 (메인 스레드가 아닌 곳에서) 파일을 미리 읽어 둠: 접속할 때 디스크를 읽느라 멈추지 않게 */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPreLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent e) {
+        if (e.getLoginResult() != org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED) return;
+        try {
+            getOrLoad(e.getUniqueId());
+        } catch (RuntimeException ex) {   // 실패하면 접속할 때 다시 읽음
+            plugin.getLogger().log(Level.WARNING, "플레이어 데이터 미리 읽기 실패: " + e.getUniqueId(), ex);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

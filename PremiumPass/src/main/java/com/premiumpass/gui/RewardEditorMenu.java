@@ -47,7 +47,10 @@ public class RewardEditorMenu extends Menu {
         for (ItemStack it : inv.getContents()) {
             if (it != null && !it.getType().isAir()) items.add(it.clone());
         }
-        plugin.rewards().setItems(track, level, items);
+        if (!plugin.rewards().setItems(track, level, items)) {
+            Text.send(player, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
+            return;
+        }
         Text.send(player, "&a레벨 &e" + level + " " + track.label + " &a보상이 저장되었습니다. &7(아이템 " + items.size() + "개)");
     }
 }

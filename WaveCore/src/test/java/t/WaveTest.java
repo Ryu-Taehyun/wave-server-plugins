@@ -1,5 +1,7 @@
 package t;
 
+import kr.wave.test.GuiSnapshot;
+
 import kr.wave.core.Items;
 import kr.wave.core.WaveCore;
 import kr.wave.core.data.GlobalData;
@@ -1383,13 +1385,13 @@ public class WaveTest {
             if (Msg.name(it).contains("다크니스 웨이브")) wave = true;
         }
         assertTrue(apo && wave, "구성품에 혼돈 세트");
-        Dump.inv(p, "chaos_preview.json");
+        GuiSnapshot.save(p, "chaos_preview.json");
         p.performCommand("상자");
         click(p, 13, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        Dump.inv(p, "theme_menu.json");
+        GuiSnapshot.save(p, "theme_menu.json");
         p.performCommand("상자");
-        Dump.inv(p, "crate_menu.json");
+        GuiSnapshot.save(p, "crate_menu.json");
         inv = p.getOpenInventory().getTopInventory();
         assertEquals(Material.IRON_SWORD, inv.getItem(28).getType(), "combat (Slot 28)");
         assertEquals(Material.ENDER_PEARL, inv.getItem(29).getType(), "enderpearl (Slot 29)");
@@ -1465,7 +1467,7 @@ public class WaveTest {
         click(p, 15, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("스페셜 상점", title(p));
-        Dump.inv(p, "specialshop.json");
+        GuiSnapshot.save(p, "specialshop.json");
         click(p, 14, ClickType.LEFT);   // Echoes 교환권 10개 45,000
         assertEquals(55_000, d.exMoney);
         var sp = p.getOpenInventory().getTopInventory();
@@ -2112,7 +2114,7 @@ public class WaveTest {
                 assertFalse(Msg.plain(lore.get(i)).isBlank() && Msg.plain(lore.get(i - 1)).isBlank(), "빈 줄 두 개 연속");
             assertTrue(Msg.plain(lore.get(lore.size() - 1)).contains("상태"));
         }
-        Dump.inv(p, "collection_sub.json");
+        GuiSnapshot.save(p, "collection_sub.json");
         click(p, 31, ClickType.LEFT);   // 보상
         boolean book = false, paper = false;
         for (ItemStack it : p.getInventory().getContents()) {
@@ -2196,15 +2198,16 @@ public class WaveTest {
 
     @Test
     void premiumPassVoucherAndLevelPurchase() {
-        org.mockbukkit.mockbukkit.MockBukkit.createMockPlugin("PremiumPass");
+        MockBukkit.load(com.premiumpass.PremiumPass.class);   // 진짜 PremiumPass
         PlayerMock p = server.addPlayer("PassBuyer");
         server.getScheduler().performTicks(5);
         PlayerData d = plugin.store().get(p);
         d.exMoney = 100_000;
         p.getInventory().clear();
-        com.premiumpass.api.PremiumPassAPI.LEVEL.put(p.getUniqueId(), 95);
+        com.premiumpass.api.PremiumPassAPI.addLevels(p, 95 - com.premiumpass.api.PremiumPassAPI.getLevel(p));
+        assertEquals(95, com.premiumpass.api.PremiumPassAPI.getLevel(p));
         assertTrue(p.performCommand("yurocash"));
-        Dump.inv(p, "paidshop.json");
+        GuiSnapshot.save(p, "paidshop.json");
         var inv = p.getOpenInventory().getTopInventory();
         assertTrue(Msg.plain(inv.getItem(29).getItemMeta().displayName()).contains("프리미엄 패스권") || inv.getItem(29).getItemMeta().getDisplayName().contains("프리미엄 패스권"));
         assertTrue(allText(inv).contains("25,000"));
@@ -2218,13 +2221,13 @@ public class WaveTest {
         assertTrue(p.performCommand("패스레벨구매"));   // /pass 메뉴의 레벨 구매 버튼이 실행하는 명령어
         server.getScheduler().performTicks(2);
         assertEquals("패스 레벨 구매", title(p));
-        Dump.inv(p, "passlevel.json");
+        GuiSnapshot.save(p, "passlevel.json");
         click(p, 11, ClickType.LEFT);   // +1
-        assertEquals(96, com.premiumpass.api.PremiumPassAPI.LEVEL.get(p.getUniqueId()));
+        assertEquals(96, com.premiumpass.api.PremiumPassAPI.getLevel(p));
         assertEquals(75_000 - 1_750, d.exMoney);
         server.getScheduler().performTicks(2);
         click(p, 15, ClickType.LEFT);   // +10 -> 최대 100 까지 4레벨만, 4 x 1,750
-        assertEquals(100, com.premiumpass.api.PremiumPassAPI.LEVEL.get(p.getUniqueId()));
+        assertEquals(100, com.premiumpass.api.PremiumPassAPI.getLevel(p));
         assertEquals(75_000 - 1_750 * 5, d.exMoney, "최대 레벨까지만 결제");
         server.getScheduler().performTicks(2);
         click(p, 11, ClickType.LEFT);   // 최대 -> 결제 안 됨
@@ -2245,7 +2248,7 @@ public class WaveTest {
         p.getInventory().addItem(Items.claymoreSd());
         server.getScheduler().performTicks(25);
         p.performCommand("컬렉션");
-        Dump.inv(p, "collection.json");
+        GuiSnapshot.save(p, "collection.json");
         assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("1 / 1"), "Arbiter: 클레이모어만으로 완성");
         // 크로노스 강화 화면: 빈 상태, 칼날 올린 상태
         p.getInventory().clear();
@@ -2253,9 +2256,9 @@ public class WaveTest {
         for (int i = 0; i < 4; i++) p.getInventory().addItem(Items.timeShard());
         p.getInventory().addItem(new ItemStack(Material.NETHERITE_SCRAP, 3));
         assertTrue(p.performCommand("chronosupgr"));
-        Dump.inv(p, "chronos_empty.json");
+        GuiSnapshot.save(p, "chronos_empty.json");
         clickBottom(p, 0);
-        Dump.inv(p, "chronos.json");
+        GuiSnapshot.save(p, "chronos.json");
         var inv = p.getOpenInventory().getTopInventory();
         assertEquals(1, Items.chronosStage(inv.getItem(11)));
         assertTrue(Msg.name(inv.getItem(13)).contains("재료가 부족"), Msg.name(inv.getItem(13)));
@@ -2274,7 +2277,7 @@ public class WaveTest {
         d.exMoney = 31_500;
         for (String[] c : new String[][]{{"상점", "mainshop"}, {"combatshop", "combatshop"}, {"ore", "oreshop"}, {"enchantbook", "enchantshop"}, {"eat", "foodshop"}}) {
             assertTrue(p.performCommand(c[0]));
-            Dump.inv(p, c[1] + ".json");
+            GuiSnapshot.save(p, c[1] + ".json");
             String t = allText(p.getOpenInventory().getTopInventory());
             assertFalse(t.contains("구매 가격:") || t.contains(" Cash"), c[0] + " 옛 가격 표시 남음: " + t);
         }
@@ -2318,12 +2321,12 @@ public class WaveTest {
         click(a, 12, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("팀원 초대", title(a));
-        Dump.inv(a, "team_invite.json");
+        GuiSnapshot.save(a, "team_invite.json");
         assertTrue(Msg.name(a.getOpenInventory().getTopInventory().getItem(0)).contains("Joiner"));
         click(a, 0, ClickType.LEFT);
         // 초대받은 사람: 팀 없음 화면에서 수락
         assertTrue(b.performCommand("팀"));
-        Dump.inv(b, "team_none.json");
+        GuiSnapshot.save(b, "team_none.json");
         assertEquals(Material.PAPER, b.getOpenInventory().getTopInventory().getItem(15).getType());
         click(b, 15, ClickType.LEFT);
         assertEquals(t, plugin.store().global().teamOf(b.getUniqueId()));
@@ -2358,15 +2361,15 @@ public class WaveTest {
         assertTrue(a.performCommand("팀 접속"));
         assertEquals("접속 중인 팀원 (3/3)", title(a));
         assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("위치 :"));
-        Dump.inv(a, "team_online.json");
+        GuiSnapshot.save(a, "team_online.json");
         a.performCommand("팀");
-        Dump.inv(a, "team_menu.json");
+        GuiSnapshot.save(a, "team_menu.json");
         assertTrue(Msg.name(a.getOpenInventory().getTopInventory().getItem(20)).contains("◆ Joiner"), "역할 순으로 표시");
         // 팀원 관리 화면 (GUI): 승급 -> 부마스터
         click(a, 20, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("팀원 관리 · Joiner", title(a));
-        Dump.inv(a, "team_member.json");
+        GuiSnapshot.save(a, "team_member.json");
         click(a, 10, ClickType.LEFT);
         assertEquals("부마스터", t.members.get(b.getUniqueId()));
         server.getScheduler().performTicks(2);
@@ -2493,7 +2496,7 @@ public class WaveTest {
         assertTrue(Msg.name(inv.getItem(13)).contains("[✦] 그림자 사슬"));
         String lore = String.join("\n", inv.getItem(13).getItemMeta().lore().stream().map(Msg::plain).toList());
         assertTrue(lore.contains("등급 : Epic") && lore.contains("끌어당기고 묶어버립니다"), lore);
-        Dump.inv(p, "combatshop.json");
+        GuiSnapshot.save(p, "combatshop.json");
         click(p, 13, ClickType.LEFT);
         assertEquals(5_000, d.money);
         p.closeInventory();
@@ -2521,7 +2524,7 @@ public class WaveTest {
         var inv = p.getOpenInventory().getTopInventory();
         assertEquals(Material.BELL, inv.getItem(14).getType());
         assertTrue(Msg.name(inv.getItem(14)).contains("[✦] 메아리 종"));
-        Dump.inv(p, "combatshop.json");
+        GuiSnapshot.save(p, "combatshop.json");
         click(p, 14, ClickType.LEFT);
         assertEquals(10_000, d.money);
         p.closeInventory();
@@ -2574,7 +2577,7 @@ public class WaveTest {
         kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(3, "&8&l무기 · 방어구");
         for (int i = 0; i < all.length; i++) g.set(i, all[i]);
         g.open(p);
-        Dump.inv(p, "weapons.json");
+        GuiSnapshot.save(p, "weapons.json");
         String chaos = String.join("\n", Items.chaosApocalypse().getItemMeta().lore().stream().map(Msg::plain).toList());
         assertTrue(chaos.contains("적의 체력을 절반") && chaos.contains("우클릭 시 주변 5칸의 적에게") && !chaos.contains("혼돈의 파열") && !chaos.contains("화염 저항") && !chaos.contains("세트 :"), chaos);
     }
@@ -2636,7 +2639,7 @@ public class WaveTest {
         g.set(11, Items.chaosApocalypse()); g.set(15, Items.darknessWave());
         g.set(19, Items.aristotlePickaxe()); g.set(21, Items.melon(1)); g.set(23, Items.newbiePass());
         g.open(p);
-        Dump.inv(p, "chaosset.json");
+        GuiSnapshot.save(p, "chaosset.json");
     }
     @Test
     void joinRefreshesItems() {
@@ -2714,7 +2717,7 @@ public class WaveTest {
             wm.secondTick();
             String last = null;
             net.kyori.adventure.text.Component c;
-            while ((c = p.nextActionBar()) != null) last = Dump.c(c);
+            while ((c = p.nextActionBar()) != null) last = GuiSnapshot.legacy(c);
             return last;
         };
         StringBuilder out = new StringBuilder();
@@ -2740,7 +2743,7 @@ public class WaveTest {
             var fw = wm.getClass().getDeclaredField("waveCd2"); fw.setAccessible(true);
             ((java.util.Map<java.util.UUID, Long>) fw.get(wm)).put(p.getUniqueId(), System.currentTimeMillis() + 70_000);
             out.append(raw.get()).append("\n");
-            java.nio.file.Files.writeString(java.nio.file.Path.of(System.getProperty("dumpdir", "/tmp"), "actionbars.txt"), out.toString());
+            GuiSnapshot.text("actionbars.txt", out.toString());
         } catch (Exception ex) { throw new RuntimeException(ex); }
     }
     @Test
@@ -2825,7 +2828,7 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         for (ItemStack it : p.getOpenInventory().getTopInventory().getContents()) if (it != null && Msg.name(it).contains("종말의 투구")) inCrate = true;
         assertTrue(inCrate, "혼돈 상자 구성품");
-        Dump.inv(p, "chaos_preview.json");
+        GuiSnapshot.save(p, "chaos_preview.json");
     }
 
     @Test
@@ -2839,7 +2842,7 @@ public class WaveTest {
         var ids = wm.getClass().getDeclaredMethod("giveIds");
         ids.setAccessible(true);
         @SuppressWarnings("unchecked") var map = (java.util.Map<String, ?>) ids.invoke(wm);
-        java.nio.file.Files.writeString(java.nio.file.Path.of(System.getProperty("dumpdir", "/tmp"), "giveids.txt"), String.join("\n", map.keySet()));
+        GuiSnapshot.text("giveids.txt", String.join("\n", map.keySet()));
         for (String k : new String[]{"혼돈의아포칼립스", "종말의투구", "다크니스웨이브", "잿불낙인검", "초승달의서약", "망령수확자", "프로스트그레이브"}) assertTrue(map.containsKey(k), k + " in " + map.keySet());
         p.getInventory().clear();
         assertTrue(admin.performCommand("아이템 종말의투구 Getter"));
@@ -2883,7 +2886,7 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         String prev = allText(p.getOpenInventory().getTopInventory());
         assertTrue(prev.contains("확률 : 1.5%") && prev.contains("확률 : 16.5%") && prev.contains("확률 : 13%"), prev);
-        Dump.inv(p, "chaos_preview.json");
+        GuiSnapshot.save(p, "chaos_preview.json");
         // 팀 창고 갱신
         var g = plugin.store().global();
         p.closeInventory();
@@ -2944,7 +2947,7 @@ public class WaveTest {
         java.io.File cf = new java.io.File(plugin.getDataFolder(), "logs/crate-" + java.time.LocalDate.now() + ".log");
         String clog = java.nio.file.Files.readString(cf.toPath());
         assertTrue(clog.contains("상자 오픈") && clog.contains("SpawnCaster") && clog.contains("combat x1"), clog);
-        java.nio.file.Files.writeString(java.nio.file.Path.of(System.getProperty("dumpdir", "/tmp"), "sample-logs.txt"), log + "\n" + clog);
+        GuiSnapshot.text("sample-logs.txt", log + "\n" + clog);
     }
 
     @Test
@@ -2965,7 +2968,7 @@ public class WaveTest {
         click(p, 10, ClickType.LEFT);   // -10만 -> 최소
         assertTrue(Msg.name(p.getOpenInventory().getTopInventory().getItem(13)).contains("1,000원"));
         click(p, 14, ClickType.LEFT);   // +1천 -> 2,000
-        Dump.inv(p, "gamble.json");
+        GuiSnapshot.save(p, "gamble.json");
         click(p, 29, ClickType.LEFT);   // 홀
         assertEquals(98_000, d.money, "베팅금 먼저 차감");
         click(p, 33, ClickType.LEFT);   // 결과 대기 중에는 또 못 검
@@ -2973,7 +2976,7 @@ public class WaveTest {
         server.getScheduler().performTicks(70);
         assertTrue(d.money == 102_000 || d.money == 98_000, "승리 +2,000 / 패배 -2,000 : " + d.money);
         assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("최근 결과"));
-        Dump.inv(p, "gamble_result.json");
+        GuiSnapshot.save(p, "gamble_result.json");
         // 잔액 부족
         d.money = 500;
         drain(p);
@@ -3045,7 +3048,7 @@ public class WaveTest {
         assertTrue(p.performCommand("바카라 10000"));
         assertEquals("바카라", title(p));
         assertTrue(Msg.name(p.getOpenInventory().getTopInventory().getItem(31)).contains("10,000원"));
-        Dump.inv(p, "baccarat.json");
+        GuiSnapshot.save(p, "baccarat.json");
         click(p, 38, ClickType.LEFT);   // 플레이어
         assertEquals(90_000, d.money, "베팅금 먼저 차감");
         click(p, 42, ClickType.LEFT);
@@ -3055,7 +3058,7 @@ public class WaveTest {
         var inv = p.getOpenInventory().getTopInventory();
         assertEquals(Material.PAPER, inv.getItem(12).getType(), "카드 공개");
         assertTrue(allText(inv).contains("최근 결과"));
-        Dump.inv(p, "baccarat_result.json");
+        GuiSnapshot.save(p, "baccarat_result.json");
         // 홀짝 <-> 바카라 이동
         click(p, 53, ClickType.LEFT);
         server.getScheduler().performTicks(2);
@@ -3094,7 +3097,7 @@ public class WaveTest {
         assertEquals(5_000_000, d.money, "거부되면 차감 없음");
         assertEquals(5_000_000, d.exMoney, "유료 캐시는 건드리지 않음");
         assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("900,000 / 1,000,000"));
-        Dump.inv(p, "baccarat_limit.json");
+        GuiSnapshot.save(p, "baccarat_limit.json");
         // 10만은 가능 -> 누적 100만
         p.performCommand("도박 100000");
         click(p, 29, ClickType.LEFT);
@@ -3137,7 +3140,7 @@ public class WaveTest {
             } else gap = true;
         }
         assertTrue(filled >= 1 && filled <= 6, "rolls 6 (같은 아이템은 합침): " + filled);
-        Dump.inv(p, "supply.json");
+        GuiSnapshot.save(p, "supply.json");
         p.getInventory().clear();
         click(p, 10, ClickType.LEFT);
         assertNull(sup.getItem(10), "클릭하면 가져감");

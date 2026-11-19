@@ -1,5 +1,7 @@
 package t;
 
+import kr.wave.test.GuiSnapshot;
+
 import com.dailyshop.DailyShop;
 import com.dailyshop.ShopManager;
 import com.dailyshop.currency.VaultCurrency;
@@ -84,7 +86,9 @@ public class DailyShopTest {
     void buyWithWaveCoreCash() {
         MockBukkit.unmock();
         server = MockBukkit.mock();
-        MockBukkit.createMockPlugin("WaveCore");   // 캐시 결제 대역 (kr.wave.core.api.WaveAPI 테스트 클래스)
+        server.addSimpleWorld("spawn-world");
+        server.addSimpleWorld("world");
+        MockBukkit.load(kr.wave.core.WaveCore.class);   // 진짜 WaveCore (캐시 결제)
         plugin = MockBukkit.load(DailyShop.class);
         ShopManager shop = plugin.shop();
         assertTrue(shop.cashAvailable(), "WaveCore 캐시 결제 사용 가능");
@@ -92,18 +96,19 @@ public class DailyShopTest {
         var e = shop.today().get(0);
         long cashPrice = shop.cashPrice(p, e);
         assertEquals(shop.price(p, e) * 40, cashPrice, "캐시 가격 = 포인트 가격 x 40");
-        kr.wave.core.api.WaveAPI.CASH.put(p.getUniqueId(), cashPrice + 5);
+        var wd = kr.wave.core.WaveCore.get().store().get(p);
+        wd.money = cashPrice + 5;
         p.getInventory().clear();
         assertTrue(shop.buy(p, e, true), "캐시로 구매");
-        assertEquals(5L, kr.wave.core.api.WaveAPI.CASH.get(p.getUniqueId()));
+        assertEquals(5L, kr.wave.core.api.WaveAPI.getCash(p, false));
         assertTrue(java.util.Arrays.stream(p.getInventory().getContents()).anyMatch(it -> it != null && it.getType() == e.item.getType()));
         // 캐시 부족
         var e2 = shop.today().get(1);
         assertFalse(shop.buy(p, e2, true));
         // GUI: 우클릭 = 캐시 구매
-        kr.wave.core.api.WaveAPI.CASH.put(p.getUniqueId(), shop.cashPrice(p, e2));
+        wd.money = shop.cashPrice(p, e2);
         p.performCommand("dailyshop");
-        Dump.inv(p, "dailyshop.json");
+        GuiSnapshot.save(p, "dailyshop.json");
         var inv = p.getOpenInventory().getTopInventory();
         int slot = -1;
         for (int i = 0; i < inv.getSize(); i++) {
@@ -116,6 +121,6 @@ public class DailyShopTest {
         var ev = new org.bukkit.event.inventory.InventoryClickEvent(view, org.bukkit.event.inventory.InventoryType.SlotType.CONTAINER, slot,
                 org.bukkit.event.inventory.ClickType.RIGHT, org.bukkit.event.inventory.InventoryAction.PICKUP_HALF);
         server.getPluginManager().callEvent(ev);
-        assertEquals(0L, kr.wave.core.api.WaveAPI.CASH.get(p.getUniqueId()), "우클릭으로 캐시 구매");
+        assertEquals(0L, kr.wave.core.api.WaveAPI.getCash(p, false), "우클릭으로 캐시 구매");
     }
 }

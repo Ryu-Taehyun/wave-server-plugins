@@ -29,7 +29,21 @@
             <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <!-- 테스트 전용: 진짜 PremiumPass 를 가짜 서버에 올려 연동 확인 -->
+        <dependency>
+            <groupId>com.premiumpass</groupId>
+            <artifactId>PremiumPass</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- 테스트 전용 (MockBukkit 가짜 서버). 서버 jar 에는 들어가지 않습니다 -->
+        <dependency>
+            <groupId>kr.wave</groupId>
+            <artifactId>wave-test-support</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.mockbukkit.mockbukkit</groupId>
             <artifactId>mockbukkit-v1.21</artifactId>
@@ -59,10 +73,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
-                <configuration>
-                    <!-- 테스트 화면 기록(JSON)은 target 폴더에 -->
-                    <systemPropertyVariables><dumpdir>${project.build.directory}</dumpdir></systemPropertyVariables>
-                </configuration>
             </plugin>
         </plugins>
     </build>

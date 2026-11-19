@@ -48,8 +48,8 @@ public class PassManager {
         keepPoints = c.getBoolean("season.keep-points", true);
         try {
             zone = ZoneId.of(c.getString("daily.timezone", "Asia/Seoul"));
-        } catch (Exception e) {
-            plugin.getLogger().warning("잘못된 timezone 설정입니다. Asia/Seoul 을 사용합니다.");
+        } catch (java.time.DateTimeException e) {   // 없는 시간대 이름 · 잘못된 형식
+            plugin.getLogger().warning("config.yml daily.timezone 값이 올바르지 않습니다 (" + e.getMessage() + "). Asia/Seoul 을 사용합니다.");
             zone = ZoneId.of("Asia/Seoul");
         }
         resetHour = Math.floorMod(c.getInt("daily.reset-hour", 0), 24);

@@ -13,8 +13,9 @@
 
     <modules>
         <module>Common</module>
+        <module>TestSupport</module>
         <module>PremiumPass</module>
-        <module>DailyShop</module>
         <module>WaveCore</module>
+        <module>DailyShop</module>
     </modules>
 </project>

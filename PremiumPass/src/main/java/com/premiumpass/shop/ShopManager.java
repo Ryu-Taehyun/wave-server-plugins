@@ -76,7 +76,8 @@ public class ShopManager {
         }
     }
 
-    public void save() {
+    /** 저장. 실패하면 콘솔에 남기고 false (관리자가 직접 바꾼 경우 호출한 쪽에서 알려 줌) */
+    public boolean save() {
         YamlConfiguration y = new YamlConfiguration();
         y.options().setHeader(List.of(
                 "프리미엄 패스 교환 상점",
@@ -92,8 +93,10 @@ public class ShopManager {
         }
         try {
             y.save(file);
+            return true;
         } catch (IOException ex) {
             plugin.getLogger().log(Level.SEVERE, "shop.yml 저장 실패", ex);
+            return false;
         }
     }
 

@@ -117,11 +117,17 @@ public class AdminCommand implements TabExecutor {
                 LevelReward r = plugin.rewards().getOrCreate(track, level);
                 List<ItemStack> items = new ArrayList<>(r.items);
                 items.add(hand);
-                plugin.rewards().setItems(track, level, items);
+                if (!plugin.rewards().setItems(track, level, items)) {
+                    Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
+                    return;
+                }
                 Text.send(s, "&a" + label + " 보상에 " + Items.describe(hand) + " &a추가 완료.");
             }
             case "clear" -> {
-                plugin.rewards().clear(track, level);
+                if (!plugin.rewards().clear(track, level)) {
+                    Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
+                    return;
+                }
                 Text.send(s, "&a" + label + " 보상을 삭제했습니다.");
             }
             case "view" -> {
@@ -191,7 +197,7 @@ public class AdminCommand implements TabExecutor {
                 int limit = a.length >= 5 ? Integer.parseInt(a[4]) : 0;
                 boolean premiumOnly = a.length >= 6 && (a[5].equalsIgnoreCase("premium") || a[5].equalsIgnoreCase("true"));
                 shop.add(a[2], hand, cost, limit, premiumOnly);
-                shop.save();
+                if (!shop.save()) Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
                 Text.send(s, "&a상점에 '" + a[2] + "' (" + Items.describe(hand) + "&a) 등록: " + cost + " 포인트"
                         + (limit > 0 ? ", 시즌 " + limit + "회 제한" : "") + (premiumOnly ? ", 프리미엄 전용" : ""));
             }
@@ -201,7 +207,7 @@ public class AdminCommand implements TabExecutor {
                     return;
                 }
                 if (shop.remove(a[2])) {
-                    shop.save();
+                    if (!shop.save()) Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
                     Text.send(s, "&a'" + a[2] + "' 삭제 완료.");
                 } else Text.send(s, "&c그런 상점 아이템이 없습니다.");
             }
@@ -216,7 +222,7 @@ public class AdminCommand implements TabExecutor {
                     return;
                 }
                 e.premiumOnly = Boolean.parseBoolean(a[3]);
-                shop.save();
+                if (!shop.save()) Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
                 Text.send(s, "&a'" + e.id + "' 프리미엄 전용: " + e.premiumOnly);
             }
             case "price" -> {
@@ -231,7 +237,7 @@ public class AdminCommand implements TabExecutor {
                 }
                 e.cost = Long.parseLong(a[3]);
                 if (a.length >= 5) e.limit = Integer.parseInt(a[4]);
-                shop.save();
+                if (!shop.save()) Text.send(s, "&c저장하지 못했습니다. 서버 콘솔의 오류를 확인하세요.");
                 Text.send(s, "&a'" + e.id + "' 가격: " + e.cost + ", 제한: " + (e.limit > 0 ? e.limit : "무제한"));
             }
             default -> {

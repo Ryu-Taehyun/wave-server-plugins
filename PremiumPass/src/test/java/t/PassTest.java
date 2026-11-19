@@ -1,5 +1,7 @@
 package t;
 
+import kr.wave.test.GuiSnapshot;
+
 import com.premiumpass.PremiumPass;
 import com.premiumpass.data.PlayerData;
 import com.premiumpass.gui.LevelMenu;
@@ -170,7 +172,7 @@ public class PassTest {
         new QuestMenu(plugin, p, false).open();
         plugin.data().get(p).points = 1200;
         new ShopMenu(plugin, p, 0).open();
-        Dump.inv(p, "passshop.json");
+        GuiSnapshot.save(p, "passshop.json");
         assertTrue(p.performCommand("pass"));
         assertTrue(p.performCommand("pass 정보"));
         assertTrue(p.performCommand("passadmin xp " + p.getName() + " 5000"));
