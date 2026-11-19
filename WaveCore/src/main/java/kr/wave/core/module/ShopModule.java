@@ -177,8 +177,14 @@ public class ShopModule extends Module {
         CrateModule cm = plugin.module(CrateModule.class);
         CrateModule.Crate c = cm == null ? null : cm.crate(crateId);
         if (c == null) return;
-        g.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e» 좌클릭 &f구매"), e -> {
+        String buyLine = cm.locked(c) ? "%nl%&c🔒 점검 중 &7- 지금은 판매하지 않습니다." : "%nl%&e» 좌클릭 &f구매";
+        g.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + buyLine), e -> {
             if (!left(e)) return;
+            if (cm.locked(c)) {
+                Msg.send(p, "&c&l[!] &c이 상자는 지금 점검 중이라 교환권을 판매하지 않습니다.");
+                Gui.denySound(p);
+                return;
+            }
             if (!plugin.module(EconomyModule.class).take(p, price, paid, "상자 키 구매: " + c.id() + " x" + amount)) {
                 Msg.send(p, paid ? "§c[❌] 유료 캐시가 부족합니다!" : "§c[❌] 캐시가 부족합니다! (현재 캐시: " + Msg.num(data(p).money) + "원)");
                 Msg.sound(p, "entity.villager.no", 0.8f, 1f);

@@ -3185,6 +3185,50 @@ public class WaveTest {
     }
 
     @Test
+    void crateLock() {
+        PlayerMock admin = server.addPlayer("LockAdm");
+        admin.setOp(true);
+        PlayerMock p = server.addPlayer("LockUser");
+        server.getScheduler().performTicks(5);
+        var cm = plugin.module(kr.wave.core.module.CrateModule.class);
+        var combat = cm.crate("combat");
+        assertTrue(admin.performCommand("상자 give LockUser combat 2"));
+        assertTrue(admin.performCommand("상자 잠금 combat 확률 점검"));
+        assertTrue(cm.locked(combat));
+        assertEquals("확률 점검", plugin.getConfig().getString("crate-locks.combat"), "config 에 저장 (재시작해도 유지)");
+        // 메뉴 표시 + 열기 거부, 키는 그대로
+        p.performCommand("상자");
+        assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("점검 중"));
+        drain(p);
+        click(p, 28, ClickType.LEFT);
+        assertTrue(drain(p).contains("점검 중이라 열 수 없습니다"));
+        assertEquals(2, cm.virtualKeys(p, combat), "키 유지");
+        // 구성품 보기는 됨
+        p.performCommand("상자");
+        click(p, 28, ClickType.RIGHT);
+        server.getScheduler().performTicks(2);
+        assertTrue(title(p).contains("상자 구성품"));
+        // 유료 캐시 상점의 키 판매도 멈춤
+        var d = plugin.store().get(p);
+        d.exMoney = 100_000;
+        p.performCommand("yurocash");
+        assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("지금은 판매하지 않습니다"));
+        click(p, 19, ClickType.LEFT);
+        assertEquals(100_000, d.exMoney, "잠긴 상자 키는 결제 안 됨");
+        // 목록 · 해제
+        drain(admin);
+        assertTrue(admin.performCommand("상자 잠금목록"));
+        assertTrue(drain(admin).contains("combat"));
+        assertTrue(admin.performCommand("상자 해제 combat"));
+        assertFalse(cm.locked(combat));
+        p.closeInventory();
+        p.performCommand("상자");
+        click(p, 28, ClickType.LEFT);
+        assertEquals(1, cm.virtualKeys(p, combat), "풀면 다시 열림");
+        server.getScheduler().performTicks(20 * 15);
+    }
+
+    @Test
     void ruinerPantsRework() {
         plugin.getConfig().set("weapons.ruiner-pants.deny-death-chance", 1.0);
         PlayerMock p = server.addPlayer("Ruined");

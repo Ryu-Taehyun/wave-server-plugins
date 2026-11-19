@@ -254,6 +254,10 @@ public class PassTest {
         PlayerMock p = server.addPlayer("Crafter");
         server.getScheduler().performTicks(2);
         PlayerData d = plugin.data().get(p);
+        d.dailyIds.clear();   // 일일 퀘스트는 무작위라, 제작 퀘스트를 직접 배정
+        d.dailyIds.add("crafter");
+        d.dailyProgress.clear();
+        d.dailyDone.clear();
         p.getInventory().clear();
         // 한 번 클릭: 결과 4개
         server.getPluginManager().callEvent(craft(p, false));

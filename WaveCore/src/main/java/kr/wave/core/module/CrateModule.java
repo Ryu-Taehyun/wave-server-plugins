@@ -482,6 +482,7 @@ public class CrateModule extends Module {
             It b = It.of(c.icon).name(c.name);
             for (String l : c.lore) b.lore(l.replace("%keys%", String.valueOf(keys)).replace("%Keys%", String.valueOf(keys)));
             b.lore("<gray>Shift + 좌클릭 시 10회 오픈됩니다.");
+            if (locked(c)) b.lore("", "&c&l🔒 점검 중 &7- 지금은 열 수 없습니다." + lockReasonText(c), "&8구성품 보기(우클릭)는 됩니다.");
             if (c.glow || keys > 0) b.ench(Enchantment.UNBREAKING, 1);
             ItemStack icon = b.build();
             ItemMeta meta = icon.getItemMeta();
@@ -553,6 +554,12 @@ public class CrateModule extends Module {
 
     /** times 회 열기 (키가 모자라면 가진 만큼, 최대 times) */
     public void open(Player p, Crate c, int times) {
+        if (locked(c)) {
+            Msg.send(p, "&c&l[!] &c" + Msg.plainOf(c.name) + " &c상자는 지금 점검 중이라 열 수 없습니다." + lockReasonText(c));
+            Msg.send(p, "&7가지고 있는 키는 그대로 남아 있습니다.");
+            Msg.sound(p, "block.chest.locked", 0.8f, 1f);
+            return;
+        }
         if (c.prizes.isEmpty()) {
             Msg.send(p, "&c이 상자에는 보상이 설정되어 있지 않습니다.");
             return;
@@ -716,6 +723,30 @@ public class CrateModule extends Module {
         }
     }
 
+    /* ======================= 상자 잠금 (점검) ======================= */
+
+    /** 잠긴 상자 id(소문자) -> 사유. config.yml crate-locks 에 저장되어 재시작해도 유지 */
+    private Map<String, String> locks() {
+        Map<String, String> m = new LinkedHashMap<>();
+        var sec = plugin.getConfig().getConfigurationSection("crate-locks");
+        if (sec != null) for (String k : sec.getKeys(false)) m.put(k.toLowerCase(), sec.getString(k, ""));
+        return m;
+    }
+
+    public boolean locked(Crate c) {
+        return c != null && plugin.getConfig().isSet("crate-locks." + c.id.toLowerCase());
+    }
+
+    private String lockReasonText(Crate c) {
+        String r = plugin.getConfig().getString("crate-locks." + c.id.toLowerCase(), "");
+        return r == null || r.isBlank() ? "" : " &7(사유: " + r + ")";
+    }
+
+    private void setLock(Crate c, String reason) {
+        plugin.getConfig().set("crate-locks." + c.id.toLowerCase(), reason);
+        plugin.saveConfig();
+    }
+
     /* ======================= 명령어 ======================= */
 
     private void command(CommandSender s, String l, String[] a) {
@@ -753,6 +784,43 @@ public class CrateModule extends Module {
                 Msg.send(s, "&a상자 설정을 다시 불러왔습니다. &7(" + crates.size() + "개: " + String.join(", ", ids()) + ")");
             }
             case "migrate" -> migrate(s);
+            case "잠금", "lock" -> {
+                // /상자 잠금 <상자> [사유]
+                Crate c = a.length >= 2 ? crate(a[1]) : null;
+                if (c == null) {
+                    Msg.send(s, "&c/상자 잠금 <상자> [사유] &7(상자: " + String.join(", ", ids()) + ")");
+                    return;
+                }
+                String reason = a.length >= 3 ? String.join(" ", java.util.Arrays.copyOfRange(a, 2, a.length)) : "";
+                setLock(c, reason);
+                Msg.send(s, "&a[!] " + Msg.plainOf(c.name) + " &a상자를 잠갔습니다." + (reason.isEmpty() ? "" : " &7(사유: " + reason + ")"));
+                Msg.send(s, "&7열기 · 교환권 판매가 멈추고, 플레이어의 키는 그대로 남습니다. 풀려면 /상자 해제 " + c.id);
+                plugin.getLogger().info("[상자 잠금] " + s.getName() + " -> " + c.id + (reason.isEmpty() ? "" : " (" + reason + ")"));
+            }
+            case "해제", "unlock" -> {
+                Crate c = a.length >= 2 ? crate(a[1]) : null;
+                if (c == null) {
+                    Msg.send(s, "&c/상자 해제 <상자> &7(잠긴 상자: " + (locks().isEmpty() ? "없음" : String.join(", ", locks().keySet())) + ")");
+                    return;
+                }
+                if (!locked(c)) {
+                    Msg.send(s, "&7" + Msg.plainOf(c.name) + " &7상자는 잠겨 있지 않습니다.");
+                    return;
+                }
+                plugin.getConfig().set("crate-locks." + c.id.toLowerCase(), null);
+                plugin.saveConfig();
+                Msg.send(s, "&a[!] " + Msg.plainOf(c.name) + " &a상자 잠금을 풀었습니다.");
+                plugin.getLogger().info("[상자 잠금 해제] " + s.getName() + " -> " + c.id);
+            }
+            case "잠금목록", "locks" -> {
+                Map<String, String> m = locks();
+                if (m.isEmpty()) {
+                    Msg.send(s, "&7잠긴 상자가 없습니다.");
+                    return;
+                }
+                Msg.send(s, "&6잠긴 상자 " + m.size() + "개");
+                for (var en : m.entrySet()) Msg.send(s, " &7- &f" + en.getKey() + (en.getValue().isBlank() ? "" : " &7(" + en.getValue() + ")"));
+            }
             case "open" -> {
                 if (!(s instanceof Player p) || a.length < 2 || crate(a[1]) == null) return;
                 giveKeys(p, crate(a[1]), crate(a[1]).required, false);
@@ -764,6 +832,8 @@ public class CrateModule extends Module {
                 Msg.send(s, "&e/상자 keys [플레이어] &7- 가상 키 확인");
                 Msg.send(s, "&e/상자 reload &7- crates 폴더 다시 불러오기");
                 Msg.send(s, "&e/상자 migrate &7- CrazyCrates 가상 키 가져오기");
+                Msg.send(s, "&e/상자 잠금 <상자> [사유] &7- 점검: 열기 · 교환권 판매 멈춤 (키는 유지)");
+                Msg.send(s, "&e/상자 해제 <상자> &7- 잠금 풀기   &e/상자 잠금목록");
                 Msg.send(s, "&7상자: " + String.join(", ", ids()));
             }
         }
