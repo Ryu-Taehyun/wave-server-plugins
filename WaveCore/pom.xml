@@ -26,8 +26,21 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- 테스트 전용 (MockBukkit 가짜 서버). 서버 jar 에는 들어가지 않습니다 -->
+        <dependency>
+            <groupId>org.mockbukkit.mockbukkit</groupId>
+            <artifactId>mockbukkit-v1.21</artifactId>
+            <version>4.116.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.0.3</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -40,6 +53,15 @@
                 <version>3.13.0</version>
                 <configuration>
                     <release>21</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <!-- 테스트 화면 기록(JSON)은 target 폴더에 -->
+                    <systemPropertyVariables><dumpdir>${project.build.directory}</dumpdir></systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

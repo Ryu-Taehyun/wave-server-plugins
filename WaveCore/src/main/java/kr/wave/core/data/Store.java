@@ -87,10 +87,6 @@ public class Store implements Listener {
         return n == null ? 0 : n.length;
     }
 
-    public boolean hasFile(UUID id) {
-        return file(id).exists();
-    }
-
     /** 저장된 모든 플레이어 데이터에 작업 적용 후 저장 (전체 초기화용) */
     public int forAll(java.util.function.Consumer<PlayerData> action) {
         java.util.Set<UUID> ids = new java.util.HashSet<>(cache.keySet());
@@ -98,7 +94,8 @@ public class Store implements Listener {
         if (files != null) for (File f : files) {
             try {
                 ids.add(UUID.fromString(f.getName().substring(0, f.getName().length() - 4)));
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException e) {
+                kr.wave.core.util.Log.once("store:name:" + f.getName(), "players 폴더에 플레이어 파일이 아닌 파일이 있어 건너뜁니다: " + f.getName());
             }
         }
         for (UUID id : ids) {
@@ -144,7 +141,16 @@ public class Store implements Listener {
         saveGlobal();
     }
 
+    /** 파일 쓰기는 한 번에 하나만 (저장 스레드와 종료 시 메인 스레드가 겹치지 않게) */
+    private final Object writeLock = new Object();
+
     private void write(File f, String content) {
+        synchronized (writeLock) {
+            writeNow(f, content);
+        }
+    }
+
+    private void writeNow(File f, String content) {
         try {
             File tmp = new File(f.getParentFile(), f.getName() + ".tmp");
             Files.writeString(tmp.toPath(), content, StandardCharsets.UTF_8);
@@ -154,15 +160,36 @@ public class Store implements Listener {
         }
     }
 
+    /**
+     * 종료 시 저장: 남은 저장 작업이 끝나기를 기다리고, 시간 안에 안 끝나면 대기 중인 작업은 취소한 뒤
+     * 마지막 상태를 한 번 더 씁니다. 파일 쓰기는 writeLock 으로 한 번에 하나만 하므로
+     * 저장 스레드와 메인 스레드가 같은 파일을 동시에 쓰는 일은 없습니다.
+     */
     public void shutdown() {
         io.shutdown();
         try {
-            io.awaitTermination(10, TimeUnit.SECONDS);
+            if (!io.awaitTermination(10, TimeUnit.SECONDS)) {
+                int dropped = io.shutdownNow().size();   // 아래에서 최신 상태로 다시 쓰므로 취소해도 손실 없음
+                plugin.getLogger().warning("저장 작업이 10초 안에 끝나지 않아 대기 중인 " + dropped + "개를 취소하고 마지막 상태를 다시 저장합니다.");
+                if (!io.awaitTermination(5, TimeUnit.SECONDS)) plugin.getLogger().warning("저장 스레드가 아직 끝나지 않았습니다. 진행 중인 쓰기가 끝난 뒤 이어서 저장합니다.");
+            }
         } catch (InterruptedException e) {
+            io.shutdownNow();
             Thread.currentThread().interrupt();
         }
         for (PlayerData d : cache.values()) write(file(d.uuid), d.toYaml());
         write(globalFile, global.toYaml());
+    }
+
+    /** 접속 전에 (메인 스레드가 아닌 곳에서) 플레이어 파일을 미리 읽어 둠: 접속할 때 디스크를 읽느라 멈추지 않게 */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPreLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent e) {
+        if (e.getLoginResult() != org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED) return;
+        try {
+            get(e.getUniqueId());
+        } catch (RuntimeException ex) {   // 미리 읽기 실패: 접속할 때 다시 읽음
+            plugin.getLogger().log(Level.WARNING, "플레이어 데이터 미리 읽기 실패: " + e.getUniqueId(), ex);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

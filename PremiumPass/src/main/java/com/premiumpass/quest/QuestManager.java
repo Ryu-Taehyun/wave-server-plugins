@@ -2,7 +2,7 @@ package com.premiumpass.quest;
 
 import com.premiumpass.PremiumPass;
 import com.premiumpass.data.PlayerData;
-import com.premiumpass.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

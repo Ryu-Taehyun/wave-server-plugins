@@ -1,4 +1,4 @@
-package com.dailyshop.util;
+package kr.wave.common;
 
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;

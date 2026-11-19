@@ -58,7 +58,7 @@
 
 ## 빌드
 
-PremiumPass 연동 코드를 컴파일하려면 먼저 PremiumPass 폴더에서 `mvn install`을 실행한 뒤:
+저장소 맨 위 폴더에서 `mvn install` 하면 Common · PremiumPass 와 함께 빌드됩니다. 이 폴더만 빌드하려면 먼저 Common · PremiumPass 를 `mvn install` 한 뒤:
 
 ```bash
 mvn package

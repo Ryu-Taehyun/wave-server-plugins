@@ -67,7 +67,7 @@ public final class TxLog {
         try {
             io.submit(job);
         } catch (java.util.concurrent.RejectedExecutionException e) {
-            job.run();
+            job.run();   // 서버 종료 중(기록 스레드가 이미 멈춤)일 때만 바로 씀. 평소에는 항상 기록 스레드에서 씀
         }
     }
 

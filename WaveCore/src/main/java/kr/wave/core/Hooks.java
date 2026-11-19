@@ -1,5 +1,7 @@
 package kr.wave.core;
 
+import kr.wave.core.util.Log;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -40,7 +42,8 @@ public class Hooks {
                     vaultChat = rsp.getProvider();
                     vaultPrefix = chatClass.getMethod("getPlayerPrefix", Player.class);
                 }
-            } catch (ReflectiveOperationException | LinkageError ignored) {
+            } catch (ReflectiveOperationException | LinkageError e) {
+                Log.once("hook:vault", "Vault Chat 연동 중 오류: " + e);
             }
             if (vaultChat == null) plugin.getLogger().warning("Vault Chat 을 찾지 못했습니다. 채팅/탭에 칭호가 표시되지 않습니다.");
         }
@@ -49,6 +52,7 @@ public class Hooks {
             Object r = vaultPrefix.invoke(vaultChat, p);
             return r == null ? "" : r.toString();
         } catch (ReflectiveOperationException e) {
+            Log.once("hook:vault-prefix", "칭호(접두사)를 읽지 못했습니다: " + e);
             return "";
         }
     }
@@ -72,7 +76,8 @@ public class Hooks {
                     if (regionId.equalsIgnoreCase(String.valueOf(call(r, "getId")))) return true;
                 }
             }
-        } catch (Exception | LinkageError ignored) {
+        } catch (Exception | LinkageError e) {
+            Log.once("hook:wg-region", "WorldGuard 구역 확인에 실패했습니다. 보호구역 판정이 동작하지 않습니다: " + e);
         }
         return false;
     }
@@ -97,7 +102,8 @@ public class Hooks {
             Method m = query.getClass().getMethod("testState", weLocClass, assoc, arr.getClass());
             Object r = m.invoke(query, weLoc, null, arr);
             return Boolean.FALSE.equals(r);
-        } catch (Exception | LinkageError ignored) {
+        } catch (Exception | LinkageError e) {
+            Log.once("hook:wg-pvp", "WorldGuard PvP 확인에 실패했습니다. PvP 금지 구역 스킬 제한이 동작하지 않습니다: " + e);
             return false;
         }
     }

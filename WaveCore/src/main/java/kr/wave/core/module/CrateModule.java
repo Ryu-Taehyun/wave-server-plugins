@@ -7,6 +7,7 @@ import kr.wave.core.util.Cmd;
 import kr.wave.core.util.Fx;
 import kr.wave.core.util.Gui;
 import kr.wave.core.util.It;
+import kr.wave.core.util.Log;
 import kr.wave.core.util.Msg;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -138,7 +139,8 @@ public class CrateModule extends Module {
             if (new File(dir, n + ".yml").exists()) continue;
             try {
                 plugin.saveResource("crates/" + n + ".yml", false);
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException e) {
+                Log.warn("기본 상자 파일이 jar 안에 없습니다: crates/" + n + ".yml");
             }
         }
         File[] files = dir.listFiles((d, n) -> n.endsWith(".yml"));
@@ -284,7 +286,7 @@ public class CrateModule extends Module {
             try {
                 String v = pdc.get(k, PersistentDataType.STRING);
                 if (v != null && crate(v) != null) return crate(v);
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException ignored) {   // 글자가 아닌 다른 형식의 CrazyCrates 태그: 키가 아님
             }
         }
         return null;

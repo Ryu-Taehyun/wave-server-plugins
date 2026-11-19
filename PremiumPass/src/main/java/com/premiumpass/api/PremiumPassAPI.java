@@ -71,7 +71,7 @@ public final class PremiumPassAPI {
         plugin.data().save(d);
         int up = d.level - before;
         if (up > 0) {
-            com.premiumpass.util.Text.send(p, "&a프리미엄 패스 레벨이 &e" + before + " &a→ &e" + d.level + " &a(으)로 올랐습니다! &7(/pass 에서 보상 수령)");
+            kr.wave.common.Text.send(p, "&a프리미엄 패스 레벨이 &e" + before + " &a→ &e" + d.level + " &a(으)로 올랐습니다! &7(/pass 에서 보상 수령)");
             p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
         }
         return up;

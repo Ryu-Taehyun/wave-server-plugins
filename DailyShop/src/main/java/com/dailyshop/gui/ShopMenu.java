@@ -2,8 +2,8 @@ package com.dailyshop.gui;
 
 import com.dailyshop.DailyShop;
 import com.dailyshop.ShopManager;
-import com.dailyshop.util.Items;
-import com.dailyshop.util.Text;
+import kr.wave.common.Items;
+import kr.wave.common.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;

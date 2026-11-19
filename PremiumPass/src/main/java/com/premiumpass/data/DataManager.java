@@ -99,7 +99,16 @@ public class DataManager implements Listener {
         for (PlayerData d : cache.values()) save(d);
     }
 
+    /** 파일 쓰기는 한 번에 하나만 (저장 스레드와 종료 시 메인 스레드가 겹치지 않게) */
+    private final Object writeLock = new Object();
+
     private void write(File f, String content) {
+        synchronized (writeLock) {
+            writeNow(f, content);
+        }
+    }
+
+    private void writeNow(File f, String content) {
         try {
             File tmp = new File(f.getParentFile(), f.getName() + ".tmp");
             Files.writeString(tmp.toPath(), content, StandardCharsets.UTF_8);
@@ -109,13 +118,21 @@ public class DataManager implements Listener {
         }
     }
 
+    /**
+     * 종료 시 저장: 남은 저장 작업이 끝나기를 기다리고, 시간 안에 안 끝나면 대기 중인 작업은 취소한 뒤
+     * 마지막 상태를 한 번 더 씁니다. 파일 쓰기는 writeLock 으로 한 번에 하나만 하므로
+     * 저장 스레드와 메인 스레드가 같은 파일을 동시에 쓰는 일은 없습니다.
+     */
     public void shutdown() {
         io.shutdown();
         try {
             if (!io.awaitTermination(10, TimeUnit.SECONDS)) {
-                plugin.getLogger().warning("저장 작업이 시간 내에 끝나지 않았습니다.");
+                int dropped = io.shutdownNow().size();   // 아래에서 최신 상태로 다시 쓰므로 취소해도 손실 없음
+                plugin.getLogger().warning("저장 작업이 10초 안에 끝나지 않아 대기 중인 " + dropped + "개를 취소하고 마지막 상태를 다시 저장합니다.");
+                if (!io.awaitTermination(5, TimeUnit.SECONDS)) plugin.getLogger().warning("저장 스레드가 아직 끝나지 않았습니다. 진행 중인 쓰기가 끝난 뒤 이어서 저장합니다.");
             }
         } catch (InterruptedException e) {
+            io.shutdownNow();
             Thread.currentThread().interrupt();
         }
         for (PlayerData d : cache.values()) write(file(d.uuid), d.toYaml());

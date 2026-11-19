@@ -6,7 +6,7 @@ import com.premiumpass.gui.LevelMenu;
 import com.premiumpass.gui.MainMenu;
 import com.premiumpass.gui.QuestMenu;
 import com.premiumpass.gui.ShopMenu;
-import com.premiumpass.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;

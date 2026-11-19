@@ -2,8 +2,8 @@ package com.premiumpass.gui;
 
 import com.premiumpass.PremiumPass;
 import com.premiumpass.data.PlayerData;
-import com.premiumpass.util.Items;
-import com.premiumpass.util.Text;
+import kr.wave.common.Items;
+import kr.wave.common.Text;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

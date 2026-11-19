@@ -75,7 +75,8 @@ public class GlobalData {
             if (ms != null) for (String u : ms.getKeys(false)) {
                 try {
                     t.members.put(UUID.fromString(u), ms.getString(u, "팀원"));
-                } catch (IllegalArgumentException ignored) {
+                } catch (IllegalArgumentException e) {
+                    kr.wave.core.util.Log.warn("global.yml: 팀 '" + id + "' 의 팀원 UUID 가 올바르지 않아 건너뜁니다: " + u);
                 }
             }
             ConfigurationSection st = ts.getConfigurationSection("storage");
@@ -83,7 +84,8 @@ public class GlobalData {
                 try {
                     int i = Integer.parseInt(k);
                     if (i >= 0 && i < 54) t.storage[i] = st.getItemStack(k);
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException e) {
+                    kr.wave.core.util.Log.warn("global.yml: 팀 '" + id + "' 창고의 칸 번호가 올바르지 않아 건너뜁니다: " + k);
                 }
             }
             teams.put(id, t);
@@ -104,7 +106,8 @@ public class GlobalData {
         if (s != null) for (String k : s.getKeys(false)) {
             try {
                 swordKills.put(Integer.parseInt(k), s.getInt(k));
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException e) {
+                kr.wave.core.util.Log.warn("global.yml: sword-kills 의 번호가 올바르지 않아 건너뜁니다: " + k);
             }
         }
         s = y.getConfigurationSection("bans");
@@ -114,7 +117,8 @@ public class GlobalData {
             b.code = s.getString(u + ".code");
             try {
                 bans.put(UUID.fromString(u), b);
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException e) {
+                kr.wave.core.util.Log.warn("global.yml: 차단 목록의 UUID 가 올바르지 않아 건너뜁니다: " + u);
             }
         }
     }
@@ -150,7 +154,4 @@ public class GlobalData {
         return y.saveToString();
     }
 
-    public Set<String> teamIds() {
-        return new LinkedHashSet<>(teams.keySet());
-    }
 }

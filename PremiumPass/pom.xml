@@ -26,8 +26,27 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- 공통 도우미 (저장소의 Common 폴더). 루트에서 mvn package 하면 같이 빌드됩니다. -->
+        <dependency>
+            <groupId>kr.wave</groupId>
+            <artifactId>wave-common</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- 테스트 전용 (MockBukkit 가짜 서버). 서버 jar 에는 들어가지 않습니다 -->
+        <dependency>
+            <groupId>org.mockbukkit.mockbukkit</groupId>
+            <artifactId>mockbukkit-v1.21</artifactId>
+            <version>4.116.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.0.3</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -46,6 +65,39 @@
                 <version>3.13.0</version>
                 <configuration>
                     <release>21</release>
+                </configuration>
+            </plugin>
+            <!-- wave-common 을 jar 안에 넣고 패키지 이름을 바꿈 (다른 플러그인과 겹치지 않게) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes><include>kr.wave:wave-common</include></includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>kr.wave.common</pattern>
+                                    <shadedPattern>com.premiumpass.lib.common</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <!-- 테스트 화면 기록(JSON)은 target 폴더에 -->
+                    <systemPropertyVariables><dumpdir>${project.build.directory}</dumpdir></systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

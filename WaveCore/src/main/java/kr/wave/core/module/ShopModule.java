@@ -196,14 +196,6 @@ public class ShopModule extends Module {
         });
     }
 
-    /** 상자 가상 키 지급 (예전에는 CrazyCrates 명령어로 지급) */
-    private void crateKey(Player p, String crate, int n) {
-        CrateModule cm = plugin.module(CrateModule.class);
-        CrateModule.Crate c = cm == null ? null : cm.crate(crate);
-        if (c != null) cm.giveKeys(p, c, n, false);
-        else plugin.getLogger().warning("상자 '" + crate + "' 를 찾을 수 없어 키를 지급하지 못했습니다: " + p.getName());
-    }
-
     /* ======================= 뉴비 상점 ======================= */
 
     private void newbieShop(Player p) {

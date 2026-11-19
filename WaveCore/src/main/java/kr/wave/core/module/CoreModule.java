@@ -318,7 +318,7 @@ public class CoreModule extends Module {
             try {
                 String v = (String) f.get(null);
                 if (v != null && v.length() >= 3) PROTECTED_NAMES.add(v.toLowerCase());
-            } catch (IllegalAccessException ignored) {
+            } catch (IllegalAccessException ignored) {   // public static 필드만 읽으므로 일어나지 않음
             }
         }
         for (String k : new String[]{"[칭호]", "닉네임 색상 변경권", "팀 색상 변경권", "천공의 심판자", "얼어붙은 제왕", "사신의",
@@ -1071,7 +1071,4 @@ public class CoreModule extends Module {
         whisper(p, t, Cmd.rest(a, 0));
     }
 
-    public static boolean isLiving(Entity e) {
-        return e instanceof LivingEntity;
-    }
 }

@@ -116,7 +116,8 @@ public class Migration {
                         d.backpack[slot] = it;
                         values++;
                     }
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException ex) {
+                    kr.wave.core.util.Log.warn("[변환] " + "배낭 칸 번호가 숫자가 아니라 건너뜁니다: " + se.getKey());
                 }
             }
         }
@@ -176,7 +177,8 @@ public class Migration {
                         t.storage[slot] = it;
                         values++;
                     }
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException ex) {
+                    kr.wave.core.util.Log.warn("[변환] " + "팀 창고 칸 번호가 숫자가 아니라 건너뜁니다: " + se.getKey());
                 }
             }
         }
@@ -219,7 +221,8 @@ public class Migration {
             try {
                 g.swordKills.put(Integer.parseInt(e.getKey()), n.intValue());
                 values++;
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException ex) {
+                kr.wave.core.util.Log.warn("[변환] " + "sword_kills 번호가 숫자가 아니라 건너뜁니다: " + e.getKey());
             }
         }
 
@@ -335,13 +338,13 @@ public class Migration {
             Method m = o.getClass().getMethod("getRandom");
             Object r = m.invoke(o);
             if (r instanceof ItemStack it && !it.getType().isAir()) return it;
-        } catch (ReflectiveOperationException ignored) {
+        } catch (ReflectiveOperationException ignored) {   // ItemType 이 아니면 다음 방법으로
         }
         try {
             Method m = o.getClass().getMethod("getItem");
             Object r = m.invoke(o);
             if (r instanceof ItemStack it && !it.getType().isAir()) return it.clone();
-        } catch (ReflectiveOperationException ignored) {
+        } catch (ReflectiveOperationException ignored) {   // 아이템으로 바꿀 수 없는 값: 아래에서 null
         }
         return null;
     }

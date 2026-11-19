@@ -1,4 +1,4 @@
-package com.dailyshop.util;
+package kr.wave.common;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -41,6 +41,16 @@ public final class Items {
         meta.setDisplayName(Text.color(name));
         if (lore != null) meta.setLore(Text.color(lore));
         meta.addItemFlags(ItemFlag.values());
+        it.setItemMeta(meta);
+        return it;
+    }
+
+    /** 파일에 저장되는 아이템용 (숨김 플래그 없이 이름/설명만) */
+    public static ItemStack named(Material m, String name, List<String> lore) {
+        ItemStack it = new ItemStack(m == null || m.isAir() ? Material.PAPER : m);
+        ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(Text.color(name));
+        if (lore != null) meta.setLore(Text.color(lore));
         it.setItemMeta(meta);
         return it;
     }

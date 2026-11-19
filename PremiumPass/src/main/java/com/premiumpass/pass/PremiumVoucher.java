@@ -2,7 +2,7 @@ package com.premiumpass.pass;
 
 import com.premiumpass.PremiumPass;
 import com.premiumpass.data.PlayerData;
-import com.premiumpass.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;

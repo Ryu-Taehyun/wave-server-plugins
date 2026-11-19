@@ -12,7 +12,7 @@ import com.premiumpass.quest.QuestListener;
 import com.premiumpass.quest.QuestManager;
 import com.premiumpass.reward.RewardManager;
 import com.premiumpass.shop.ShopManager;
-import com.premiumpass.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;

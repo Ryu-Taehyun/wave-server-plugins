@@ -123,7 +123,8 @@ public class PlayerData {
                 try {
                     int i = Integer.parseInt(k);
                     if (i >= 0 && i < backpack.length) backpack[i] = bp.getItemStack(k);
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException e) {
+                    kr.wave.core.util.Log.warn("플레이어 " + name + " 데이터: 배낭 칸 번호가 올바르지 않아 건너뜁니다: " + k);
                 }
             }
         }

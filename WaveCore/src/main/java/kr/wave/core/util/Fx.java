@@ -34,7 +34,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.spawnParticle(type, l, count, spread, spread, spread, speed, null, true);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -43,7 +44,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.spawnParticle(type, l, count, sx, sy, sz, speed, null, true);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -52,7 +54,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.spawnParticle(Particle.DUST, l, count, spread, spread, spread, 0, new Particle.DustOptions(c, size), true);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -62,7 +65,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.spawnParticle(Particle.DUST_COLOR_TRANSITION, l, count, spread, spread, spread, 0, new Particle.DustTransition(from, to, size), true);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -71,7 +75,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.spawnParticle(type, l, count, spread, spread, spread, 0, data, true);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -81,7 +86,8 @@ public final class Fx {
         if (w == null) return;
         try {
             w.strikeLightningEffect(l);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
         }
     }
 
@@ -232,7 +238,4 @@ public final class Fx {
         });
     }
 
-    public static double rand(double min, double max) {
-        return ThreadLocalRandom.current().nextDouble(min, max);
-    }
 }

@@ -1,0 +1,43 @@
+Copyright (c) 2026 Ryu-Taehyun. All rights reserved.
+
+이 저장소의 모든 소스 코드, 설정 파일, 문서, 이미지, 맵(schematic) 및 그 밖의 자료(이하 "자료")의
+저작권은 저작권자에게 있으며, 모든 권리를 보유합니다.
+
+1. 자료는 열람만을 위해 공개되어 있습니다. 공개되어 있다는 사실이 어떠한 사용 허락도 뜻하지 않습니다.
+2. 저작권자의 사전 서면 허락 없이 다음 행위를 할 수 없습니다.
+   - 자료의 전부 또는 일부를 복제, 수정, 번역하거나 이를 바탕으로 2차 저작물을 만드는 행위
+   - 자료 또는 자료로 빌드한 플러그인(jar)을 배포, 재배포, 판매, 대여, 공유하는 행위
+   - 자료 또는 자료로 빌드한 플러그인을 저작권자가 운영하지 않는 서버에서 사용하는 행위
+   - 자료를 인공지능 학습 데이터로 이용하는 행위
+3. GitHub 이용약관에 따라 GitHub 서비스 안에서 저장소를 열람하고 포크(fork)하는 것은 허용되지만,
+   포크한 사본에도 위 제한이 그대로 적용됩니다.
+4. 자료는 "있는 그대로" 제공되며, 저작권자는 자료의 사용으로 생긴 어떠한 손해에 대해서도 책임지지 않습니다.
+5. 이 저장소가 사용하는 외부 라이브러리(Paper API, MockBukkit, JUnit 등)는 각자의 라이선스를 따릅니다.
+   Minecraft 는 Mojang Studios 의 상표이며, 이 저장소는 Mojang Studios 또는 Microsoft 와 관련이 없습니다.
+
+사용 허락 문의는 저장소 소유자에게 GitHub 를 통해 연락해 주세요.
+
+---
+
+Copyright (c) 2026 Ryu-Taehyun. All rights reserved.
+
+All source code, configuration files, documentation, images, maps (schematics) and other
+materials in this repository (the "Materials") are the property of the copyright holder.
+
+1. The Materials are made publicly visible for viewing purposes only. Their visibility does not
+   grant any license or permission to use them.
+2. Without the prior written permission of the copyright holder, you may not:
+   - copy, modify, translate, or create derivative works from all or any part of the Materials;
+   - distribute, redistribute, sell, rent, or share the Materials or any plugin (jar) built from them;
+   - use the Materials or any plugin built from them on a server not operated by the copyright holder;
+   - use the Materials as training data for artificial intelligence or machine learning systems.
+3. As permitted by the GitHub Terms of Service, you may view and fork this repository on GitHub,
+   but any fork remains subject to all of the restrictions above.
+4. THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL THE
+   COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF
+   THE MATERIALS.
+5. Third-party libraries used by this repository (Paper API, MockBukkit, JUnit, etc.) are subject
+   to their own licenses. Minecraft is a trademark of Mojang Studios; this repository is not
+   affiliated with Mojang Studios or Microsoft.
+
+For permission requests, contact the repository owner through GitHub.

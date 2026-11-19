@@ -2,7 +2,7 @@ package com.dailyshop;
 
 import com.dailyshop.command.DailyShopCommand;
 import com.dailyshop.gui.ShopMenu;
-import com.dailyshop.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;

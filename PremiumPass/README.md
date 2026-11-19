@@ -132,6 +132,8 @@
 mvn install
 ```
 
+저장소 맨 위 폴더에서 `mvn install` 하면 공통 도우미(Common)와 함께 빌드됩니다. 이 폴더만 빌드하려면 먼저 `Common` 폴더에서 `mvn install` 하세요.
+
 빌드 결과물은 `target/PremiumPass-1.0.0.jar` 입니다. `install`을 쓰면 DailyShop 빌드에 필요한 PremiumPass가 로컬 저장소에 등록됩니다.
 
 ## 서버 전용 보상 (WaveCore 연동)

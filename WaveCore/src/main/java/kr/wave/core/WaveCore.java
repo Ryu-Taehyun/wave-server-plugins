@@ -105,7 +105,8 @@ public class WaveCore extends JavaPlugin {
         for (Module m : modules) {
             try {
                 m.disable();
-            } catch (Exception ignored) {
+            } catch (Exception e) {   // 한 모듈이 실패해도 나머지 모듈은 계속 종료
+                getLogger().log(java.util.logging.Level.WARNING, m.getClass().getSimpleName() + " 종료 중 오류", e);
             }
         }
         for (Player p : Bukkit.getOnlinePlayers()) {

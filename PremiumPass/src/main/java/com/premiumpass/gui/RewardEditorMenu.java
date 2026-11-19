@@ -3,7 +3,7 @@ package com.premiumpass.gui;
 import com.premiumpass.PremiumPass;
 import com.premiumpass.reward.LevelReward;
 import com.premiumpass.reward.Track;
-import com.premiumpass.util.Text;
+import kr.wave.common.Text;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;

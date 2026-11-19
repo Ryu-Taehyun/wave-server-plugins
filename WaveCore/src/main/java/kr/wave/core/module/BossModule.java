@@ -188,7 +188,9 @@ public class BossModule extends Module {
                 int n = 1;
                 try {
                     if (a.length >= 4) n = Math.max(1, Math.min(2304, Integer.parseInt(a[3])));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException e) {
+                    Msg.send(s, "&c개수는 숫자로 적어 주세요.");
+                    return;
                 }
                 It.give(t, Items.altarTicket(), n);
                 Msg.send(s, "&a" + t.getName() + " 님에게 천공의 제단 이동권 " + n + "개를 지급했습니다.");
@@ -284,7 +286,8 @@ public class BossModule extends Module {
         double hp = cfg().getDouble("health", 400);
         try {
             c.getChunk().addPluginChunkTicket(plugin);   // 아무도 없어도 전투 시간 동안 제단 유지
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            kr.wave.core.util.Log.once("boss:ticket", "보스 제단 청크를 고정하지 못했습니다 (아무도 없으면 제단이 멈출 수 있음): " + e);
         }
         boss = c.getWorld().spawn(c, WitherSkeleton.class, w -> {
             w.customName(Msg.c(NAME));
@@ -292,7 +295,8 @@ public class BossModule extends Module {
             try {
                 w.setRemoveWhenFarAway(false);
                 w.setPersistent(true);
-            } catch (RuntimeException ignored) {
+            } catch (RuntimeException e) {
+                kr.wave.core.util.Log.once("boss:persist", "보스를 계속 남아 있게 설정하지 못했습니다: " + e);
             }
             w.getPersistentDataContainer().set(bossKey, PersistentDataType.BYTE, (byte) 1);
             setAttr(w, hp, "max_health", "generic.max_health");
@@ -347,7 +351,8 @@ public class BossModule extends Module {
         try {
             Location c = center();
             if (c != null) c.getChunk().removePluginChunkTicket(plugin);
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            kr.wave.core.util.Log.once("boss:unticket", "보스 제단 청크 고정을 풀지 못했습니다: " + e);
         }
         fightLeft = 0;
         if (bar != null) for (Player p : new ArrayList<>(barViewers)) p.hideBossBar(bar);
