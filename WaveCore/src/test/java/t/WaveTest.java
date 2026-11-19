@@ -3299,61 +3299,83 @@ public class WaveTest {
         server.getScheduler().performTicks(5);
         assertTrue(Items.isSeasonKeep(Items.chaosHelmet()));
         assertFalse(Items.isSeasonKeep(new ItemStack(Material.DIAMOND)));
-        // 접속 중: 가방 · 갑옷 · 엔더 상자 · 셜커 상자 안
+        var d = plugin.store().get(p);
+        // 접속 중: 가방 · 갑옷 · 엔더 상자 · 엔더 상자 안의 셜커 상자 · 배낭 · 팀 창고
         p.getInventory().clear();
         p.getInventory().addItem(Items.chaosHelmet(), new ItemStack(Material.DIRT, 64));
         p.getInventory().setChestplate(Items.voidChest());
-        p.getEnderChest().addItem(Items.claymoreSd(), new ItemStack(Material.DIAMOND, 10));
         ItemStack shulker = new ItemStack(Material.SHULKER_BOX);
         var bsm = (org.bukkit.inventory.meta.BlockStateMeta) shulker.getItemMeta();
         var box = (org.bukkit.block.ShulkerBox) bsm.getBlockState();
         box.getInventory().addItem(Items.frostGrave(), new ItemStack(Material.COBBLESTONE, 32));
         bsm.setBlockState(box);
         shulker.setItemMeta(bsm);
-        p.getInventory().addItem(shulker);
+        p.getEnderChest().addItem(Items.claymoreSd(), new ItemStack(Material.DIAMOND, 10), shulker);
+        d.backpack = new ItemStack[27];
+        d.backpack[0] = Items.natureBoots();
+        d.backpack[1] = new ItemStack(Material.GOLD_INGOT, 5);
+        var team = new kr.wave.core.data.GlobalData.Team();
+        team.id = "keepteam";
+        team.display = "keepteam";
+        team.members.put(p.getUniqueId(), "마스터");
+        team.storage[0] = Items.sealedSword();
+        team.storage[1] = new ItemStack(Material.EMERALD, 9);
+        plugin.store().global().teams.put(team.id, team);
         p.setLevel(30);
-        // 오프라인: 나갈 때 사본
+        // 오프라인: 나갈 때 사본, 배낭은 WaveCore 데이터
         away.getInventory().clear();
         away.getInventory().addItem(Items.ruinerPants(), new ItemStack(Material.IRON_INGOT, 20));
         var ad = plugin.store().get(away);
+        ad.backpack = new ItemStack[27];
+        ad.backpack[3] = Items.russellHelmet();
         away.disconnect();
         server.getScheduler().performTicks(2);
         assertEquals(1, ad.keepItems.size(), "나갈 때 시즌 유지 아이템 사본");
         // 시즌 초기화
         assertTrue(admin.performCommand("시즌 초기화"));
         assertTrue(admin.performCommand("시즌 초기화 확인"));
-        java.util.List<String> left = new java.util.ArrayList<>();
-        for (ItemStack it : p.getInventory().getContents()) if (it != null) left.add(Msg.name(it).isEmpty() ? it.getType().name() : Msg.name(it));
-        assertEquals(4, left.size(), "시즌 유지 아이템 4개만 남음: " + left);
-        assertTrue(left.stream().anyMatch(n -> n.contains("종말의 투구")) && left.stream().anyMatch(n -> n.contains("뒤틀린 차원의 갑옷"))
-                && left.stream().anyMatch(n -> n.contains("클레이모어")) && left.stream().anyMatch(n -> n.contains("프로스트 그레이브")), left.toString());
-        assertTrue(p.getEnderChest().isEmpty());
+        assertTrue(java.util.Arrays.stream(p.getInventory().getContents()).allMatch(java.util.Objects::isNull), "인벤토리 비움");
+        assertTrue(p.getEnderChest().isEmpty(), "엔더 상자 비움");
         assertEquals(0, p.getLevel());
-        assertFalse(ad.pendingWipe.isEmpty(), "접속 안 한 사람은 다음 접속 때");
-        // 다시 접속
+        assertTrue(java.util.Arrays.stream(team.storage).allMatch(java.util.Objects::isNull), "팀 창고 비움");
+        java.util.List<String> bag = new java.util.ArrayList<>();
+        for (ItemStack it : d.backpack) if (it != null) bag.add(Msg.name(it));
+        assertEquals(6, bag.size(), "시즌 유지 아이템 6개가 배낭으로: " + bag);
+        for (String n : new String[]{"종말의 투구", "뒤틀린 차원의 갑옷", "클레이모어", "프로스트 그레이브", "대자연의 황혼", "얼어붙은 제왕의 검"})
+            assertTrue(bag.stream().anyMatch(x -> x.contains(n)), n + " in " + bag);
+        assertFalse(bag.stream().anyMatch(x -> x.isEmpty()), "일반 아이템은 없음");
+        // 오프라인이던 사람: 배낭은 이미 비우고, 다음 접속 때 인벤토리를 비우며 배낭으로
+        assertFalse(ad.pendingWipe.isEmpty());
+        assertEquals(1, ad.seasonReturn.size(), "배낭 안 시즌 유지 아이템은 모아 둠");
         away.reconnect();
         server.getScheduler().performTicks(3);
         assertTrue(away.hasPlayedBefore(), "다시 접속한 사람은 월드 데이터가 있음");
-        {
-            java.util.List<ItemStack> inv = new java.util.ArrayList<>();
-            for (ItemStack it : away.getInventory().getContents()) if (it != null) inv.add(it);
-            assertEquals(1, inv.size(), "다음 접속 때 비우고 시즌 유지 아이템만");
-            assertTrue(Msg.name(inv.get(0)).contains("재앙의 서막 바지"));
-        }
-        assertTrue(ad.pendingWipe.isEmpty());
-        // 월드 플레이어 데이터가 사라진 채로 접속: 사본을 우편함으로
+        assertTrue(java.util.Arrays.stream(away.getInventory().getContents()).allMatch(java.util.Objects::isNull), "다음 접속 때 인벤토리 비움");
+        java.util.List<String> abag = new java.util.ArrayList<>();
+        for (ItemStack it : ad.backpack) if (it != null) abag.add(Msg.name(it));
+        assertEquals(2, abag.size(), abag.toString());
+        assertTrue(abag.stream().anyMatch(x -> x.contains("재앙의 서막 바지")) && abag.stream().anyMatch(x -> x.contains("러셀의 패러독스")), abag.toString());
+        assertTrue(ad.pendingWipe.isEmpty() && ad.seasonReturn.isEmpty());
+        // 맵 초기화 (월드 플레이어 데이터 없음) 후 첫 접속: 사본을 배낭으로
         PlayerMock lost = server.addPlayer("LostWorld");
         server.getScheduler().performTicks(2);
         var ld = plugin.store().get(lost);
         ld.keepItems.add(Items.chaosApocalypse());
-        int mail = ld.mailbox.size();
         assertFalse(lost.hasPlayedBefore(), "월드 데이터가 없는 상태");
-        {
-            server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerJoinEvent(lost, net.kyori.adventure.text.Component.empty()));
-            assertEquals(mail + 1, ld.mailbox.size(), "월드 데이터가 없으면 사본을 우편함으로");
-            assertTrue(Msg.name(ld.mailbox.get(ld.mailbox.size() - 1)).contains("혼돈의 아포칼립스"));
-            assertTrue(ld.keepItems.isEmpty());
-        }
+        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerJoinEvent(lost, net.kyori.adventure.text.Component.empty()));
+        server.getScheduler().performTicks(2);
+        assertTrue(java.util.Arrays.stream(ld.backpack).anyMatch(it -> it != null && Msg.name(it).contains("혼돈의 아포칼립스")), "사본을 배낭으로");
+        assertTrue(ld.keepItems.isEmpty() || ld.keepItems.stream().noneMatch(it -> Msg.name(it).contains("혼돈의 아포칼립스")), "한 번만 지급");
+        // 배낭이 가득 차면 우편함
+        PlayerMock full = server.addPlayer("FullBag");
+        server.getScheduler().performTicks(2);
+        var fd = plugin.store().get(full);
+        for (int k = 0; k < 27; k++) fd.backpack[k] = new ItemStack(Material.STONE);
+        fd.keepItems.add(Items.thunderAxe());
+        int mail = fd.mailbox.size();
+        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerJoinEvent(full, net.kyori.adventure.text.Component.empty()));
+        server.getScheduler().performTicks(2);
+        assertEquals(mail + 1, fd.mailbox.size(), "배낭이 차면 우편함");
     }
 
     @Test

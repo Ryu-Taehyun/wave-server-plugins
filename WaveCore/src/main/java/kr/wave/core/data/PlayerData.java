@@ -54,6 +54,8 @@ public class PlayerData {
     public final List<ItemStack> keepItems = new ArrayList<>();
     /** 시즌 초기화로 인벤토리를 비워야 하는데 그때 접속하지 않았던 경우 (다음 접속 때 처리). 비어 있으면 없음 */
     public String pendingWipe = "";
+    /** 다음 접속 때 배낭으로 넣어 줄 시즌 유지 아이템 (시즌 초기화 · 맵 초기화) */
+    public final List<ItemStack> seasonReturn = new ArrayList<>();
     /** 배낭 (최대 3줄 = 27칸 저장, 보이는 줄 수는 backpackRows) */
     public ItemStack[] backpack = new ItemStack[27];
     public int backpackRows = 2;
@@ -114,6 +116,7 @@ public class PlayerData {
         readItems(y.getList("mailbox"), mailbox);
         readItems(y.getList("keep-items"), keepItems);
         pendingWipe = y.getString("pending-wipe", "");
+        readItems(y.getList("season-return"), seasonReturn);
         backpackRows = Math.max(2, Math.min(3, y.getInt("backpack-rows", 2)));
         for (Object o : y.getList("overlord-claimed", new ArrayList<>())) if (o instanceof Number n) overlordClaimed.add(n.intValue());
         collected.addAll(y.getStringList("collected"));
@@ -167,6 +170,7 @@ public class PlayerData {
         y.set("mailbox", new ArrayList<>(mailbox));
         y.set("keep-items", new ArrayList<>(keepItems));
         y.set("pending-wipe", pendingWipe);
+        y.set("season-return", new ArrayList<>(seasonReturn));
         for (int i = 0; i < backpack.length; i++) if (backpack[i] != null) y.set("backpack." + i, backpack[i]);
         y.set("backpack-rows", backpackRows);
         y.set("overlord-claimed", new ArrayList<>(overlordClaimed));

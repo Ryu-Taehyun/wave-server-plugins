@@ -58,8 +58,8 @@ public class SeasonModule extends Module {
         INVENTORIES("inventories", true, "인벤토리 · 엔더 상자 · 바닐라 경험치 (시즌 유지 아이템은 남김)"),
         MARKET("market", true, "장터 매물 (판매자 우편함으로 돌려줌)"),
         COLLECTIONS("collections", false, "컬렉션 수집 · 보상 수령 기록"),
-        BACKPACK("backpack", false, "배낭 (시즌 유지 아이템은 남김)"),
-        TEAM_STORAGE("team-storage", false, "팀 창고 (시즌 유지 아이템은 남김)"),
+        BACKPACK("backpack", true, "배낭(개인 창고)"),
+        TEAM_STORAGE("team-storage", true, "팀 창고"),
         BET_LIMIT("bet-limit", true, "오늘 도박 베팅 누적");
 
         final String key, label;
@@ -126,6 +126,7 @@ public class SeasonModule extends Module {
         line(s, Part.LEVEL, lv[0] + "명");
         int online = Bukkit.getOnlinePlayers().size();
         line(s, Part.INVENTORIES, "접속 중 " + online + "명은 바로, 나머지 " + Math.max(0, n - online) + "명은 다음 접속 때");
+        Msg.send(s, " &a● 시즌 유지 아이템 &7: 인벤토리 · 엔더 상자 · 배낭 · 팀 창고 · 셜커 상자 · 꾸러미 안까지 찾아 다음 접속 때 &f배낭&7으로");
         line(s, Part.MARKET, g.market.size() + "개");
         line(s, Part.COLLECTIONS, col[0] + "명");
         line(s, Part.BACKPACK, bp[0] + "명");
@@ -180,14 +181,28 @@ public class SeasonModule extends Module {
             done.add("장터 " + n + "개 반환");
         }
         if (on(Part.TEAM_STORAGE)) {
-            for (GlobalData.Team t : g.teams.values()) t.storage = keepOnly(t.storage, 54);
+            for (GlobalData.Team t : g.teams.values()) {
+                java.util.UUID owner = null;   // 팀 창고의 시즌 유지 아이템은 팀 마스터(없으면 첫 팀원)에게
+                for (var en : t.members.entrySet()) {
+                    if (owner == null) owner = en.getKey();
+                    if ("마스터".equals(en.getValue())) owner = en.getKey();
+                }
+                List<ItemStack> keep = kr.wave.core.Items.seasonKeepIn(t.storage);
+                if (owner != null && !keep.isEmpty()) plugin.store().get(owner).seasonReturn.addAll(keep);
+                t.storage = new ItemStack[54];
+            }
             done.add("팀 창고");
         }
         plugin.store().saveGlobal();
         // 3. 플레이어 데이터
         String resetId = LocalDateTime.now().format(FILE_TIME);
-        // 접속 중인 사람의 인벤토리는 바로 비움 (시즌 유지 아이템은 다시 넣어 줌)
-        if (on(Part.INVENTORIES)) for (Player p : Bukkit.getOnlinePlayers()) wipe(p, data(p), true);
+        // 접속 중인 사람: 인벤토리 · 엔더 상자를 바로 비우고 시즌 유지 아이템을 모아 둠 (아래에서 배낭으로)
+        if (on(Part.INVENTORIES)) for (Player p : Bukkit.getOnlinePlayers()) {
+            PlayerData d = data(p);
+            d.seasonReturn.addAll(keepItemsOf(p));
+            clearVanilla(p);
+            d.keepItems.clear();
+        }
         int players = plugin.store().forAll(d -> {
             if (on(Part.MONEY)) {
                 d.money = 0;
@@ -205,14 +220,22 @@ public class SeasonModule extends Module {
                 d.collected.clear();
                 d.collectionClaimed.clear();
             }
-            if (on(Part.BACKPACK)) d.backpack = keepOnly(d.backpack, 27);
-            if (on(Part.INVENTORIES) && Bukkit.getPlayer(d.uuid) == null) d.pendingWipe = resetId;   // 다음 접속 때 비움
+            if (on(Part.BACKPACK)) {
+                d.seasonReturn.addAll(kr.wave.core.Items.seasonKeepIn(d.backpack));
+                d.backpack = new ItemStack[27];
+            }
+            if (on(Part.INVENTORIES)) {
+                d.seasonReturn.addAll(kr.wave.core.Items.seasonKeepIn(d.respawnItems.toArray(new ItemStack[0])));   // 사망 보관 아이템
+                d.respawnItems.clear();
+                if (Bukkit.getPlayer(d.uuid) == null) d.pendingWipe = resetId;   // 다음 접속 때 비움
+            }
             if (on(Part.BET_LIMIT)) {
                 d.betDay = "";
                 d.betToday = 0;
             }
         });
         for (Part p : Part.values()) if (on(p) && p != Part.MARKET && p != Part.TEAM_STORAGE) done.add(p.label);
+        for (Player p : Bukkit.getOnlinePlayers()) deliver(p, data(p), true);   // 접속 중인 사람은 바로 배낭으로
         // 4. 추가 명령어 (예: passadmin season next)
         for (String c : plugin.getConfig().getStringList("season-reset.commands")) {
             String line = c.startsWith("/") ? c.substring(1) : c;
@@ -237,14 +260,6 @@ public class SeasonModule extends Module {
 
     /* ---------------- 시즌 유지 아이템 ---------------- */
 
-    /** 칸 배열에서 시즌 유지 아이템만 앞에서부터 남긴 새 배열 */
-    private static ItemStack[] keepOnly(ItemStack[] from, int size) {
-        ItemStack[] out = new ItemStack[size];
-        int i = 0;
-        for (ItemStack it : kr.wave.core.Items.seasonKeepIn(from)) if (i < size) out[i++] = it;
-        return out;
-    }
-
     /** 지금 들고 있는 시즌 유지 아이템 (가방 · 핫바 · 갑옷 · 왼손 · 엔더 상자, 셜커 상자 안 포함) */
     private static List<ItemStack> keepItemsOf(Player p) {
         List<ItemStack> out = new ArrayList<>(kr.wave.core.Items.seasonKeepIn(p.getInventory().getContents()));
@@ -259,45 +274,67 @@ public class SeasonModule extends Module {
         d.keepItems.addAll(keepItemsOf(p));
     }
 
-    /** 시즌 초기화로 인벤토리 비우기: 시즌 유지 아이템만 다시 넣어 주고 (넘치면 우편함) 나머지는 비움 */
-    private void wipe(Player p, PlayerData d, boolean now) {
-        List<ItemStack> keep = keepItemsOf(p);
+    /** 인벤토리(가방 · 핫바 · 갑옷 · 왼손) · 엔더 상자 · 바닐라 경험치 비우기 */
+    private static void clearVanilla(Player p) {
         p.getInventory().clear();
         p.getEnderChest().clear();
         p.setLevel(0);
         p.setExp(0);
         p.setTotalExperience(0);
-        int mailed = 0;
-        for (ItemStack it : keep) {
-            for (ItemStack rest : p.getInventory().addItem(it).values()) {
-                plugin.module(MailModule.class).send(p.getUniqueId(), rest);
+    }
+
+    /** 모아 둔 시즌 유지 아이템을 배낭 빈칸에 넣음 (배낭이 차면 우편함) */
+    private void deliver(Player p, PlayerData d, boolean now) {
+        if (d.seasonReturn.isEmpty()) return;
+        int slots = Math.max(2, Math.min(3, d.backpackRows)) * 9, inBag = 0, mailed = 0;
+        for (ItemStack it : d.seasonReturn) {
+            boolean put = false;
+            for (int i = 0; i < slots && i < d.backpack.length; i++) {
+                if (d.backpack[i] == null || d.backpack[i].getType().isAir()) {
+                    d.backpack[i] = it.clone();
+                    put = true;
+                    inBag++;
+                    break;
+                }
+            }
+            if (!put) {
+                plugin.module(MailModule.class).send(p.getUniqueId(), it.clone());
                 mailed++;
             }
         }
-        d.pendingWipe = "";
-        snapshot(p);
+        int total = d.seasonReturn.size();
+        d.seasonReturn.clear();
         plugin.store().save(d);
-        Msg.send(p, TAG + "&f" + (now ? "새 시즌이 시작되어" : "지난 접속 이후 새 시즌이 시작되어") + " 인벤토리가 초기화되었습니다.");
-        if (!keep.isEmpty()) Msg.send(p, TAG + "&7시즌이 지나도 남는 아이템 &f" + keep.size() + "개&7는 그대로 돌려드렸습니다."
-                + (mailed > 0 ? " &8(" + mailed + "개는 우편함)" : ""));
+        Msg.send(p, TAG + "&f" + (now ? "새 시즌이 시작되었습니다." : "새 시즌이 시작되었습니다. (지난 접속 이후)")
+                + " 시즌이 지나도 남는 아이템 &e" + total + "개&f를 &e배낭&f에 넣어 드렸습니다. &7(/배낭)"
+                + (mailed > 0 ? " &8(배낭이 가득 차 " + mailed + "개는 우편함)" : ""));
+        plugin.getLogger().info("[시즌 유지 아이템] " + p.getName() + " : 배낭 " + inBag + "개, 우편함 " + mailed + "개");
     }
 
     @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.NORMAL)
     public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
         Player p = e.getPlayer();
         PlayerData d = data(p);
-        // 월드의 플레이어 데이터가 사라진 채로 들어옴 (새 월드 · playerdata 삭제 등): 사본으로 시즌 유지 아이템을 되돌려 줌
-        if (!p.hasPlayedBefore() && !d.keepItems.isEmpty()) {
-            for (ItemStack it : d.keepItems) plugin.module(MailModule.class).send(p.getUniqueId(), it.clone());
-            Msg.send(p, TAG + "&f월드 데이터가 초기화되어, 시즌이 지나도 남는 아이템 &e" + d.keepItems.size() + "개&f를 &e우편함&f으로 돌려드렸습니다. &7(/우편함)");
-            plugin.getLogger().info("[시즌 유지 아이템] " + p.getName() + " 님의 월드 데이터가 없어 " + d.keepItems.size() + "개를 우편함으로 복구");
-            d.keepItems.clear();
+        boolean worldLost = !p.hasPlayedBefore() && !d.keepItems.isEmpty();
+        if (!worldLost && d.pendingWipe.isEmpty() && d.seasonReturn.isEmpty()) return;
+        later(1, () -> {
+            if (!p.isOnline()) return;
+            boolean changed = false;
+            if (worldLost) {
+                // 맵 초기화 등으로 월드의 플레이어 데이터가 없음: 마지막 사본을 씀 (인벤토리는 이미 비어 있음)
+                d.seasonReturn.addAll(d.keepItems);
+                plugin.getLogger().info("[시즌 유지 아이템] " + p.getName() + " 님의 월드 데이터가 없어 사본 " + d.keepItems.size() + "개로 복구");
+                changed = true;
+            } else if (!d.pendingWipe.isEmpty()) {
+                // 시즌 초기화 때 접속하지 않았음: 지금 실제로 가진 것에서 시즌 유지 아이템을 모으고 비움
+                d.seasonReturn.addAll(keepItemsOf(p));
+                clearVanilla(p);
+                changed = true;
+            }
             d.pendingWipe = "";
-            plugin.store().save(d);
-            return;
-        }
-        if (!d.pendingWipe.isEmpty()) later(1, () -> {
-            if (p.isOnline()) wipe(p, d, false);
+            d.keepItems.clear();
+            if (changed || !d.seasonReturn.isEmpty()) deliver(p, d, false);
+            snapshot(p);
         });
     }
 

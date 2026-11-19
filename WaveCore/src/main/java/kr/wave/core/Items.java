@@ -31,7 +31,7 @@ public final class Items {
 
     /**
      * 칸 목록에서 시즌 유지 아이템만 골라 사본으로 모음.
-     * 셜커 상자 안에 든 시즌 유지 아이템도 꺼내서 모음 (셜커 상자 자체가 유지 아이템이면 통째로)
+     * 셜커 상자 · 꾸러미(번들) 안에 든 것도 꺼내서 모음 (그 상자 자체가 유지 아이템이면 통째로)
      */
     public static java.util.List<ItemStack> seasonKeepIn(ItemStack[] slots) {
         java.util.List<ItemStack> out = new java.util.ArrayList<>();
@@ -43,7 +43,9 @@ public final class Items {
                 continue;
             }
             if (it.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta bsm && bsm.getBlockState() instanceof org.bukkit.block.ShulkerBox box) {
-                for (ItemStack in : box.getInventory().getContents()) if (isSeasonKeep(in)) out.add(in.clone());
+                out.addAll(seasonKeepIn(box.getInventory().getContents()));   // 셜커 상자 안 (안의 꾸러미까지)
+            } else if (it.getItemMeta() instanceof org.bukkit.inventory.meta.BundleMeta bundle) {
+                out.addAll(seasonKeepIn(bundle.getItems().toArray(new ItemStack[0])));
             }
         }
         return out;
