@@ -97,7 +97,7 @@ public class DailyShopCommand implements TabExecutor {
             }
             case "reload" -> {
                 plugin.reloadAll();
-                Text.send(s, "&a설정을 다시 불러왔습니다.");
+                Text.send(s, plugin.warnings().reloadMessage());
             }
             default -> {
                 Text.send(s, "&6일일 상점 관리 명령어");

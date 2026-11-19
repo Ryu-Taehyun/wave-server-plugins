@@ -3173,6 +3173,18 @@ public class WaveTest {
     }
 
     @Test
+    void preloadedButNeverJoinedIsDropped() {
+        var id = java.util.UUID.randomUUID();
+        preLogin(new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Ghost", java.net.InetAddress.getLoopbackAddress(), id));
+        assertEquals(1, plugin.store().preloadedCount());
+        server.getScheduler().performTicks(20 * 95);
+        boolean cached = false;
+        for (PlayerData x : plugin.store().cached()) if (x.uuid.equals(id)) cached = true;
+        assertFalse(cached, "접속 안 하면 캐시에서 내림");
+        assertEquals(0, plugin.store().preloadedCount());
+    }
+
+    @Test
     void ruinerPantsRework() {
         plugin.getConfig().set("weapons.ruiner-pants.deny-death-chance", 1.0);
         PlayerMock p = server.addPlayer("Ruined");
@@ -3207,5 +3219,16 @@ public class WaveTest {
 
     static final class WeaponModuleAccess {
         static double max(PlayerMock p) { return kr.wave.core.module.WeaponModule.maxHealth(p); }
+    }
+
+    /** 접속 전 이벤트는 실제 서버처럼 별도 스레드에서 */
+    private void preLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent ev) {
+        Thread t = new Thread(() -> server.getPluginManager().callEvent(ev));
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

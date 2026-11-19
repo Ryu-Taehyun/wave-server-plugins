@@ -49,7 +49,7 @@ public class PassManager {
         try {
             zone = ZoneId.of(c.getString("daily.timezone", "Asia/Seoul"));
         } catch (java.time.DateTimeException e) {   // 없는 시간대 이름 · 잘못된 형식
-            plugin.getLogger().warning("config.yml daily.timezone 값이 올바르지 않습니다 (" + e.getMessage() + "). Asia/Seoul 을 사용합니다.");
+            plugin.warnings().invalid("config.yml", "daily.timezone", c.getString("daily.timezone"), "Asia/Seoul 을 사용합니다.");
             zone = ZoneId.of("Asia/Seoul");
         }
         resetHour = Math.floorMod(c.getInt("daily.reset-hour", 0), 24);

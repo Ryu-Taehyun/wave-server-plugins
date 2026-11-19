@@ -223,4 +223,102 @@ public class PassTest {
         java.nio.file.Files.copy(rewards.toPath(), new java.io.File(out, "rewards.yml").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         java.nio.file.Files.copy(shop.toPath(), new java.io.File(out, "shop.yml").toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     }
+
+    private long crafted(PlayerData d) {
+        return d.dailyProgress.getOrDefault("crafter", 0L) + d.seasonProgress.getOrDefault("crafter", 0L);
+    }
+
+    private org.bukkit.event.inventory.CraftItemEvent craft(PlayerMock p, boolean shift) {
+        var recipe = new org.bukkit.inventory.ShapelessRecipe(new org.bukkit.NamespacedKey(plugin, "sticks"), new ItemStack(Material.STICK, 4));
+        recipe.addIngredient(2, Material.OAK_PLANKS);
+        // 가짜 서버는 제작대 화면을 만들지 못해서, 이벤트에 필요한 것만 돌려주는 대역 화면을 씀
+        var view = (org.bukkit.inventory.InventoryView) java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),
+                new Class<?>[]{org.bukkit.inventory.InventoryView.class}, (proxy, m, args) -> switch (m.getName()) {
+                    case "getPlayer" -> p;
+                    case "convertSlot" -> args[0];
+                    case "getTopInventory", "getBottomInventory" -> p.getInventory();
+                    case "getType" -> org.bukkit.event.inventory.InventoryType.WORKBENCH;
+                    case "getCursor" -> null;
+                    case "hashCode" -> System.identityHashCode(proxy);
+                    case "equals" -> proxy == args[0];
+                    case "toString" -> "CraftViewStub";
+                    default -> m.getReturnType() == boolean.class ? false : m.getReturnType() == int.class ? 0 : null;
+                });
+        return new org.bukkit.event.inventory.CraftItemEvent(recipe, view, org.bukkit.event.inventory.InventoryType.SlotType.RESULT, 0,
+                shift ? org.bukkit.event.inventory.ClickType.SHIFT_LEFT : org.bukkit.event.inventory.ClickType.LEFT,
+                shift ? org.bukkit.event.inventory.InventoryAction.MOVE_TO_OTHER_INVENTORY : org.bukkit.event.inventory.InventoryAction.PICKUP_ALL);
+    }
+
+    @Test
+    void shiftCraftCountsRealResult() {
+        PlayerMock p = server.addPlayer("Crafter");
+        server.getScheduler().performTicks(2);
+        PlayerData d = plugin.data().get(p);
+        p.getInventory().clear();
+        // 한 번 클릭: 결과 4개
+        server.getPluginManager().callEvent(craft(p, false));
+        assertEquals(4, crafted(d));
+        // Shift 클릭: 실제로 들어온 12개만 (재료 개수와 상관없이)
+        server.getPluginManager().callEvent(craft(p, true));
+        p.getInventory().addItem(new ItemStack(Material.STICK, 12));   // 서버가 제작 결과를 넣는 것처럼
+        server.getScheduler().performTicks(1);
+        assertEquals(16, crafted(d));
+        // 인벤토리가 가득 차 아무것도 못 만들면 0
+        for (int i = 0; i < 36; i++) p.getInventory().setItem(i, new ItemStack(Material.DIRT, 64));
+        server.getPluginManager().callEvent(craft(p, true));
+        server.getScheduler().performTicks(1);
+        assertEquals(16, crafted(d), "가득 차면 인정 안 됨");
+    }
+
+    @Test
+    void preloadedButNeverJoinedIsDropped() {
+        var id = java.util.UUID.randomUUID();
+        preLogin(new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Ghost", java.net.InetAddress.getLoopbackAddress(), id));
+        assertEquals(1, plugin.data().preloadedCount());
+        boolean cached = false;
+        for (PlayerData x : plugin.data().cached()) if (x.uuid.equals(id)) cached = true;
+        assertTrue(cached, "미리 읽음");
+        server.getScheduler().performTicks(20 * 95);   // 1분 + 정리 주기
+        cached = false;
+        for (PlayerData x : plugin.data().cached()) if (x.uuid.equals(id)) cached = true;
+        assertFalse(cached, "접속 안 하면 캐시에서 내림");
+        assertEquals(0, plugin.data().preloadedCount());
+        // 미리 읽은 뒤 접속한 사람은 유지
+        PlayerMock real = server.addPlayer("RealJoin");
+        preLogin(new org.bukkit.event.player.AsyncPlayerPreLoginEvent("RealJoin", java.net.InetAddress.getLoopbackAddress(), real.getUniqueId()));
+        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerJoinEvent(real, net.kyori.adventure.text.Component.empty()));
+        server.getScheduler().performTicks(20 * 95);
+        cached = false;
+        for (PlayerData x : plugin.data().cached()) if (x.uuid.equals(real.getUniqueId())) cached = true;
+        assertTrue(cached, "접속한 사람은 그대로");
+    }
+
+    @Test
+    void reloadReportsInvalidConfigValues() {
+        PlayerMock admin = server.addPlayer("PassAdm");
+        admin.setOp(true);
+        plugin.getConfig().set("daily.timezone", "Mars/Olympus");
+        plugin.saveConfig();
+        assertTrue(admin.performCommand("passadmin reload"));
+        String msg = "";
+        net.kyori.adventure.text.Component c;
+        while ((c = admin.nextComponentMessage()) != null) msg += net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(c) + "\n";
+        assertTrue(msg.contains("잘못된 값 1개"), msg);
+        assertEquals(1, plugin.warnings().count());
+        plugin.getConfig().set("daily.timezone", "Asia/Seoul");
+        plugin.saveConfig();
+        admin.performCommand("passadmin reload");
+        assertEquals(0, plugin.warnings().count());
+    }
+
+    /** 접속 전 이벤트는 실제 서버처럼 별도 스레드에서 */
+    private void preLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent ev) {
+        Thread t = new Thread(() -> server.getPluginManager().callEvent(ev));
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

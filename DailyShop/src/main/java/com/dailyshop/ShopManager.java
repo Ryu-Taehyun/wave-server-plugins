@@ -109,6 +109,7 @@ public class ShopManager {
     /* ======================= 로드 / 저장 ======================= */
 
     public void load() {
+        plugin.warnings().reset();
         FileConfiguration c = plugin.getConfig();
         count = Math.max(1, c.getInt("count", 6));
         premiumDiscount = Math.max(0, Math.min(100, c.getInt("premium-discount", 10)));
@@ -116,7 +117,7 @@ public class ShopManager {
         try {
             zone = ZoneId.of(c.getString("timezone", "Asia/Seoul"));
         } catch (java.time.DateTimeException e) {   // 없는 시간대 이름 · 잘못된 형식
-            plugin.getLogger().warning("config.yml timezone 값이 올바르지 않습니다 (" + e.getMessage() + "). Asia/Seoul 을 사용합니다.");
+            plugin.warnings().invalid("config.yml", "timezone", c.getString("timezone"), "Asia/Seoul 을 사용합니다.");
             zone = ZoneId.of("Asia/Seoul");
         }
         resetHour = Math.floorMod(c.getInt("reset-hour", 0), 24);
@@ -143,7 +144,7 @@ public class ShopManager {
                 for (String id : sec.getKeys(false)) {
                     ItemStack it = sec.getItemStack(id + ".item");
                     if (it == null) {
-                        plugin.getLogger().warning("shop.yml: '" + id + "' 의 item 이 올바르지 않습니다.");
+                        plugin.warnings().invalid("shop.yml", id + ".item", sec.get(id + ".item"), "이 상품은 건너뜁니다.");
                         continue;
                     }
                     pool.put(id, new Entry(id, it, Math.max(0, sec.getLong(id + ".cost")),
@@ -170,7 +171,7 @@ public class ShopManager {
                 try {
                     bought.put(UUID.fromString(uuid), m);
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("state.yml: 구매 기록의 UUID 가 올바르지 않아 건너뜁니다: " + uuid);
+                    plugin.warnings().invalid("state.yml", "구매 기록의 플레이어 UUID", uuid, "이 기록은 건너뜁니다.");
                 }
             }
         }
@@ -180,20 +181,23 @@ public class ShopManager {
     private Currency createCurrency(FileConfiguration c) {
         String type = c.getString("currency.type", "PREMIUMPASS").toUpperCase(Locale.ROOT);
         Material item = Material.matchMaterial(c.getString("currency.item", "EMERALD"));
-        if (item == null || !item.isItem()) item = Material.EMERALD;
+        if (item == null || !item.isItem()) {
+            plugin.warnings().invalid("config.yml", "currency.item", c.getString("currency.item"), "EMERALD 를 사용합니다.");
+            item = Material.EMERALD;
+        }
         switch (type) {
             case "PREMIUMPASS" -> {
                 if (Bukkit.getPluginManager().isPluginEnabled("PremiumPass")) return new PremiumPassCurrency();
-                plugin.getLogger().warning("currency.type 이 PREMIUMPASS 인데 PremiumPass 플러그인이 없습니다. ITEM(" + item + ") 으로 대신합니다.");
+                plugin.warnings().invalid("config.yml", "currency.type", type + " (PremiumPass 플러그인 없음)", "ITEM(" + item + ") 으로 대신합니다.");
             }
             case "VAULT" -> {
                 Currency v = VaultCurrency.tryCreate();
                 if (v != null) return v;
-                plugin.getLogger().warning("currency.type 이 VAULT 인데 Vault 또는 경제 플러그인이 없습니다. ITEM(" + item + ") 으로 대신합니다.");
+                plugin.warnings().invalid("config.yml", "currency.type", type + " (Vault 또는 경제 플러그인 없음)", "ITEM(" + item + ") 으로 대신합니다.");
             }
             case "ITEM" -> {
             }
-            default -> plugin.getLogger().warning("알 수 없는 currency.type '" + type + "'. ITEM(" + item + ") 으로 대신합니다.");
+            default -> plugin.warnings().invalid("config.yml", "currency.type", type, "ITEM(" + item + ") 으로 대신합니다.");
         }
         if (!type.equals("ITEM")) currencyName = Items.koreanName(item);
         return new ItemCurrency(item);

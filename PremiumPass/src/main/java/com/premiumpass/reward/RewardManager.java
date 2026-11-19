@@ -57,7 +57,7 @@ public class RewardManager {
             try {
                 level = Integer.parseInt(key);
             } catch (NumberFormatException e) {
-                plugin.getLogger().warning("rewards.yml: 잘못된 레벨 키 '" + key + "'");
+                plugin.warnings().invalid("rewards.yml", "levels 의 레벨 번호", key, "이 레벨은 건너뜁니다.");
                 continue;
             }
             ConfigurationSection s = levels.getConfigurationSection(key);

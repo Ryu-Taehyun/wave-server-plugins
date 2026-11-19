@@ -45,6 +45,7 @@ public class DataManager implements Listener {
         if (!folder.exists() && !folder.mkdirs()) {
             plugin.getLogger().warning("playerdata 폴더를 만들 수 없습니다.");
         }
+        Bukkit.getScheduler().runTaskTimer(plugin, this::sweepPreloaded, 600L, 600L);
     }
 
     public PlayerData get(Player p) {
@@ -148,11 +149,33 @@ public class DataManager implements Listener {
         for (PlayerData d : cache.values()) write(file(d.uuid), d.toYaml());
     }
 
+    /** 미리 읽기만 하고 아직 접속하지 않은 플레이어 -> 미리 읽은 서버 틱 */
+    private final Map<UUID, Long> preloaded = new java.util.concurrent.ConcurrentHashMap<>();
+    /** 미리 읽은 뒤 이 시간 안에 접속하지 않으면 캐시에서 내림 (접속이 밴 · 화이트리스트 · 인원 초과 등으로 실패한 경우) */
+    private static final long PRELOAD_KEEP_TICKS = 20 * 60;
+
+    /** 30초마다: 미리 읽었지만 접속하지 않은 데이터를 캐시에서 내림 (자동 저장 대상에서도 빠짐) */
+    private void sweepPreloaded() {
+        long now = Bukkit.getCurrentTick();
+        for (var en : preloaded.entrySet()) {
+            if (now - en.getValue() < PRELOAD_KEEP_TICKS) continue;
+            UUID id = en.getKey();
+            preloaded.remove(id);
+            if (Bukkit.getPlayer(id) == null) cache.remove(id);
+        }
+    }
+
+    /** 미리 읽기만 하고 아직 접속하지 않은 플레이어 수 (테스트 · 확인용) */
+    public int preloadedCount() {
+        return preloaded.size();
+    }
+
     /** 접속 전에 (메인 스레드가 아닌 곳에서) 파일을 미리 읽어 둠: 접속할 때 디스크를 읽느라 멈추지 않게 */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPreLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent e) {
         if (e.getLoginResult() != org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED) return;
         try {
+            if (!cache.containsKey(e.getUniqueId())) preloaded.put(e.getUniqueId(), (long) Bukkit.getCurrentTick());
             getOrLoad(e.getUniqueId());
         } catch (RuntimeException ex) {   // 실패하면 접속할 때 다시 읽음
             plugin.getLogger().log(Level.WARNING, "플레이어 데이터 미리 읽기 실패: " + e.getUniqueId(), ex);
@@ -161,6 +184,7 @@ public class DataManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent e) {
+        preloaded.remove(e.getPlayer().getUniqueId());
         Player p = e.getPlayer();
         PlayerData d = get(p);
         plugin.pass().ensure(p, d);

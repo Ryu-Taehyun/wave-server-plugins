@@ -40,6 +40,13 @@ public class DailyShop extends JavaPlugin {
         if (shop != null) shop.shutdown();
     }
 
+    private final kr.wave.common.ConfigWarnings warnings = new kr.wave.common.ConfigWarnings(getLogger());
+
+    /** 설정 · 데이터 파일 경고 (기준은 ConfigWarnings 설명 참고) */
+    public kr.wave.common.ConfigWarnings warnings() {
+        return warnings;
+    }
+
     public void reloadAll() {
         reloadConfig();
         Text.setPrefix(getConfig().getString("prefix", "&e[일일 상점] &f"));

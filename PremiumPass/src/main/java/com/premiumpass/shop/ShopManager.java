@@ -66,7 +66,7 @@ public class ShopManager {
         for (String id : sec.getKeys(false)) {
             ItemStack it = sec.getItemStack(id + ".item");
             if (it == null) {
-                plugin.getLogger().warning("shop.yml: '" + id + "' 의 item 이 올바르지 않습니다.");
+                plugin.warnings().invalid("shop.yml", id + ".item", sec.get(id + ".item"), "이 상품은 건너뜁니다.");
                 continue;
             }
             Entry en = new Entry(id, it, Math.max(0, sec.getLong(id + ".cost")), Math.max(0, sec.getInt(id + ".limit")),

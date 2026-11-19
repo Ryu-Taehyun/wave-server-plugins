@@ -123,4 +123,21 @@ public class DailyShopTest {
         server.getPluginManager().callEvent(ev);
         assertEquals(0L, kr.wave.core.api.WaveAPI.getCash(p, false), "우클릭으로 캐시 구매");
     }
+
+    @Test
+    void reloadReportsInvalidConfigValues() {
+        var admin = server.addPlayer("ShopAdm");
+        admin.setOp(true);
+        plugin.reloadAll();
+        int base = plugin.warnings().count();   // 이 테스트 서버에는 PremiumPass 가 없어 결제 수단 대체 경고가 이미 있음
+        plugin.getConfig().set("currency.item", "NOT_A_THING");
+        plugin.getConfig().set("timezone", "Nowhere/Zone");
+        plugin.saveConfig();
+        assertTrue(admin.performCommand("dailyshop admin reload"));
+        String msg = "";
+        net.kyori.adventure.text.Component c;
+        while ((c = admin.nextComponentMessage()) != null) msg += net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(c) + "\n";
+        assertEquals(base + 2, plugin.warnings().count(), msg);
+        assertTrue(msg.contains("잘못된 값 " + (base + 2) + "개"), msg);
+    }
 }

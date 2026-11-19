@@ -57,7 +57,7 @@ public class QuestManager {
             try {
                 type = QuestType.valueOf(s.getString("type", "").toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("quests.yml: '" + id + "' 의 type 이 올바르지 않습니다: " + s.getString("type"));
+                plugin.warnings().invalid("quests.yml", id + ".type", s.getString("type"), "이 퀘스트는 건너뜁니다.");
                 continue;
             }
             Material icon = Material.matchMaterial(s.getString("icon", "PAPER"));

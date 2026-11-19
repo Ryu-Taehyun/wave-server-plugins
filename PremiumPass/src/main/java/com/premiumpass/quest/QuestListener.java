@@ -102,15 +102,26 @@ public class QuestListener implements Listener {
         if (!(e.getWhoClicked() instanceof Player p) || !counts(p)) return;
         if (e.getAction() == InventoryAction.NOTHING) return;
         ItemStack result = e.getRecipe().getResult();
-        int amount = result.getAmount();
-        if (e.isShiftClick()) {
-            int min = Integer.MAX_VALUE;
-            for (ItemStack it : e.getInventory().getMatrix()) {
-                if (it != null && !it.getType().isAir()) min = Math.min(min, it.getAmount());
-            }
-            if (min != Integer.MAX_VALUE) amount *= min;
+        String key = result.getType().name();
+        if (!e.isShiftClick()) {   // 한 번 클릭: 결과 칸의 개수만큼
+            plugin.quests().progress(p, QuestType.CRAFT, result.getAmount(), key);
+            return;
         }
-        plugin.quests().progress(p, QuestType.CRAFT, amount, result.getType().name());
+        // Shift 클릭(한 번에 여러 번 제작): 재료 수가 아니라 실제로 인벤토리에 들어온 개수로 셈.
+        // 인벤토리가 차서 다 못 만든 만큼은 인정하지 않음
+        int before = countType(p, result.getType());
+        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!p.isOnline()) return;
+            int made = countType(p, result.getType()) - before;
+            if (made > 0) plugin.quests().progress(p, QuestType.CRAFT, made, key);
+        });
+    }
+
+    /** 인벤토리(가방 · 핫바)에 있는 이 종류 아이템 수 */
+    static int countType(Player p, Material type) {
+        int n = 0;
+        for (ItemStack it : p.getInventory().getStorageContents()) if (it != null && it.getType() == type) n += it.getAmount();
+        return n;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

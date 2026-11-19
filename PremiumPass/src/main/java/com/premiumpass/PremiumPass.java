@@ -77,7 +77,15 @@ public class PremiumPass extends JavaPlugin {
         if (dataManager != null) dataManager.shutdown();
     }
 
+    private final kr.wave.common.ConfigWarnings warnings = new kr.wave.common.ConfigWarnings(getLogger());
+
+    /** 설정 · 데이터 파일 경고 (기준은 ConfigWarnings 설명 참고) */
+    public kr.wave.common.ConfigWarnings warnings() {
+        return warnings;
+    }
+
     private void loadSettings() {
+        warnings.reset();
         Text.setPrefix(getConfig().getString("prefix", "&6[프리미엄 패스] &f"));
         passManager.load();
         questManager.load();

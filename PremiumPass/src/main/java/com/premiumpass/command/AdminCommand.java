@@ -73,7 +73,7 @@ public class AdminCommand implements TabExecutor {
                 case "season" -> season(s, a);
                 case "reload" -> {
                     plugin.reloadAll();
-                    Text.send(s, "&a설정을 다시 불러왔습니다.");
+                    Text.send(s, plugin.warnings().reloadMessage());
                 }
                 default -> help(s);
             }
