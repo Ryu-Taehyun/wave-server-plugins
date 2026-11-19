@@ -248,6 +248,8 @@ public class WeaponModule extends Module {
             if (!(en instanceof LivingEntity le) || le == attacker || le == victim || le.isDead()) continue;
             if (en instanceof org.bukkit.entity.ArmorStand) continue;
             if (le.getLocation().distanceSquared(center) > radius * radius) continue;
+            // PvP 금지 구역 안의 대상은 확인 없이 제외 (확인 공격을 보내면 WorldGuard 가 "Hey!" 경고를 보냄)
+            if (plugin.hooks().pvpDenied(le.getLocation())) continue;
             if (le instanceof Player t) {
                 if (t.getGameMode() == org.bukkit.GameMode.CREATIVE || t.getGameMode() == org.bukkit.GameMode.SPECTATOR) continue;
                 if (team != null && team.members.containsKey(t.getUniqueId())) continue;   // 팀원 제외
@@ -644,6 +646,8 @@ public class WeaponModule extends Module {
         for (org.bukkit.entity.Entity en : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
             if (!(en instanceof LivingEntity le) || le == attacker || le.isDead()) continue;
             if (le.getLocation().distanceSquared(center) > radius * radius) continue;
+            // PvP 금지 구역 안의 대상은 확인 없이 제외 (확인 공격을 보내면 WorldGuard 가 "Hey!" 경고를 보냄)
+            if (plugin.hooks().pvpDenied(le.getLocation())) continue;
             if (le instanceof Player t) {
                 if (t.getGameMode() == org.bukkit.GameMode.CREATIVE || t.getGameMode() == org.bukkit.GameMode.SPECTATOR) continue;
                 EntityDamageByEntityEvent probe = new EntityDamageByEntityEvent(attacker, t, org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_ATTACK,
@@ -807,6 +811,19 @@ public class WeaponModule extends Module {
 
     /* ======================= 우클릭 스킬 ======================= */
 
+    private final Map<UUID, Long> skillBlockMsg = new HashMap<>();
+
+    /** 스폰 월드 · 보호구역 · PvP 금지 구역(WorldGuard)에서는 스킬 사용 불가 */
+    public boolean skillBlocked(Player p) {
+        var cfg = plugin.getConfig();
+        Location loc = p.getLocation();
+        if (cfg.getBoolean("skills.block-in-spawn", true) && inWorld(p, "spawn")) return true;
+        for (String r : cfg.getStringList("skills.blocked-regions").isEmpty()
+                ? java.util.List.of(cfg.getString("protect-region", "protect")) : cfg.getStringList("skills.blocked-regions"))
+            if (plugin.hooks().inRegion(loc, r)) return true;
+        return cfg.getBoolean("skills.block-where-pvp-denied", true) && plugin.hooks().pvpDenied(loc);
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onSkill(PlayerInteractEvent e) {
         if (e.getHand() != EquipmentSlot.HAND) return;
@@ -816,6 +833,18 @@ public class WeaponModule extends Module {
         String n = Msg.name(hand);
         long now = System.currentTimeMillis();
         UUID id = p.getUniqueId();
+
+        boolean skillItem = n.contains(Items.N_CHAOS) || n.contains(Items.N_DARK_WAVE) || n.contains(Items.N_SEALED_SWORD)
+                || n.contains(Items.N_ETERNAL_CHRONOS) || Items.isNewChar(n);
+        if (skillItem && skillBlocked(p)) {
+            e.setCancelled(true);
+            if (now - skillBlockMsg.getOrDefault(id, 0L) > 1500) {   // 연타해도 안내는 한 번씩
+                skillBlockMsg.put(id, now);
+                Msg.send(p, "&c&l[!] &c스폰과 보호구역에서는 스킬을 사용할 수 없습니다.");
+                Msg.sound(p, "block.note_block.bass", 0.6f, 0.8f);
+            }
+            return;
+        }
 
         if (n.contains(Items.N_CHAOS)) {
             e.setCancelled(true);   // 괭이로 땅을 갈지 않음

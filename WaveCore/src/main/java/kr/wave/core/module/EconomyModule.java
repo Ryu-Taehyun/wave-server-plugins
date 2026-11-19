@@ -72,6 +72,7 @@ public class EconomyModule extends Module {
         if (paid) {
             d.exMoney += amount;
             d.exMoneyTotal += amount;
+            kr.wave.core.util.TxLog.paid("관리자 지급", String.valueOf(t.getName()), t.getUniqueId(), amount, d.exMoney, "지급자 " + s.getName());
             Msg.send(s, "§a[💰] &6" + a[0] + "님에게 " + amount + " 유료 캐시를 지급했습니다.");
             if (t.getPlayer() != null) Msg.send(t.getPlayer(), "§a[💰] &6서버로부터 " + amount + " 유료 캐시가 지급되었습니다. (잔액: " + d.exMoney + "원)");
         } else {
@@ -91,6 +92,7 @@ public class EconomyModule extends Module {
         }
         PlayerData d = plugin.store().get(t);
         if (paid) {
+            kr.wave.core.util.TxLog.paid("초기화", String.valueOf(t.getName()), t.getUniqueId(), -d.exMoney, 0, "실행자 " + s.getName() + " · 누적 " + d.exMoneyTotal + " 도 0으로");
             d.exMoney = 0;
             d.exMoneyTotal = 0;
             Msg.send(s, "§e[🪙] &7플레이어 " + t.getName() + "님의 유료 캐시가 &c초기화 &7되었습니다.");
@@ -218,10 +220,16 @@ public class EconomyModule extends Module {
 
     /** 캐시 차감. 부족하면 false */
     public boolean take(Player p, long amount, boolean paid) {
+        return take(p, amount, paid, null);
+    }
+
+    /** 캐시 차감 + 유료 캐시면 사용 내용(reason) 기록. 부족하면 false */
+    public boolean take(Player p, long amount, boolean paid, String reason) {
         PlayerData d = data(p);
         if (paid) {
             if (d.exMoney < amount) return false;
             d.exMoney -= amount;
+            kr.wave.core.util.TxLog.paid("사용", p.getName(), p.getUniqueId(), -amount, d.exMoney, reason);
         } else {
             if (d.money < amount) return false;
             d.money -= amount;

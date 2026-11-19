@@ -31,6 +31,7 @@ public final class WaveAPI {
         if (paid) {
             if (d.exMoney < amount) return false;
             d.exMoney -= amount;
+            kr.wave.core.util.TxLog.paid("사용", p.getName(), p.getUniqueId(), -amount, d.exMoney, "다른 플러그인 (WaveAPI)");
         } else {
             if (d.money < amount) return false;
             d.money -= amount;

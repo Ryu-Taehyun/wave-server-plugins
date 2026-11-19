@@ -112,6 +112,7 @@ public class WaveCore extends JavaPlugin {
             if (top != null && top.getHolder() instanceof Gui) p.closeInventory();
         }
         if (store != null) store.shutdown();
+        kr.wave.core.util.TxLog.shutdown();
     }
 
     private void adminCommand(org.bukkit.command.CommandSender s, String label, String[] a) {

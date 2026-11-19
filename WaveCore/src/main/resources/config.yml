@@ -140,6 +140,13 @@ special-shop:
     price-1: 5000
     price-10: 45000
 
+# 스킬 사용 제한 (우클릭 스킬: 혼돈의 아포칼립스, 다크니스 웨이브, 얼어붙은 제왕의 검, 이터널 크로노스, 초승달의 서약)
+skills:
+  block-in-spawn: true          # 스폰 월드(worlds.spawn)에서 금지
+  blocked-regions:              # 이 WorldGuard 구역 안에서 금지 (비우면 protect-region 값 사용)
+    - "protect"
+  block-where-pvp-denied: true  # WorldGuard 로 PvP 가 막힌 곳에서도 금지
+
 # 아이템 뽑기 메뉴: 아래 상자들은 '스페셜 테마 뽑기' 칸 안에 따로 모아 보여줍니다
 crate-menu:
   special-theme:

@@ -689,6 +689,13 @@ public class CrateModule extends Module {
                 console(line);
             }
         }
+        StringBuilder log = new StringBuilder();
+        for (Prize win : s.wins) {
+            if (log.length() > 0) log.append(", ");
+            log.append(Msg.plain(win.display.getItemMeta() != null && win.display.getItemMeta().hasDisplayName() ? win.display.getItemMeta().displayName() : net.kyori.adventure.text.Component.text(win.display.getType().name())))
+                    .append(" x").append(win.display.getAmount()).append(" [").append(win.id).append("]");
+        }
+        kr.wave.core.util.TxLog.crate(p.getName(), p.getUniqueId(), c.id, s.wins.size(), log + (p.isOnline() ? "" : " (오프라인: 우편함으로)"));
         // 결과 창: 스킵 버튼 -> 상자 메뉴로
         int btn = s.wins.size() == 1 ? 22 : 31;
         s.gui.set(btn, It.of(Material.LIME_DYE).name("&a&l완료").lore("&7클릭하면 상자 메뉴로 돌아갑니다.").build(), e -> later(1, () -> back(p, c)));

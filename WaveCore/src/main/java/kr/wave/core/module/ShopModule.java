@@ -70,7 +70,7 @@ public class ShopModule extends Module {
             Msg.sound(p, "entity.villager.no", 0.8f, 1f);
             return;
         }
-        if (!plugin.module(EconomyModule.class).take(p, price, paid)) {
+        if (!plugin.module(EconomyModule.class).take(p, price, paid, done)) {
             Msg.send(p, paid ? "§c[❌] 유료 캐시가 부족합니다!" : "§c[❌] 캐시가 부족합니다! (현재 캐시: " + Msg.num(data(p).money) + "원)");
             Msg.sound(p, "entity.villager.no", 0.5f, 1);
             return;
@@ -179,7 +179,7 @@ public class ShopModule extends Module {
         if (c == null) return;
         g.set(slot, cm.shopIcon(c, amount, priceLine(price, paid) + (amount >= 10 ? " &a(할인)" : "") + "%nl%&e» 좌클릭 &f구매"), e -> {
             if (!left(e)) return;
-            if (!plugin.module(EconomyModule.class).take(p, price, paid)) {
+            if (!plugin.module(EconomyModule.class).take(p, price, paid, "상자 키 구매: " + c.id() + " x" + amount)) {
                 Msg.send(p, paid ? "§c[❌] 유료 캐시가 부족합니다!" : "§c[❌] 캐시가 부족합니다! (현재 캐시: " + Msg.num(data(p).money) + "원)");
                 Msg.sound(p, "entity.villager.no", 0.8f, 1f);
                 return;
@@ -366,7 +366,7 @@ public class ShopModule extends Module {
                     return;
                 }
                 long c = price * can;
-                if (!plugin.module(EconomyModule.class).take(p, c, true)) {
+                if (!plugin.module(EconomyModule.class).take(p, c, true, "프리미엄 패스 레벨 +" + can)) {
                     Msg.send(p, "§c[❌] 유료 캐시가 부족합니다! &7(필요 " + Msg.num(c) + " / 보유 " + Msg.num(data(p).exMoney) + ")");
                     Msg.sound(p, "entity.villager.no", 0.8f, 1f);
                     return;
@@ -375,6 +375,7 @@ public class ShopModule extends Module {
                 if (up < can) {   // 연동 실패 등 -> 남은 만큼 환불
                     PlayerData d = data(p);
                     d.exMoney += price * (can - Math.max(0, up));
+                    kr.wave.core.util.TxLog.paid("환불", p.getName(), p.getUniqueId(), price * (can - Math.max(0, up)), d.exMoney, "패스 레벨 지급 실패분 (" + Math.max(0, up) + "/" + can + " 지급)");
                     plugin.store().save(d);
                 }
                 Msg.send(p, "§a[💰] &7패스 레벨 &e+" + Math.max(0, up) + " &7구매 완료 &8(-" + Msg.num(price * Math.max(0, up)) + " 유료 캐시)");

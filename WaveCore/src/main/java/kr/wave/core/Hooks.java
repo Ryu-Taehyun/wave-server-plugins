@@ -77,6 +77,31 @@ public class Hooks {
         return false;
     }
 
+    /** 이 위치에서 WorldGuard 가 PvP 를 막는지 (pvp: deny). WorldGuard 가 없거나 확인 실패 시 false */
+    public boolean pvpDenied(Location loc) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("WorldGuard")) return false;
+        try {
+            ClassLoader cl = getClass().getClassLoader();
+            Class<?> wgClass = Class.forName("com.sk89q.worldguard.WorldGuard", true, cl);
+            Object wg = wgClass.getMethod("getInstance").invoke(null);
+            Object query = call(call(call(wg, "getPlatform"), "getRegionContainer"), "createQuery");
+            Class<?> adapter = Class.forName("com.sk89q.worldedit.bukkit.BukkitAdapter", true, cl);
+            Object weLoc = adapter.getMethod("adapt", Location.class).invoke(null, loc);
+            Class<?> flags = Class.forName("com.sk89q.worldguard.protection.flags.Flags", true, cl);
+            Object pvp = flags.getField("PVP").get(null);
+            Class<?> stateFlag = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag", true, cl);
+            Object arr = java.lang.reflect.Array.newInstance(stateFlag, 1);
+            java.lang.reflect.Array.set(arr, 0, pvp);
+            Class<?> assoc = Class.forName("com.sk89q.worldguard.protection.association.RegionAssociable", true, cl);
+            Class<?> weLocClass = Class.forName("com.sk89q.worldedit.util.Location", true, cl);
+            Method m = query.getClass().getMethod("testState", weLocClass, assoc, arr.getClass());
+            Object r = m.invoke(query, weLoc, null, arr);
+            return Boolean.FALSE.equals(r);
+        } catch (Exception | LinkageError ignored) {
+            return false;
+        }
+    }
+
     private static Object call(Object target, String name, Object... args) throws ReflectiveOperationException {
         Class<?> c = target.getClass();
         while (c != null) {
