@@ -271,7 +271,7 @@ public class WeaponModule extends Module {
                 else hurt(le, dmg);
                 try {
                     le.playHurtAnimation(0);
-                } catch (Throwable ignored) {   // 이 기능이 없는 서버 버전: 맞는 연출만 생략 (피해는 이미 들어감)
+                } catch (RuntimeException | LinkageError ignored) {   // 이 기능이 없는 서버 버전: 맞는 연출만 생략 (피해는 이미 들어감)
                 }
             }
             Fx.p(le.getLocation().add(0, 1, 0), Particle.END_ROD, 8, 0.3, 0.05);

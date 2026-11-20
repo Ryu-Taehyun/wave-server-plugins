@@ -94,7 +94,7 @@ public class ShareModule extends Module {
         shown = shown.decoration(TextDecoration.ITALIC, false);
         try {
             return shown.hoverEvent(it.asHoverEvent());   // 게임 안 아이템 설명 그대로
-        } catch (Throwable t) {   // 지원하지 않는 서버: 이름 · 설명을 글자로
+        } catch (RuntimeException | LinkageError t) {   // 지원하지 않는 서버: 이름 · 설명을 글자로
             Component tip = name;
             if (meta != null && meta.lore() != null) for (Component l : meta.lore()) tip = tip.append(Component.newline()).append(l);
             return shown.hoverEvent(HoverEvent.showText(tip));

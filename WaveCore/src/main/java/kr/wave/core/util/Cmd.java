@@ -57,7 +57,7 @@ public final class Cmd {
                 }
                 try {
                     exec.run(sender, label, args);
-                } catch (Exception ex) {
+                } catch (RuntimeException ex) {   // 명령어 하나의 오류가 서버 전체로 번지지 않게
                     Bukkit.getLogger().log(Level.SEVERE, "[WaveCore] /" + name + " 처리 중 오류", ex);
                     Msg.send(sender, "&c명령어 처리 중 오류가 발생했습니다.");
                 }

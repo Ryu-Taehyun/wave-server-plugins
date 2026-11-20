@@ -150,7 +150,7 @@ public class CrateModule extends Module {
             try {
                 Crate c = parse(f.getName().substring(0, f.getName().length() - 4), YamlConfiguration.loadConfiguration(f));
                 if (c != null) crates.put(c.id.toLowerCase(), c);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {   // 형식이 잘못된 상자 파일: 이 상자만 건너뜀
                 plugin.getLogger().warning("상자 설정을 읽지 못했습니다: " + f.getName() + " (" + e.getMessage() + ")");
             }
         }
@@ -217,7 +217,7 @@ public class CrateModule extends Module {
         String b64 = raw.startsWith("Data:") ? raw.substring(5) : raw;
         try {
             return ItemStack.deserializeBytes(Base64.getDecoder().decode(b64.trim()));
-        } catch (Throwable t) {
+        } catch (RuntimeException | LinkageError t) {
             return null;   // 서버 버전이 너무 낮거나 손상된 데이터 -> Display 아이템으로 대체
         }
     }

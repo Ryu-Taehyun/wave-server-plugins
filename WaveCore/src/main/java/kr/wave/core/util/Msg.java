@@ -177,7 +177,7 @@ public final class Msg {
         if (it == null || it.getType().isAir()) return text;
         try {
             return text.hoverEvent(it.asHoverEvent());
-        } catch (Throwable t) {
+        } catch (RuntimeException | LinkageError t) {
             ItemMeta meta = it.getItemMeta();
             Component tip = meta != null && meta.hasDisplayName() ? meta.displayName() : Component.text(it.getType().name());
             if (meta != null && meta.lore() != null) for (Component l : meta.lore()) tip = tip.append(Component.newline()).append(l);

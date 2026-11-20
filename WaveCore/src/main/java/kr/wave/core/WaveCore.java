@@ -82,7 +82,7 @@ public class WaveCore extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(m, this);
             try {
                 m.enable();
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 getLogger().log(Level.SEVERE, m.getClass().getSimpleName() + " 활성화 실패", e);
             }
         }
@@ -91,7 +91,7 @@ public class WaveCore extends JavaPlugin {
             for (Module m : modules) {
                 try {
                     m.secondTick();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     getLogger().log(Level.WARNING, m.getClass().getSimpleName() + " 1초 작업 오류", e);
                 }
             }
@@ -108,7 +108,7 @@ public class WaveCore extends JavaPlugin {
         for (Module m : modules) {
             try {
                 m.disable();
-            } catch (Exception e) {   // 한 모듈이 실패해도 나머지 모듈은 계속 종료
+            } catch (RuntimeException e) {   // 한 모듈이 실패해도 나머지 모듈은 계속 종료
                 getLogger().log(java.util.logging.Level.WARNING, m.getClass().getSimpleName() + " 종료 중 오류", e);
             }
         }

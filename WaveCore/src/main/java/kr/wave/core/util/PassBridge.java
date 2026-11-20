@@ -17,7 +17,7 @@ public final class PassBridge {
         try {
             Class<?> c = Class.forName("com.premiumpass.api.PremiumPassAPI", true, Bukkit.getPluginManager().getPlugin("PremiumPass").getClass().getClassLoader());
             return (boolean) c.getMethod("isAvailable").invoke(null) ? c : null;
-        } catch (Throwable t) {
+        } catch (RuntimeException | LinkageError | ReflectiveOperationException t) {
             return null;
         }
     }
@@ -32,7 +32,7 @@ public final class PassBridge {
         try {
             Method m = c.getMethod(name, types);
             return m.invoke(null, args);
-        } catch (Throwable t) {
+        } catch (RuntimeException | LinkageError | ReflectiveOperationException t) {
             return null;
         }
     }

@@ -44,7 +44,7 @@ public final class GuiSnapshot {
             b.append("]}");
         }
         b.append("]}");
-        try { Files.writeString(Path.of(dir, file), b.toString()); } catch (Exception e) { throw new RuntimeException(e); }
+        try { Files.writeString(Path.of(dir, file), b.toString()); } catch (java.io.IOException e) { throw new java.io.UncheckedIOException(e); }
     }
 
     /** 채팅 · 액션바 글자를 색상 코드(§) 문자열로 (미리보기 이미지용) */
@@ -58,8 +58,8 @@ public final class GuiSnapshot {
         if (dir == null || dir.isBlank()) return;
         try {
             Files.writeString(Path.of(dir, file), content);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
         }
     }
 }

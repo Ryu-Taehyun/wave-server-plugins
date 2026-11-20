@@ -23,7 +23,7 @@ public class WaveCashCurrency implements Currency {
         try {
             Class<?> c = Class.forName("kr.wave.core.api.WaveAPI", true, w.getClass().getClassLoader());
             return new WaveCashCurrency(c.getMethod("getCash", Player.class, boolean.class), c.getMethod("takeCash", Player.class, long.class, boolean.class));
-        } catch (Throwable t) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError t) {
             return null;
         }
     }
@@ -37,7 +37,7 @@ public class WaveCashCurrency implements Currency {
     public long balance(Player p) {
         try {
             return (long) get.invoke(null, p, false);
-        } catch (Throwable t) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError t) {
             return 0;
         }
     }
@@ -46,7 +46,7 @@ public class WaveCashCurrency implements Currency {
     public boolean withdraw(Player p, long amount) {
         try {
             return (boolean) take.invoke(null, p, amount, false);
-        } catch (Throwable t) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError t) {
             return false;
         }
     }

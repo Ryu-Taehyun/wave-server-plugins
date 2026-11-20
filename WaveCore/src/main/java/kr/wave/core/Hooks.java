@@ -76,7 +76,7 @@ public class Hooks {
                     if (regionId.equalsIgnoreCase(String.valueOf(call(r, "getId")))) return true;
                 }
             }
-        } catch (Exception | LinkageError e) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             Log.once("hook:wg-region", "WorldGuard 구역 확인에 실패했습니다. 보호구역 판정이 동작하지 않습니다: " + e);
         }
         return false;
@@ -104,7 +104,7 @@ public class Hooks {
             Method m = query.getClass().getMethod("queryState", weLocClass, assoc, arr.getClass());
             Object r = m.invoke(query, weLoc, null, arr);
             return r != null && "DENY".equals(r.toString());
-        } catch (Exception | LinkageError e) {
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             Log.once("hook:wg-pvp", "WorldGuard PvP 확인에 실패했습니다. PvP 금지 구역 스킬 제한이 동작하지 않습니다: " + e);
             return false;
         }

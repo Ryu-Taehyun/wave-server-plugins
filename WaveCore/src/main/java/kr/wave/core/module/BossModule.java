@@ -286,7 +286,7 @@ public class BossModule extends Module {
         double hp = cfg().getDouble("health", 400);
         try {
             c.getChunk().addPluginChunkTicket(plugin);   // 아무도 없어도 전투 시간 동안 제단 유지
-        } catch (Throwable e) {
+        } catch (RuntimeException | LinkageError e) {
             kr.wave.core.util.Log.once("boss:ticket", "보스 제단 청크를 고정하지 못했습니다 (아무도 없으면 제단이 멈출 수 있음): " + e);
         }
         boss = c.getWorld().spawn(c, WitherSkeleton.class, w -> {
@@ -351,7 +351,7 @@ public class BossModule extends Module {
         try {
             Location c = center();
             if (c != null) c.getChunk().removePluginChunkTicket(plugin);
-        } catch (Throwable e) {
+        } catch (RuntimeException | LinkageError e) {
             kr.wave.core.util.Log.once("boss:unticket", "보스 제단 청크 고정을 풀지 못했습니다: " + e);
         }
         fightLeft = 0;

@@ -132,7 +132,10 @@ public class Store implements Listener {
             return true;
         } catch (java.util.concurrent.RejectedExecutionException e) {
             return true;   // 이미 종료 중: 저장은 바로바로 쓰였음
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
             plugin.getLogger().log(Level.WARNING, "저장 대기 중 오류", e);
             return false;
         }
