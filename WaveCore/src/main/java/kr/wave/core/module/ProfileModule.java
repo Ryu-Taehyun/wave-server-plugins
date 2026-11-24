@@ -142,6 +142,8 @@ public class ProfileModule extends Module {
         out.add("&7상태 : " + seenLine(t, d) + " &7· 랭크 " + rankLabel(d) + " &7· 레벨 &f" + d.level);
         out.add("&7캐시 : &f" + Msg.num(d.money) + "원 &7· 유료 캐시 : &6" + Msg.num(d.exMoney) + "원 &8(누적 " + Msg.num(d.exMoneyTotal) + ")");
         out.add("&7팀 : " + teamLine(t) + " &7· 출석 &f" + d.attendStreak + "일 연속 / 누적 " + d.attendTotal + "일");
+        AltModule alt = plugin.module(AltModule.class);
+        if (alt != null) out.add("&7같은 곳 계정 : " + alt.summary(t.getUniqueId()));
         out.add("&7경고 &c" + d.warnings + "회 &7· 채팅 금지 " + (d.muteUntil > System.currentTimeMillis() ? "&c" + Dur.left(d.muteUntil) + " 남음" : "&a없음")
                 + " &7· 차단 " + (ban == null ? "&a없음" : "&c" + (ban.permanent() ? "영구" : Dur.left(ban.until) + " 남음")));
         return out;
@@ -166,6 +168,9 @@ public class ProfileModule extends Module {
         g.set(15, It.of(ban != null ? Material.BARRIER : Material.LIME_DYE).name(ban != null ? "&c&l차단됨" : "&a&l차단 없음")
                 .lore(ban == null ? new String[]{"&7정상"} : new String[]{"&7사유 : &f" + Msg.esc(ban.reason), "&7기간 : &f" + (ban.permanent() ? "영구" : Dur.when(ban.until) + "까지"),
                         "&7코드 : &f#" + ban.code, "&7처리자 : &f" + (ban.by.isEmpty() ? "-" : ban.by)}).build());
+        AltModule alt = plugin.module(AltModule.class);
+        if (alt != null) g.set(32, It.of(Material.SPYGLASS).name("&6&l같은 곳에서 접속한 계정").lore("&7" + alt.summary(t.getUniqueId()), "",
+                "&8빨간 이름 = 차단 중인 계정", "&8가족 · 같은 PC방일 수도 있으니 참고만", "&7/부계정 " + name).build());
         g.set(16, It.of(d.muteUntil > System.currentTimeMillis() ? Material.RED_DYE : Material.GRAY_DYE).name("&c&l경고 · 채팅 금지")
                 .lore("&7누적 경고 : &c" + d.warnings + "회", "&7채팅 금지 : " + (d.muteUntil > System.currentTimeMillis()
                         ? "&c" + Dur.left(d.muteUntil) + " 남음 &8(" + Msg.esc(d.muteReason) + ")" : "&a없음")).build());

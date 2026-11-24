@@ -55,6 +55,8 @@ public class PlayerData {
     public final Set<String> hideFx = new HashSet<>();
     /** 다른 사람이 /정보 에서 내 컬렉션 진행을 볼 수 있는지 */
     public boolean collectionPublic = true;
+    /** 다른 플레이어 처치 수 (순위용, 시즌 초기화 때 0) */
+    public int kills;
 
     /* 보관 */
     public final List<ItemStack> mailbox = new ArrayList<>();
@@ -134,6 +136,7 @@ public class PlayerData {
         fxOff.addAll(y.getStringList("fx-off"));
         hideFx.addAll(y.getStringList("hide-fx"));
         collectionPublic = y.getBoolean("collection-public", true);
+        kills = y.getInt("kills", 0);
         crownOwned = y.getBoolean("crown-owned", crownKill);
         readItems(y.getList("mailbox"), mailbox);
         readItems(y.getList("keep-items"), keepItems);
@@ -199,6 +202,7 @@ public class PlayerData {
         y.set("fx-off", new java.util.ArrayList<>(fxOff));
         y.set("hide-fx", new java.util.ArrayList<>(hideFx));
         y.set("collection-public", collectionPublic);
+        y.set("kills", kills);
         y.set("crown-owned", crownOwned);
         y.set("mailbox", new ArrayList<>(mailbox));
         y.set("keep-items", new ArrayList<>(keepItems));

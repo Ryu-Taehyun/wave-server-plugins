@@ -11,6 +11,7 @@ import kr.wave.core.util.Gui;
 import kr.wave.core.util.It;
 import kr.wave.core.util.Msg;
 import org.bukkit.Material;
+import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -3282,8 +3283,10 @@ public class WaveTest {
         assertEquals(50_000, d.money, "미리보기는 바꾸지 않음");
         // 실행
         assertTrue(admin.performCommand("시즌 초기화 확인"));
-        assertEquals(0, d.money);
-        assertEquals(0, d.moneyTotal);
+        // 돈은 지운 뒤, 지우기 전 순위로 TOP 10 보상 (돈 · 레벨 · 컬렉션 1위 = 1,000,000 x 3) + 트로피 3개
+        assertEquals(3_000_000, d.money, "초기화 뒤 순위 보상만 남음");
+        assertEquals(3_000_000, d.moneyTotal);
+        assertEquals(3, d.mailbox.stream().filter(it -> Msg.name(it).contains("순위 트로피 · 1위")).count());
         assertEquals(30_000, d.exMoney, "유료 캐시는 기본으로 유지");
         assertEquals(30_000, d.exMoneyTotal);
         assertEquals(1, d.level);
@@ -3844,6 +3847,135 @@ public class WaveTest {
             }
         }
         GuiSnapshot.save(a, "hit_fx_mixed.json");
+    }
+
+    /** 접속 주소를 정해서 접속 (MockBukkit 기본은 모두 127.0.0.1) */
+    private PlayerMock joinFrom(String name, String ip) {
+        PlayerMock pm = new PlayerMock(server, name);
+        pm.setAddress(new java.net.InetSocketAddress(ip, 25565));
+        server.addPlayer(pm);
+        return pm;
+    }
+
+    @Test
+    void altGuard() throws Exception {
+        PlayerMock admin = joinFrom("Guard", "10.0.0.9");
+        admin.setOp(true);
+        PlayerMock main = joinFrom("MainAcc", "10.0.0.5");
+        server.getScheduler().performTicks(5);
+        UUID mainId = main.getUniqueId();
+        assertTrue(admin.performCommand("임시밴 MainAcc 1d 핵"));
+        // 같은 곳에서 다른 계정 접속 -> 알림 (기본 alert: 접속은 됨)
+        drain(admin);
+        var ev = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("SubAcc", java.net.InetAddress.getByName("10.0.0.5"), UUID.randomUUID());
+        preLogin(ev);
+        assertEquals(org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED, ev.getLoginResult());
+        server.getScheduler().performTicks(2);
+        String seen = drain(admin);
+        assertTrue(seen.contains("[부계정]") && seen.contains("SubAcc") && seen.contains("MainAcc"), seen);
+        // 다른 곳은 조용
+        var other = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Clean", java.net.InetAddress.getByName("10.0.0.77"), UUID.randomUUID());
+        preLogin(other);
+        server.getScheduler().performTicks(2);
+        assertFalse(drain(admin).contains("[부계정]"));
+        // block 이면 막음, allow 목록은 통과
+        plugin.getConfig().set("alt-guard.action", "block");
+        var ev2 = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("SubAcc2", java.net.InetAddress.getByName("10.0.0.5"), UUID.randomUUID());
+        preLogin(ev2);
+        assertEquals(org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ev2.getLoginResult());
+        plugin.getConfig().set("alt-guard.allow", java.util.List.of("Brother"));
+        var ev3 = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Brother", java.net.InetAddress.getByName("10.0.0.5"), UUID.randomUUID());
+        preLogin(ev3);
+        assertEquals(org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED, ev3.getLoginResult());
+        // 접속한 계정은 /부계정 · /조회 에 나옴
+        plugin.getConfig().set("alt-guard.action", "alert");
+        joinFrom("SubAcc", "10.0.0.5");
+        server.getScheduler().performTicks(2);
+        drain(admin);
+        assertTrue(admin.performCommand("부계정 MainAcc"));
+        String alts = drain(admin);
+        assertTrue(alts.contains("SubAcc") && !alts.contains("Guard"), alts);
+        assertTrue(admin.performCommand("조회 SubAcc"));
+        assertTrue(allText(admin.getOpenInventory().getTopInventory()).contains("MainAcc"));
+        // 주소는 그대로 저장하지 않음
+        var alt = plugin.module(kr.wave.core.module.AltModule.class);
+        alt.save();
+        String file = java.nio.file.Files.readString(new java.io.File(plugin.getDataFolder(), "alts.yml").toPath());
+        assertFalse(file.contains("10.0.0.5") || file.contains("10_0_0_5"), file);
+        assertTrue(alt.sameNetwork(mainId, server.getPlayerExact("SubAcc").getUniqueId()));
+    }
+
+    @Test
+    void rankingTop200AndRewards() {
+        plugin.getConfig().set("ranking.rewards.1.money", 1000);
+        plugin.getConfig().set("ranking.rewards.2-3.money", 500);
+        plugin.getConfig().set("ranking.rewards.4-10.money", 100);
+        PlayerMock admin = joinFrom("RankOp", "10.1.0.1");
+        admin.setOp(true);
+        plugin.getConfig().set("ranking.exclude", java.util.List.of("RankOp"));
+        java.util.List<PlayerMock> ps = new java.util.ArrayList<>();
+        for (int i = 1; i <= 12; i++) ps.add(joinFrom("R" + i, "10.1.1." + i));
+        server.getScheduler().performTicks(5);
+        for (int i = 0; i < 12; i++) plugin.store().get(ps.get(i)).money = (i + 1) * 10_000L;   // R12 가 1위
+        plugin.store().get(admin).money = 999_999_999L;   // 제외 목록
+        var rm = plugin.module(kr.wave.core.module.RankingModule.class);
+        assertTrue(ps.get(0).performCommand("순위 돈"));
+        assertTrue(title(ps.get(0)).contains("순위 · 돈"), title(ps.get(0)));
+        var inv = ps.get(0).getOpenInventory().getTopInventory();
+        assertTrue(Msg.name(inv.getItem(9)).contains("#1") && Msg.name(inv.getItem(9)).contains("R12"), Msg.name(inv.getItem(9)));
+        assertTrue(Msg.name(inv.getItem(20)).contains("#12") && Msg.name(inv.getItem(20)).contains("R1"));
+        assertFalse(allText(inv).contains("RankOp"), "제외 목록");
+        assertTrue(allText(inv).contains("TOP 10"));
+        GuiSnapshot.save(ps.get(0), "ranking.json");
+        assertEquals(1, rm.rankOf(kr.wave.core.module.RankingModule.Cat.MONEY, ps.get(11).getUniqueId()));
+        // 탭 이동
+        click(ps.get(0), 3, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(title(ps.get(0)).contains("레벨"));
+        // 처치 수: 다른 곳끼리만, 같은 상대 10분 안 반복은 1번
+        PlayerMock k = ps.get(0), v = ps.get(1);
+        for (int i = 0; i < 2; i++) {
+            v.setKiller(k);
+            server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(v, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(k).withDirectEntity(k).build(), new java.util.ArrayList<>(), 0, null));
+        }
+        assertEquals(1, plugin.store().get(k).kills);
+        PlayerMock twin = joinFrom("Twin", "10.1.1.1");   // R1 과 같은 곳
+        server.getScheduler().performTicks(2);
+        twin.setKiller(k);
+        server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(twin, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(k).withDirectEntity(k).build(), new java.util.ArrayList<>(), 0, null));
+        assertEquals(1, plugin.store().get(k).kills, "같은 곳(부계정) 처치는 세지 않음");
+        // TOP 10 입장 메시지
+        drain(admin);
+        ps.get(11).disconnect();
+        ps.get(11).reconnect();
+        server.getScheduler().performTicks(10);
+        String join = drain(admin);
+        assertTrue(join.contains("[🏆 돈 1위]") && join.contains("R12"), join);
+        // 보상: 미리보기 -> 확인
+        drain(admin);
+        assertTrue(admin.performCommand("순위 보상"));
+        assertTrue(drain(admin).contains("R12"));
+        long before = plugin.store().get(ps.get(11)).money;
+        assertTrue(admin.performCommand("순위 보상 확인"));
+        PlayerData top = plugin.store().get(ps.get(11));
+        assertEquals(before + 1000, top.money, "1위 보상");
+        assertTrue(top.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")), "순위가 새겨진 트로피");
+        ItemStack trophy = top.mailbox.stream().filter(it -> Msg.name(it).contains("트로피")).findFirst().orElseThrow();
+        assertFalse(Items.seasonKeepIn(new ItemStack[]{trophy}).isEmpty(), "트로피는 시즌이 지나도 유지");
+        PlayerData r1 = plugin.store().get(ps.get(0));   // 돈 12위지만 처치 1위
+        assertTrue(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("처치 순위 트로피 · 1위")));
+        assertFalse(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피")), "돈 12위는 돈 보상 없음");
+        assertEquals(30_000 + 100, plugin.store().get(ps.get(2)).money, "10위(R3) 100");
+        Gui g = new Gui(1, "&8트로피");
+        g.set(2, Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 1, "R12", "120,000원", "S1"));
+        g.set(4, Items.rankTrophy("처치", "#FF5A5A", "#FFC2C2", 2, "R5", "87킬", "S1"));
+        g.set(6, Items.rankTrophy("레벨", "#7CFF00", "#C8FFB0", 7, "R9", "Lv.42", "S1"));
+        g.open(admin);
+        GuiSnapshot.save(admin, "trophies.json");
+        // 보상 확인 없이 다시 확인하면 거부
+        drain(admin);
+        admin.performCommand("순위 보상 확인");
+        assertTrue(drain(admin).contains("미리보기"));
     }
 
     private static net.kyori.adventure.text.event.ClickEvent clickOwner(net.kyori.adventure.text.Component c) {

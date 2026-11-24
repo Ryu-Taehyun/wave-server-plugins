@@ -58,7 +58,8 @@ public class SeasonModule extends Module {
         COLLECTIONS("collections", false, "컬렉션 수집 · 보상 수령 기록"),
         BACKPACK("backpack", true, "배낭(개인 창고)"),
         TEAM_STORAGE("team-storage", true, "팀 창고"),
-        BET_LIMIT("bet-limit", true, "오늘 도박 베팅 누적");
+        BET_LIMIT("bet-limit", true, "오늘 도박 베팅 누적"),
+        KILLS("kills", true, "처치 수 (순위)");
 
         final String key, label;
         final boolean def;
@@ -194,6 +195,12 @@ public class SeasonModule extends Module {
         plugin.store().saveGlobal();
         // 3. 플레이어 데이터
         String resetId = LocalDateTime.now().format(FILE_TIME);
+        // 순위 TOP 10: 지우기 전에 순위를 정해 두고, 지운 뒤에 보상 (돈 보상이 같이 지워지지 않게)
+        RankingModule ranking = plugin.module(RankingModule.class);
+        java.util.Map<RankingModule.Cat, java.util.List<RankingModule.Entry>> top10 = null;
+        if (ranking != null && plugin.getConfig().getBoolean("ranking.reward-on-season-reset", true)) {
+            top10 = ranking.snapshotTop10();
+        }
         // 접속 중인 사람: 인벤토리 · 엔더 상자를 바로 비우고 시즌 유지 아이템을 모아 둠 (아래에서 배낭으로)
         if (on(Part.INVENTORIES)) for (Player p : Bukkit.getOnlinePlayers()) {
             PlayerData d = data(p);
@@ -231,9 +238,17 @@ public class SeasonModule extends Module {
                 d.betDay = "";
                 d.betToday = 0;
             }
+            if (on(Part.KILLS)) d.kills = 0;
         });
         for (Part p : Part.values()) if (on(p) && p != Part.MARKET && p != Part.TEAM_STORAGE) done.add(p.label);
         for (Player p : Bukkit.getOnlinePlayers()) deliver(p, data(p), true);   // 접속 중인 사람은 바로 배낭으로
+        if (ranking != null) {
+            if (top10 != null) {
+                int n = ranking.payout(top10, ranking.seasonName(LocalDateTime.now().toLocalDate().toString()));
+                done.add("순위 TOP 10 보상 " + n + "건");
+            }
+            ranking.rebuild();
+        }
         // 4. 추가 명령어 (예: passadmin season next)
         for (String c : plugin.getConfig().getStringList("season-reset.commands")) {
             String line = c.startsWith("/") ? c.substring(1) : c;

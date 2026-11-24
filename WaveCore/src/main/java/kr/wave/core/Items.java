@@ -314,6 +314,25 @@ public final class Items {
                         "&8교환하면 교환권 1장이 사라집니다.").build();
     }
 
+    public static final String N_RANK_TROPHY = "순위 트로피";
+
+    /** 시즌 순위 TOP 10 트로피 (순위 · 분야 · 시즌 · 주인이 새겨짐, 시즌이 지나도 유지) */
+    public static ItemStack rankTrophy(String category, String from, String to, int rank, String owner, String record, String season) {
+        Material m = rank == 1 ? Material.GOLD_INGOT : rank == 2 ? Material.IRON_INGOT : rank == 3 ? Material.COPPER_INGOT : Material.AMETHYST_SHARD;
+        String medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : "🏆";
+        String tier = rank == 1 ? "<b><gradient:#FFF176:#FFB732>CHAMPION</gradient></b>" : rank <= 3 ? "<b><gradient:#E0E0E0:#9E9E9E>TOP 3</gradient></b>"
+                : "<b><gradient:#C77DFF:#F5DAF8>TOP 10</gradient></b>";
+        return It.of(m).ench(Enchantment.INFINITY, 1).hide()
+                .name("<b><gradient:" + from + ":" + to + "><italic:false>[" + medal + "] " + category + " " + N_RANK_TROPHY + " · " + rank + "위</gradient></b>")
+                .lore("&7등급 : " + tier,
+                        "&8──────────────────",
+                        "&7" + season + " 시즌 " + category + " 순위 &f" + rank + "위&7의 증표.",
+                        "",
+                        "&7주인 : &f" + owner,
+                        "&7기록 : &f" + record,
+                        "&8──────────────────" + SEASON_KEEP).build();
+    }
+
     /** 설정 파일에서 이름으로 부르는 서버 아이템 (상자 보상, 보스 전리품 등). 없으면 null */
     public static ItemStack special(String id) {
         if (id == null) return null;
