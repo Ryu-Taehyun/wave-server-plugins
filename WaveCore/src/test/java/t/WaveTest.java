@@ -3835,6 +3835,14 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         String mixed = allText(a.getOpenInventory().getTopInventory());
         assertTrue(mixed.contains("켜짐") && mixed.contains("꺼짐") && mixed.contains("보유하지 않음"), mixed);
+        var mi = a.getOpenInventory().getTopInventory();
+        for (int i = 0; i < mi.getSize(); i++) {
+            var it = mi.getItem(i);
+            if (it != null && Msg.name(it).contains("프로스트 그레이브")) {
+                assertEquals(Items.frostGrave().getType(), it.getType(), "꺼 둬도 원래 아이템 모양");
+                assertEquals(Boolean.FALSE, it.getItemMeta().getEnchantmentGlintOverride(), "꺼짐은 반짝임 없음");
+            }
+        }
         GuiSnapshot.save(a, "hit_fx_mixed.json");
     }
 

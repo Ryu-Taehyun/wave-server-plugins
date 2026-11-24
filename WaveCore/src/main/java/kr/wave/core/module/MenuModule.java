@@ -230,8 +230,9 @@ public class MenuModule extends Module {
                 continue;
             }
             boolean off = d.hideFx.contains(w.key());
-            ItemStack icon = off ? It.of(Material.GRAY_DYE).name("&7" + Msg.name(base)).build() : base;
+            ItemStack icon = base;   // 가진 무기는 꺼 두어도 원래 아이템 모양 (꺼짐은 반짝임만 없앰)
             var meta = icon.getItemMeta();
+            if (off) meta.setEnchantmentGlintOverride(false);
             meta.lore(Msg.lore("", "&7타격 파티클 : " + (off ? "&c꺼짐" : "&a켜짐"), "", off ? "&e클릭하여 활성화" : "&e클릭하여 끄기"));
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
             icon.setItemMeta(meta);
