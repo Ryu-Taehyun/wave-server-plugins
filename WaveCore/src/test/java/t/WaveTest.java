@@ -4077,7 +4077,7 @@ public class WaveTest {
         var jl = Msg.c(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1).replace("%name%", "X"));
         assertFalse(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "입장 메시지는 굵게 하지 않음");
         String join7 = joinLine(ps.get(5));
-        assertTrue(join7.contains("[🏆 부의 제왕 7위]") && join7.contains("R6"), join7);
+        assertTrue(join7.contains("[★ 부의 제왕 7위]") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인
         drain(admin);
         assertTrue(admin.performCommand("순위 보상"));
@@ -4089,6 +4089,10 @@ public class WaveTest {
         assertTrue(top.mailbox.stream().anyMatch(it -> Msg.name(it).contains("부의 제왕 트로피 · 1위")), "순위가 새겨진 트로피");
         ItemStack trophy = top.mailbox.stream().filter(it -> Msg.name(it).contains("트로피")).findFirst().orElseThrow();
         assertFalse(Items.seasonKeepIn(new ItemStack[]{trophy}).isEmpty(), "트로피는 시즌이 지나도 유지");
+        for (int r = 1; r <= 10; r++) for (String bad : new String[]{"🥇", "🥈", "🥉", "🏆"}) {
+            assertFalse(Msg.plainOf(kr.wave.core.module.RankingModule.joinTag(kr.wave.core.module.RankingModule.Cat.MONEY, r)).contains(bad), "잘리는 이모지 없음");
+            assertFalse(Msg.name(Items.rankTrophy("부의 제왕", "#FFFFFF:#000000", r, "x", "1", "S1")).contains(bad));
+        }
         String tl = String.join("\n", trophy.getItemMeta().lore().stream().map(Msg::plain).toList());
         assertTrue(tl.contains("등급 : TOP 1"), tl);
         assertTrue(String.join("\n", Items.rankTrophy("부의 제왕", kr.wave.core.module.RankingModule.titleColors(kr.wave.core.module.RankingModule.Cat.MONEY, 7), 7, "x", "1원", "S").getItemMeta().lore().stream().map(Msg::plain).toList()).contains("등급 : Ranking"));
@@ -4102,7 +4106,7 @@ public class WaveTest {
         String tkey = kr.wave.core.module.RankingModule.titleKey(season, kr.wave.core.module.RankingModule.Cat.MONEY, 1);
         assertTrue(top.titles.contains(tkey), top.titles.toString());
         assertEquals("[👑 S1 부의 제왕 1위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(tkey)));
-        assertEquals("[🏆 S1 킬의 제왕 4위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(kr.wave.core.module.RankingModule.titleKey("S1", kr.wave.core.module.RankingModule.Cat.KILLS, 4))));
+        assertEquals("[★ S1 킬의 제왕 4위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(kr.wave.core.module.RankingModule.titleKey("S1", kr.wave.core.module.RankingModule.Cat.KILLS, 4))));
         assertTrue(plugin.store().get(ps.get(5)).titles.stream().anyMatch(tk -> Msg.plainOf(String.valueOf(kr.wave.core.module.RankingModule.titleText(tk))).contains("부의 제왕 7위")));
         PlayerMock champ = ps.get(11);
         top.titles.add("ace");

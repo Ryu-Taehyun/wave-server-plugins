@@ -268,7 +268,7 @@ public class RankingModule extends Module {
 
     /** 입장 태그 (예: [👑 부의 제왕 1위]) */
     public static String joinTag(Cat c, int r) {
-        String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
+        String medal = medal(r);
         return "<gradient:" + titleColors(c, r) + ">[" + medal + " " + c.titleName + " " + r + "위]</gradient>";
     }
 
@@ -278,6 +278,14 @@ public class RankingModule extends Module {
         if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad("님이 입장했습니다!") + " <color:" + c.to + "><obf>D</obf></color>";
         if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다!");
         return tag + " %name% <gray>님이 입장했습니다.</gray>";
+    }
+
+    /**
+     * 순위 표시 기호. 마인크래프트 글꼴에 없는 메달 이모지(🥇🥈🥉🏆)는 잘려 보여서 게임에서 그려지는 기호만 씀
+     * 1위 👑 · 2위 ✦ · 3위 ✧ · 4~10위 ★
+     */
+    public static String medal(int r) {
+        return r == 1 ? "👑" : r == 2 ? "✦" : r == 3 ? "✧" : "★";
     }
 
     /** 등급 이름: 1 · 2 · 3위는 TOP 1/2/3, 4~10위는 Ranking */
@@ -378,7 +386,7 @@ public class RankingModule extends Module {
             String color = rank == 1 ? "&6" : rank == 2 ? "&f" : rank == 3 ? "<color:#E07A4F>" : rank <= 10 ? "&d" : "&7";
             It it = It.of(m).name(color + "#" + rank + " &f" + e.name() + (self ? " &a(나)" : ""))
                     .lore("&7" + c.label + " : &f" + e.shown(c));
-            if (rank <= 10) it.lore("", "&6🏆 TOP 10 &7· 시즌 종료 보상 대상");
+            if (rank <= 10) it.lore("", "&6★ TOP 10 &7· 시즌 종료 보상 대상");
             if (self) it.ench(Enchantment.UNBREAKING, 1);
             g.set(9 + i, it.hide().build());
         }
@@ -421,7 +429,7 @@ public class RankingModule extends Module {
             return null;
         }
         if (c == null) return null;
-        String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
+        String medal = medal(r);
         return "<b><gradient:" + titleColors(c, r) + ">[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient></b>";   // 예: [👑 S7 부의 제왕 1위]
     }
 

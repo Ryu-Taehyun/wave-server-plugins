@@ -322,7 +322,7 @@ public final class Items {
      */
     public static ItemStack rankTrophy(String title, String colors, int rank, String owner, String record, String season) {
         Material m = rank == 1 ? Material.GOLD_INGOT : rank == 2 ? Material.IRON_INGOT : rank == 3 ? Material.COPPER_INGOT : Material.AMETHYST_SHARD;
-        String medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : "🏆";
+        String medal = kr.wave.core.module.RankingModule.medal(rank);   // 잘리는 메달 이모지 대신
         String tier = rank == 1 ? "<b><gradient:#FFF176:#FFB732>TOP 1</gradient></b>" : rank == 2 ? "<b><gradient:#FFFFFF:#9E9E9E>TOP 2</gradient></b>"
                 : rank == 3 ? "<b><gradient:#F0A37B:#B8653F>TOP 3</gradient></b>" : "<b><gradient:#C77DFF:#F5DAF8>Ranking</gradient></b>";
         return It.of(m).ench(Enchantment.INFINITY, 1).hide()
