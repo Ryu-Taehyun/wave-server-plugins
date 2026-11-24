@@ -1905,6 +1905,16 @@ public class WaveTest {
         assertTrue(p.performCommand("배낭"));
         assertEquals(27, p.getOpenInventory().getTopInventory().getSize());
         p.closeInventory();
+        // 교환권 설명 (렌더링용 스냅샷)
+        for (ItemStack vv : new ItemStack[]{Items.legendVoucher(), Items.mythicVoucher()}) {
+            String lore = String.join("\n", vv.getItemMeta().lore().stream().map(Msg::plain).toList());
+            assertTrue(lore.contains("우클릭") && lore.contains("교환권 1장이 사라집니다") && !lore.contains("<"), lore);
+        }
+        Gui vg = new Gui(3, "&8교환권");
+        vg.set(11, Items.legendVoucher()).set(15, Items.mythicVoucher());
+        vg.open(p);
+        GuiSnapshot.save(p, "vouchers.json");
+        p.closeInventory();
         // ★10 전설의 무기 교환권 -> 클레이모어 선택
         int slotV = -1;
         for (int i = 0; i < 36; i++) if (Msg.nameIs(p.getInventory().getItem(i), Items.N_MYTHIC_VOUCHER)) slotV = i;

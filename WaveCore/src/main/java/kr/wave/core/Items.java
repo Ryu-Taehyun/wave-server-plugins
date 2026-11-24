@@ -273,16 +273,45 @@ public final class Items {
     public static final String N_LEGEND_VOUCHER_OLD = "[Over Lord] Legendary 무기 교환권";
     public static final String N_MYTHIC_VOUCHER_OLD = "[Over Lord] 전설의 무기 교환권";
 
+    /**
+     * 무기 교환권 (오버 로드 ★5 / ★10). 이름은 그대로 두어 이미 지급된 교환권도 그대로 쓸 수 있음.
+     * 설명: 등급 · 한 줄 소개 · 세트별 목록(컬렉션 색) · 사용법
+     */
     public static ItemStack legendVoucher() {
         return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
                 .name("<b><gradient:#29FF00:#EEEEEE><italic:false>[👑] Legendary 무기 교환권</gradient></b>")
-                .lore("%nl%&7우클릭하면 Legendary 등급 무기·방어구 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- 얼어붙은 제왕의 검 / 날개%nl%&8- 파괴의 낫 / 재앙의 서막 바지%nl%&8- 공허의 속삭임 / 뒤틀린 차원의 갑옷%nl%&8- 아리스토텔레스의 이데아 / 러셀의 패러독스").build();
+                .lore("&7등급 : <gradient:#29FF00:#EEEEEE>Legendary</gradient>",
+                        "&8──────────────────",
+                        "&7오버 로드의 다섯 번째 별에 새겨진 증표.",
+                        "&7지난 시즌의 장비 하나를 골라 되찾을 수 있습니다.",
+                        "",
+                        "<color:#3DE8FA>❄</color> &fSealed Master Power",
+                        "   &7얼어붙은 제왕의 검 &8· &7날개",
+                        "<color:#FF5A5A>☠</color> &fThe Ruiner's Grudge",
+                        "   &7파괴의 낫 &8· &7재앙의 서막 바지",
+                        "<color:#C2C2C2>◎</color> &fWhisper of the Void",
+                        "   &7공허의 속삭임 &8· &7뒤틀린 차원의 갑옷",
+                        "<color:#6EC6E0>✎</color> &fThe Philosopher's Literature",
+                        "   &7아리스토텔레스의 이데아 &8· &7러셀의 패러독스",
+                        "&8──────────────────",
+                        "&a▶ 우클릭 &7교환할 장비 고르기",
+                        "&8교환하면 교환권 1장이 사라집니다.").build();
     }
 
     public static ItemStack mythicVoucher() {
         return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
                 .name("<b><gradient:#FFF176:#FFB732><italic:false>[👑] 전설의 무기 교환권</gradient></b>")
-                .lore("%nl%&7우클릭하면 전설의 무기 중%nl%&7하나를 골라 교환할 수 있습니다.%nl%%nl%&8- 초승달의 서약%nl%&8- 천공의 심판자 클레이모어%nl%&8- 프로스트 그레이브").build();
+                .lore("&7등급 : <gradient:#FFF176:#FFB732>Mythic</gradient>",
+                        "&8──────────────────",
+                        "&7오버 로드의 마지막 별, 열 번째 별의 보상.",
+                        "&7전설로 남은 무기 하나가 당신을 기다립니다.",
+                        "",
+                        "<color:#8C93FF>🌙</color> &f초승달의 서약 &8(Prologue of Inscribed)",
+                        "<color:#FFE14D>⚡</color> &f천공의 심판자 클레이모어 &8(Arbiter of Heaven)",
+                        "<color:#7FDBFF>❆</color> &f프로스트 그레이브 &8(Glacier Storm)",
+                        "&8──────────────────",
+                        "<color:#FFD54A>▶ 우클릭</color> &7교환할 무기 고르기",
+                        "&8교환하면 교환권 1장이 사라집니다.").build();
     }
 
     /** 설정 파일에서 이름으로 부르는 서버 아이템 (상자 보상, 보스 전리품 등). 없으면 null */
