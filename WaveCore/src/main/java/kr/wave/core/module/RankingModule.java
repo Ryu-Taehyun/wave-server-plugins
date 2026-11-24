@@ -422,13 +422,32 @@ public class RankingModule extends Module {
         }
         if (c == null) return null;
         String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
-        return c.grad("[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]");   // 예: [👑 시즌 7 부의 제왕 1위]
+        return "<gradient:" + titleColors(c, r) + ">[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient>";   // 예: [👑 시즌 7 부의 제왕 1위]
     }
 
     /** "시즌 12" -> 12 (숫자가 없으면 0) */
     private static long seasonNo(String season) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)\\D*$").matcher(season);
         return m.find() ? Long.parseLong(m.group(1)) : 0;
+    }
+
+    /**
+     * 순위 칭호 그라데이션: 분야는 색 계열(부 = 금빛, 킬 = 붉은빛), 순위는 화려함으로 구분
+     * 1위 = 세 가지 색으로 가장 진하게, 2위 = 밝게, 3위 = 따뜻하게, 4~10위 = 차분하게
+     */
+    static String titleColors(Cat c, int r) {
+        if (c == Cat.MONEY) return switch (r) {
+            case 1 -> "#FFF59D:#FFC400:#FF6D00";
+            case 2 -> "#FFFDE7:#FFD54F";
+            case 3 -> "#FFE0B2:#FFA040";
+            default -> "#E8D49A:#B8923A";
+        };
+        return switch (r) {
+            case 1 -> "#FF8A80:#FF1744:#A30000";
+            case 2 -> "#FFEBEE:#FF6E6E";
+            case 3 -> "#FFCCBC:#F4511E";
+            default -> "#E0A0A0:#A85050";
+        };
     }
 
     /** 순위 칭호 정렬: 최근 시즌 먼저 (시즌 10 > 시즌 9), 같은 시즌이면 돈 → 처치, 순위 순 */
