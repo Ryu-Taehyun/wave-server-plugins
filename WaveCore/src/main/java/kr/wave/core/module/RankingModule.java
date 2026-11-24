@@ -46,13 +46,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RankingModule extends Module {
 
     public enum Cat {
-        MONEY("money", "돈", Material.GOLD_INGOT, "#FFD84D", "#FF9F1C", "💰"),
-        KILLS("kills", "처치", Material.IRON_SWORD, "#FF5A5A", "#FFC2C2", "⚔");
+        MONEY("money", "돈", Material.GOLD_INGOT, "#FFD84D", "#FF9F1C", "💰", "부의 제왕"),
+        KILLS("kills", "처치", Material.IRON_SWORD, "#FF5A5A", "#FFC2C2", "⚔", "킬의 제왕");
 
-        public final String key, label, from, to, emoji;
+        public final String key, label, from, to, emoji, titleName;
         public final Material icon;
 
-        Cat(String key, String label, Material icon, String from, String to, String emoji) {
+        Cat(String key, String label, Material icon, String from, String to, String emoji, String titleName) {
+            this.titleName = titleName;
             this.key = key;
             this.label = label;
             this.icon = icon;
@@ -407,7 +408,7 @@ public class RankingModule extends Module {
         return TITLE_PREFIX + season.replace("|", "/") + "|" + c.key + "|" + rank;
     }
 
-    /** 순위 칭호 키면 보이는 글자 (예: [👑 2026.11 돈 TOP 1]), 아니면 null */
+    /** 순위 칭호 키면 보이는 글자 (예: [👑 시즌 7 부의 제왕 1위]), 아니면 null */
     public static String titleText(String key) {
         if (key == null || !key.startsWith(TITLE_PREFIX)) return null;
         String[] p = key.split("\\|");
@@ -421,7 +422,7 @@ public class RankingModule extends Module {
         }
         if (c == null) return null;
         String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
-        return c.grad("[" + medal + " " + p[1] + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]");
+        return c.grad("[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]");   // 예: [👑 시즌 7 부의 제왕 1위]
     }
 
     /** "시즌 12" -> 12 (숫자가 없으면 0) */
