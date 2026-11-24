@@ -1825,8 +1825,8 @@ public class WaveTest {
                 var owner = hoverOwner(c, "Mint");
                 assertNotNull(owner, "처치자 이름 마우스 정보");
                 String info = Msg.plain((net.kyori.adventure.text.Component) owner.hoverEvent().value());
-                assertTrue(info.contains("Mint") && info.contains("클릭 : 플레이어 정보 보기") && info.contains("Shift+클릭 : 귓속말 보내기")
-                        && !info.contains("레벨") && !info.contains("칭호"), info);
+                assertTrue(info.contains("Mint") && info.contains("랭크 : ") && info.contains("소속 팀 : ") && info.contains("클릭 : 플레이어 정보 보기")
+                        && info.contains("Shift+클릭 : 귓속말 보내기") && !info.contains("레벨") && !info.contains("칭호"), info);
                 assertEquals("/정보 Mint", owner.clickEvent().value(), "클릭 = 플레이어 정보");
                 assertEquals("/귓 Mint ", owner.insertion(), "Shift+클릭 = 귓속말 입력");
                 assertNotNull(hoverOwner(c, "Solar"), "상대 이름 마우스 정보");
@@ -3706,12 +3706,11 @@ public class WaveTest {
         assertTrue(v.performCommand("정보 Payer"));
         assertTrue(title(v).contains("플레이어 정보"));
         String info = allText(v.getOpenInventory().getTopInventory());
-        assertTrue(info.contains("레벨 : 12") && info.contains("Supreme") && info.contains("컬렉션") && info.contains("Arbiter of Heaven 0/1")
+        assertTrue(info.contains("레벨 : 12") && info.contains("Supreme") && info.contains("컬렉션") && info.contains("자세히 보기") && !info.contains("Arbiter of Heaven")
                 && !info.contains("12,345") && !info.contains("연속 출석") && !info.contains("칭호"), info);
         GuiSnapshot.save(v, "profile.json");
         d.collected.add(Msg.name(Items.claymoreSd()));
         assertTrue(v.performCommand("정보 Payer"));
-        assertTrue(allText(v.getOpenInventory().getTopInventory()).contains("완성 : 1"));
         click(v, 23, ClickType.LEFT);   // 컬렉션 자세히 (보기 전용)
         server.getScheduler().performTicks(2);
         assertTrue(title(v).contains("Payer 의 컬렉션"), title(v));

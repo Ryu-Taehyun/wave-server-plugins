@@ -624,12 +624,15 @@ public class CoreModule extends Module {
     }
 
     /**
-     * 플레이어 이름: 마우스를 올리면 사용법, 클릭하면 /정보 창, Shift+클릭하면 귓속말 입력.
+     * 플레이어 이름: 마우스를 올리면 닉네임(색상) · 랭크 · 팀 · 사용법, 클릭하면 /정보 창, Shift+클릭하면 귓속말 입력.
      * (마인크래프트 채팅은 우클릭을 받을 수 없어서 귓속말은 Shift+클릭으로 넣습니다)
      */
     public Component nameTag(Player p, String styled) {
         PlayerData d = data(p);
-        Component info = Msg.c(nickName(d.nickColor, p.getName(), "&e")
+        GlobalData.Team team = global().teamOf(p.getUniqueId());
+        Component info = Msg.c(nickName(d.nickColor, p.getName(), "&f")
+                + "%nl%&7랭크 : " + ProfileModule.rankLabel(d)
+                + "%nl%&7소속 팀 : " + (team == null ? "&8없음" : "&f" + Msg.esc(team.display))
                 + "%nl%%nl%&e클릭 &7: 플레이어 정보 보기"
                 + "%nl%&eShift+클릭 &7: 귓속말 보내기");
         return Msg.c(styled).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(info))

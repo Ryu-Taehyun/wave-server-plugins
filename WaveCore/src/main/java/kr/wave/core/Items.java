@@ -301,7 +301,7 @@ public final class Items {
     public static ItemStack mythicVoucher() {
         return It.of(Material.PAPER).ench(Enchantment.INFINITY, 1).hide()
                 .name("<b><gradient:#FFF176:#FFB732><italic:false>[👑] 전설의 무기 교환권</gradient></b>")
-                .lore("&7등급 : <gradient:#FFF176:#FFB732>Mythic</gradient>",
+                .lore("&7등급 : <b><gradient:#FFF176:#FFB732>OVER LORD</gradient></b>",
                         "&8──────────────────",
                         "&7오버 로드의 마지막 별, 열 번째 별의 보상.",
                         "&7전설로 남은 무기 하나가 당신을 기다립니다.",

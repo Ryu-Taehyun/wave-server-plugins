@@ -94,8 +94,8 @@ public class ProfileModule extends Module {
         g.set(21, It.of(Material.DIAMOND).name("&b&l랭크").lore("&7현재 랭크 : " + rankLabel(d)).build());
         g.set(22, It.of(Material.WHITE_BANNER).name("&c&l팀").lore("&7소속 : " + teamLine(t)).build());
         CollectionModule cm = plugin.module(CollectionModule.class);
-        It col = It.of(Material.NETHER_STAR).name("&d&l컬렉션").lore(cm.summary(d).toArray(String[]::new));
-        g.set(23, col.lore("", "&e클릭하여 자세히 보기").build(), e -> cm.view(viewer, d, name, () -> open(viewer, t)));
+        g.set(23, It.of(Material.NETHER_STAR).name("&d&l컬렉션").lore("&7컬렉션 진행 현황을 봅니다.", "", "&e클릭하여 자세히 보기").build(),
+                e -> cm.view(viewer, d, name, () -> open(viewer, t)));
         g.set(24, It.of(Material.DIAMOND_CHESTPLATE).hide().name("&f&l장비 보기").lore("&7착용 중인 장비를 봅니다.", "", "&e클릭하여 보기").build(), e -> {
             viewer.closeInventory();
             if (t.isOnline()) viewer.performCommand("stats " + name);

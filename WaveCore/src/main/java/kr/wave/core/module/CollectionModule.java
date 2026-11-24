@@ -160,20 +160,6 @@ public class CollectionModule extends Module {
         g.nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
     }
 
-    /** 컬렉션별 진행 (한 줄씩) */
-    public java.util.List<String> summary(PlayerData d) {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        int done = 0;
-        for (Col c : COLS) {
-            int have = progress(d, c), total = c.items().size();
-            if (have >= total) done++;
-            out.add((have >= total ? "&a✔ " : have > 0 ? "&e◐ " : "&8✘ ") + "&f" + Msg.plainOf(c.name()) + " &7" + have + "/" + total);
-        }
-        out.add(0, "&7완성 : &d" + done + " &7/ " + COLS.size());
-        out.add(1, "");
-        return out;
-    }
-
     /** 다른 플레이어의 컬렉션 진행 현황 (보기 전용, 보상 수령 없음) */
     public void view(Player viewer, PlayerData d, String name, Runnable back) {
         Gui g = new Gui(5, "&8&l" + name + " 의 컬렉션");
