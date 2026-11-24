@@ -3900,29 +3900,26 @@ public class WaveTest {
         String all = allText(lord.getOpenInventory().getTopInventory());
         assertTrue(all.contains("OVER LORD") && all.contains("님이 강림하셨습니다") && all.contains("돈 TOP 1") && all.contains("사용 중"), all);
         GuiSnapshot.save(lord, "join_messages.json");
-        var ol = plugin.module(kr.wave.core.module.OverlordModule.class);
-        java.util.function.Function<String, String[]> join = style -> {
+        java.util.function.Function<String, String> join = style -> {
             d.joinStyle = style;
-            var je = new org.bukkit.event.player.PlayerJoinEvent(lord, net.kyori.adventure.text.Component.text("기본 접속"));
-            ol.onJoin(je);
-            drain(admin);
-            lord.disconnect();
-            lord.reconnect();
-            server.getScheduler().performTicks(10);
-            return new String[]{Msg.plain(je.joinMessage()), drain(admin)};
+            return joinLine(lord);
         };
-        // 자동: OVER LORD + 순위 줄 둘 다
-        String[] auto = join.apply("auto");
-        assertTrue(auto[0].contains("OVER LORD") && auto[1].contains("돈 TOP 1"), auto[0] + " / " + auto[1]);
-        // 기본만
-        String[] basic = join.apply("basic");
-        assertTrue(basic[0].equals("기본 접속") && !basic[1].contains("TOP 1"), basic[0] + " / " + basic[1]);
-        // 순위만
-        String[] rk = join.apply("ranking");
-        assertTrue(rk[0].equals("기본 접속") && rk[1].contains("돈 TOP 1"), rk[0] + " / " + rk[1]);
-        // OVER LORD 만
-        String[] lo = join.apply("overlord");
-        assertTrue(lo[0].contains("OVER LORD") && !lo[1].contains("TOP 1"), lo[0] + " / " + lo[1]);
+        // 자동: 하나만 (OVER LORD 가 먼저)
+        String auto = join.apply("auto");
+        assertTrue(auto.contains("OVER LORD") && !auto.contains("TOP 1"), auto);
+        String basic = join.apply("basic");
+        assertTrue(!basic.contains("OVER LORD") && !basic.contains("TOP 1") && basic.contains("접속했습니다"), basic);
+        String rk = join.apply("ranking");
+        assertTrue(rk.contains("돈 TOP 1") && !rk.contains("OVER LORD"), rk);
+        String lo = join.apply("overlord");
+        assertTrue(lo.contains("OVER LORD") && !lo.contains("TOP 1"), lo);
+        // OVER LORD 가 없으면 자동 = 순위
+        d.overlordClaimed.remove(7);
+        String auto2 = join.apply("auto");
+        assertTrue(auto2.contains("돈 TOP 1") && !auto2.contains("OVER LORD"), auto2);
+        // 고른 것이 없어지면 기본
+        String gone = join.apply("overlord");
+        assertTrue(!gone.contains("OVER LORD") && !gone.contains("TOP 1") && gone.contains("Lord2"), gone);
         // 없는 것은 못 고름
         PlayerMock plain = joinFrom("Plain", "10.2.0.3");
         server.getScheduler().performTicks(5);
@@ -3936,6 +3933,19 @@ public class WaveTest {
         click(plain, 15, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("auto", plugin.store().get(plain).joinStyle);
+    }
+
+    /** 실제 입장 이벤트를 다시 보내 입장 메시지 한 줄을 얻음 (MockBukkit 은 입장 메시지를 채팅으로 보내지 않음) */
+    private String joinLine(PlayerMock p) {
+        if (!p.hasPlayedBefore()) {   // 처음 접속은 환영 화면(입장 줄 없음) -> 다시 접속한 상태로
+            p.disconnect();
+            p.reconnect();
+            server.getScheduler().performTicks(2);
+        }
+        var je = new org.bukkit.event.player.PlayerJoinEvent(p, net.kyori.adventure.text.Component.text("x"));
+        server.getPluginManager().callEvent(je);
+        server.getScheduler().performTicks(10);
+        return je.joinMessage() == null ? "" : Msg.plain(je.joinMessage());
     }
 
     /** 접속 주소를 정해서 접속 (MockBukkit 기본은 모두 127.0.0.1) */
@@ -4035,18 +4045,10 @@ public class WaveTest {
         server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(twin, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(k).withDirectEntity(k).build(), new java.util.ArrayList<>(), 0, null));
         assertEquals(1, plugin.store().get(k).kills, "같은 곳(부계정) 처치는 세지 않음");
         // TOP 10 입장 메시지
-        drain(admin);
-        ps.get(11).disconnect();
-        ps.get(11).reconnect();
-        server.getScheduler().performTicks(10);
-        String join = drain(admin);
-        assertTrue(join.contains("[👑 돈 TOP 1]") && join.contains("R12"), join);
+        String join = joinLine(ps.get(11));
+        assertTrue(join.contains("[👑 돈 TOP 1]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
         // 4~10위는 Ranking #순위
-        drain(admin);
-        ps.get(5).disconnect();
-        ps.get(5).reconnect();
-        server.getScheduler().performTicks(10);
-        String join7 = drain(admin);
+        String join7 = joinLine(ps.get(5));
         assertTrue(join7.contains("돈 Ranking #7") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인
         drain(admin);

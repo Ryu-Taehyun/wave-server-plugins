@@ -218,7 +218,7 @@ public class MenuModule extends Module {
             case "basic" -> "기본 입장 메시지만";
             case "overlord" -> "OVER LORD";
             case "ranking" -> "순위";
-            default -> "자동 (가진 것 모두)";
+            default -> "자동";
         };
     }
 
@@ -235,9 +235,9 @@ public class MenuModule extends Module {
         String olLine = "<b><gradient:#FFF176:#FFB732>👑 OVER LORD</gradient></b> <dark_gray>|</dark_gray> " + nick + " <gradient:#FFE9A8:#FFB732>님이 강림하셨습니다.</gradient>";
         String rkLine = top == null ? null : RankingModule.joinLine(top.getKey(), top.getValue()).replace("%name%", nick);
         Gui g = new Gui(4, "&8&l입장 메시지");
-        g.set(4, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&7접속할 때 모두에게 보일 메시지를 고릅니다.", "&8OVER LORD · 순위 메시지는 가지고 있을 때만 고를 수 있습니다.").build());
+        g.set(4, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&7접속할 때 모두에게 보일 메시지를 하나 고릅니다.", "&8OVER LORD · 순위 메시지는 가지고 있을 때만 고를 수 있습니다.").build());
         Object[][] opts = {
-                {11, "auto", Material.NETHER_STAR, "&e&l자동", true, new String[]{"&7가지고 있는 입장 메시지를 모두 씁니다.", "&8(OVER LORD 가 있으면 OVER LORD, 순위 TOP 10 이면 순위 줄 추가)"}},
+                {11, "auto", Material.NETHER_STAR, "&e&l자동", true, new String[]{"&7가지고 있는 입장 메시지 중 하나를 씁니다.", "&8OVER LORD > 순위 > 기본 순서 (겹쳐 나오지 않음)"}},
                 {13, "basic", Material.PAPER, "&f&l기본만", true, new String[]{"&7미리보기 :", basic}},
                 {15, "overlord", Material.GOLDEN_HELMET, "<b><gradient:#FFF176:#FFB732>OVER LORD</gradient></b>", hasOl,
                         hasOl ? new String[]{"&7미리보기 :", olLine} : new String[]{"&c보유하고 있지 않습니다.", "&8오버 로드 ★7 보상"}},

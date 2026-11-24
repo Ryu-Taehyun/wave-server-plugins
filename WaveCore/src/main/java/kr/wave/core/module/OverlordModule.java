@@ -249,7 +249,8 @@ public class OverlordModule extends Module {
         Player p = e.getPlayer();
         PlayerData d = data(p);
         if (!hasJoinMessage(d) || e.joinMessage() == null) return;
-        if (!d.joinStyle.equals("auto") && !d.joinStyle.equals("overlord")) return;   // 프로필 설정 → 입장 메시지
+        RankingModule rk = plugin.module(RankingModule.class);
+        if (rk != null && !rk.resolveJoin(p).equals("overlord")) return;   // 프로필 설정 → 입장 메시지 (하나만)
         CoreModule core = plugin.module(CoreModule.class);
         net.kyori.adventure.text.Component name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f"))
                 : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));

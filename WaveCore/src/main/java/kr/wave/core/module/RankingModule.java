@@ -284,25 +284,41 @@ public class RankingModule extends Module {
         return rank <= 3 ? "TOP " + rank : "Ranking";
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    /**
+     * 실제로 쓸 입장 메시지 하나 (겹쳐 나오지 않음): overlord · ranking · basic.
+     * 자동이면 OVER LORD > 순위 > 기본 순서로 가진 것 하나, 고른 것이 없어졌으면 기본
+     */
+    public String resolveJoin(Player p) {
+        PlayerData d = data(p);
+        OverlordModule ol = plugin.module(OverlordModule.class);
+        boolean hasOl = ol != null && ol.hasJoinMessage(d);
+        boolean hasRank = plugin.getConfig().getBoolean("ranking.join-message", true) && bestTop10(p.getUniqueId()) != null;
+        return switch (d.joinStyle) {
+            case "basic" -> "basic";
+            case "overlord" -> hasOl ? "overlord" : "basic";
+            case "ranking" -> hasRank ? "ranking" : "basic";
+            default -> hasOl ? "overlord" : hasRank ? "ranking" : "basic";
+        };
+    }
+
+    /** 순위 입장 메시지: 기본 입장 줄을 바꿔 씀 (한 줄만) */
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent e) {
-        if (!plugin.getConfig().getBoolean("ranking.join-message", true)) return;
         Player p = e.getPlayer();
-        String style = data(p).joinStyle;
-        if (!style.equals("auto") && !style.equals("ranking")) return;   // 프로필 설정 → 입장 메시지
+        if (e.joinMessage() == null) return;   // 점검 중 등
         put(data(p));
         resort();
+        if (!resolveJoin(p).equals("ranking")) return;
         Map.Entry<Cat, Integer> b = bestTop10(p.getUniqueId());
-        if (b == null) return;
         Cat c = b.getKey();
         int r = b.getValue();
+        PlayerData d = data(p);
+        CoreModule core = plugin.module(CoreModule.class);
+        var name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f")) : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));
+        // 짧게, 강조만: 순위가 높을수록 글자 · 효과가 강해짐
+        e.joinMessage(Msg.fill(joinLine(c, r), "%name%", name));
         later(5, () -> {
             if (!p.isOnline()) return;
-            PlayerData d = data(p);
-            CoreModule core = plugin.module(CoreModule.class);
-            var name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f")) : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));
-            // 짧게, 강조만: 순위가 높을수록 글자 · 효과가 강해짐
-            Msg.broadcastFill(joinLine(c, r), "%name%", name);
             if (r == 1) {
                 for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.5f, 1.3f);
                 kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.TOTEM_OF_UNDYING, 60, 0.45);
