@@ -217,7 +217,7 @@ public class MenuModule extends Module {
         var list = WeaponModule.FX_WEAPONS;
         java.util.Set<String> owned = ownedFxWeapons(p, d);
         int per = 14, pages = Math.max(1, (list.size() + per - 1) / per);
-        Gui g = new Gui(5, "&8&l무기 타격 파티클");
+        Gui g = new Gui(4, "&8&l무기 타격 파티클");
         g.set(4, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&7가지고 있는 무기를 클릭하면 그 무기의", "&7타격 파티클을 내 화면에서 켜거나 끕니다.",
                 "", "&8다른 플레이어 화면과 무기 성능은 바뀌지 않습니다.", "&8(천둥의 심판 번개 자체는 끌 수 없습니다)").build());
         int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
