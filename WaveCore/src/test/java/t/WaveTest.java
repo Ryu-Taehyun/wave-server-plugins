@@ -3824,6 +3824,18 @@ public class WaveTest {
         click(a, slot, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertTrue(da.hideFx.isEmpty());
+        // 여러 무기를 가진 경우 (렌더링용): 4개 보유, 프로스트 그레이브만 꺼 둠
+        a.getInventory().addItem(Items.frostGrave(), Items.chaosApocalypse(), Items.sealedSword());
+        da.hideFx.add("frost");
+        a.closeInventory();
+        assertTrue(a.performCommand("메뉴"));
+        click(a, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        click(a, 31, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        String mixed = allText(a.getOpenInventory().getTopInventory());
+        assertTrue(mixed.contains("켜짐") && mixed.contains("꺼짐") && mixed.contains("보유하지 않음"), mixed);
+        GuiSnapshot.save(a, "hit_fx_mixed.json");
     }
 
     private static net.kyori.adventure.text.event.ClickEvent clickOwner(net.kyori.adventure.text.Component c) {
