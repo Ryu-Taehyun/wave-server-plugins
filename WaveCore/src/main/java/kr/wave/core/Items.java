@@ -320,8 +320,8 @@ public final class Items {
     public static ItemStack rankTrophy(String category, String from, String to, int rank, String owner, String record, String season) {
         Material m = rank == 1 ? Material.GOLD_INGOT : rank == 2 ? Material.IRON_INGOT : rank == 3 ? Material.COPPER_INGOT : Material.AMETHYST_SHARD;
         String medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : "🏆";
-        String tier = rank == 1 ? "<b><gradient:#FFF176:#FFB732>CHAMPION</gradient></b>" : rank <= 3 ? "<b><gradient:#E0E0E0:#9E9E9E>TOP 3</gradient></b>"
-                : "<b><gradient:#C77DFF:#F5DAF8>TOP 10</gradient></b>";
+        String tier = rank == 1 ? "<b><gradient:#FFF176:#FFB732>TOP 1</gradient></b>" : rank == 2 ? "<b><gradient:#FFFFFF:#9E9E9E>TOP 2</gradient></b>"
+                : rank == 3 ? "<b><gradient:#F0A37B:#B8653F>TOP 3</gradient></b>" : "<b><gradient:#C77DFF:#F5DAF8>Ranking</gradient></b>";
         return It.of(m).ench(Enchantment.INFINITY, 1).hide()
                 .name("<b><gradient:" + from + ":" + to + "><italic:false>[" + medal + "] " + category + " " + N_RANK_TROPHY + " · " + rank + "위</gradient></b>")
                 .lore("&7등급 : " + tier,

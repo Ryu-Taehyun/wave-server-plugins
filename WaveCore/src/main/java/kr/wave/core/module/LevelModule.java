@@ -16,10 +16,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
-/** levelsystm.sk : 플레이어 레벨 1~18 */
+/** levelsystm.sk : 플레이어 레벨 1~50 (19 이상은 레벨마다 필요 경험치 +5,000) */
 public class LevelModule extends Module {
 
-    public static final int MAX_LEVEL = 18;
+    public static final int MAX_LEVEL = 50;
     private static final long[] TABLE = {0, 200, 400, 800, 1500, 2500, 4000, 6000, 8000, 12000, 16000, 22000, 26000, 35000, 40000, 45000, 50000, 60000};
 
     public LevelModule(WaveCore plugin) {
@@ -41,7 +41,9 @@ public class LevelModule extends Module {
     }
 
     public static long needed(int level) {
-        return level >= 1 && level < TABLE.length ? TABLE[level] : 999999;
+        if (level >= 1 && level < TABLE.length) return TABLE[level];
+        if (level >= TABLE.length && level < MAX_LEVEL) return TABLE[TABLE.length - 1] + 5_000L * (level - TABLE.length + 1);   // 18 -> 65,000 ... 49 -> 220,000
+        return 999999;
     }
 
     /* ======================= 경험치 획득 ======================= */
@@ -102,8 +104,45 @@ public class LevelModule extends Module {
             case 16 -> forMail ? Items.soulSplitter(plugin, 0) : Items.soulSplitterDisplay();
             case 17 -> Items.voidBow();
             case 18 -> Items.nickPaper("red", "레벨 18 달성 보상입니다.");
+            case 19 -> new ItemStack(Material.EXPERIENCE_BOTTLE, 32);
+            case 20 -> Items.heavenKey(5, null);
+            case 21 -> new ItemStack(Material.NETHERITE_SCRAP, 16);
+            case 22 -> Items.melon(5);
+            case 23 -> new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 5);
+            case 24 -> Items.weaponKey(5, null);
+            case 25 -> amount(Items.timeShard(), 5);
+            case 26 -> new ItemStack(Material.TOTEM_OF_UNDYING, 3);
+            case 27 -> new ItemStack(Material.NETHERITE_INGOT, 8);
+            case 28 -> amount(Items.mineralPack(), 2);
+            case 29 -> Items.heavenKey(6, null);
+            case 30 -> Items.sealedKey(4);
+            case 31 -> new ItemStack(Material.EXPERIENCE_BOTTLE, 64);
+            case 32 -> amount(Items.altarTicket(), 5);
+            case 33 -> new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8);
+            case 34 -> Items.ruinerKey(4);
+            case 35 -> amount(Items.timeShard(), 10);
+            case 36 -> Items.weaponKey(8, null);
+            case 37 -> new ItemStack(Material.NETHERITE_INGOT, 16);
+            case 38 -> Items.melon(10);
+            case 39 -> new ItemStack(Material.TOTEM_OF_UNDYING, 5);
+            case 40 -> Items.sealedKey(6);
+            case 41 -> amount(Items.mineralPack(), 4);
+            case 42 -> Items.heavenKey(10, null);
+            case 43 -> new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 16);
+            case 44 -> new ItemStack(Material.NETHERITE_BLOCK, 2);
+            case 45 -> Items.ruinerKey(6);
+            case 46 -> amount(Items.altarTicket(), 10);
+            case 47 -> Items.weaponKey(12, null);
+            case 48 -> amount(Items.timeShard(), 20);
+            case 49 -> new ItemStack(Material.NETHER_STAR, 3);
+            case 50 -> Items.legendVoucher();
             default -> null;
         };
+    }
+
+    private static ItemStack amount(ItemStack it, int n) {
+        it.setAmount(Math.min(n, it.getMaxStackSize()));
+        return it;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -159,9 +198,11 @@ public class LevelModule extends Module {
         PlayerData d = data(p);
         long remain = Math.max(0, needed(d.level) - d.exp);
         Gui g = new Gui(5, "&8&l레벨 업 보상");
-        int first = page == 1 ? 1 : 10;
+        int pages = (MAX_LEVEL + 8) / 9;
+        int first = (page - 1) * 9 + 1;
         for (int i = 0; i < 9; i++) {
             int lv = first + i;
+            if (lv > MAX_LEVEL) break;
             ItemStack pane = d.level >= lv
                     ? It.pane(Material.LIME_DYE, "&a보상 해금됨 (레벨 " + lv + " 이상)")
                     : It.pane(Material.GRAY_DYE, "&c보상 잠김 (레벨 " + lv + " 필요)");
@@ -171,8 +212,8 @@ public class LevelModule extends Module {
             if (reward != null) g.set(18 + i, reward);
         }
         g.set(4, It.of(Material.PLAYER_HEAD).skull(p).name("&f" + p.getName())
-                .lore("&7현재 레벨 : &e" + d.level + "%nl%&7다음 레벨까지 남은 경험치 : &e" + remain).build());
-        g.pages(p, page, 2, n -> later(1, () -> gui(p, n)))
+                .lore("&7현재 레벨 : &e" + d.level + " &8/ " + MAX_LEVEL + "%nl%" + (d.level >= MAX_LEVEL ? "&6최고 레벨 달성!" : "&7다음 레벨까지 남은 경험치 : &e" + Msg.num(remain))).build());
+        g.pages(p, page, pages, n -> later(1, () -> gui(p, n)))
                 .nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
     }
 }

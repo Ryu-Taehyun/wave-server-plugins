@@ -3283,10 +3283,10 @@ public class WaveTest {
         assertEquals(50_000, d.money, "미리보기는 바꾸지 않음");
         // 실행
         assertTrue(admin.performCommand("시즌 초기화 확인"));
-        // 돈은 지운 뒤, 지우기 전 순위로 TOP 10 보상 (돈 · 레벨 · 컬렉션 1위 = 1,000,000 x 3) + 트로피 3개
-        assertEquals(3_000_000, d.money, "초기화 뒤 순위 보상만 남음");
-        assertEquals(3_000_000, d.moneyTotal);
-        assertEquals(3, d.mailbox.stream().filter(it -> Msg.name(it).contains("순위 트로피 · 1위")).count());
+        // 돈은 지운 뒤, 지우기 전 순위로 TOP 10 보상 (돈 1위 = 1,000,000) + 트로피
+        assertEquals(1_000_000, d.money, "초기화 뒤 순위 보상만 남음");
+        assertEquals(1_000_000, d.moneyTotal);
+        assertEquals(1, d.mailbox.stream().filter(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")).count());
         assertEquals(30_000, d.exMoney, "유료 캐시는 기본으로 유지");
         assertEquals(30_000, d.exMoneyTotal);
         assertEquals(1, d.level);
@@ -3849,6 +3849,39 @@ public class WaveTest {
         GuiSnapshot.save(a, "hit_fx_mixed.json");
     }
 
+    @Test
+    void levelUpTo50() {
+        assertEquals(50, kr.wave.core.module.LevelModule.MAX_LEVEL);
+        assertEquals(60_000, kr.wave.core.module.LevelModule.needed(17));
+        assertEquals(65_000, kr.wave.core.module.LevelModule.needed(18));
+        assertEquals(220_000, kr.wave.core.module.LevelModule.needed(49));
+        PlayerMock p = server.addPlayer("Grinder");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(p);
+        d.level = 49;
+        d.exp = 219_990;
+        var ore0 = server.getWorld("world").getBlockAt(0, 10, 0);
+        ore0.setType(Material.DIAMOND_ORE);
+        server.getPluginManager().callEvent(new BlockBreakEvent(ore0, p));
+        assertEquals(50, d.level, "49 -> 50");
+        assertTrue(d.mailbox.stream().anyMatch(it -> Msg.name(it).contains("Legendary 무기 교환권")), "50레벨 보상");
+        d.exp = 999_999;
+        var ore1 = server.getWorld("world").getBlockAt(1, 10, 0);
+        ore1.setType(Material.DIAMOND_ORE);
+        server.getPluginManager().callEvent(new BlockBreakEvent(ore1, p));
+        assertEquals(50, d.level, "50 이 최고");
+        assertTrue(p.performCommand("levelstats"));
+        Gui g = (Gui) p.getOpenInventory().getTopInventory().getHolder();
+        for (int i = 0; i < 5; i++) {
+            click(p, g.last() + 8, ClickType.LEFT);
+            server.getScheduler().performTicks(2);
+            g = (Gui) p.getOpenInventory().getTopInventory().getHolder();
+        }
+        String last = allText(p.getOpenInventory().getTopInventory());
+        assertTrue(last.contains("레벨 50") && last.contains("Legendary 무기 교환권") && !last.contains("레벨 51"), last);
+        GuiSnapshot.save(p, "level_last.json");
+    }
+
     /** 접속 주소를 정해서 접속 (MockBukkit 기본은 모두 127.0.0.1) */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);
@@ -3929,9 +3962,10 @@ public class WaveTest {
         GuiSnapshot.save(ps.get(0), "ranking.json");
         assertEquals(1, rm.rankOf(kr.wave.core.module.RankingModule.Cat.MONEY, ps.get(11).getUniqueId()));
         // 탭 이동
-        click(ps.get(0), 3, ClickType.LEFT);
+        assertFalse(allText(inv).contains("레벨 순위") || allText(inv).contains("컬렉션 순위"), "레벨 · 컬렉션 분야 없음");
+        click(ps.get(0), 6, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        assertTrue(title(ps.get(0)).contains("레벨"));
+        assertTrue(title(ps.get(0)).contains("처치"));
         // 처치 수: 다른 곳끼리만, 같은 상대 10분 안 반복은 1번
         PlayerMock k = ps.get(0), v = ps.get(1);
         for (int i = 0; i < 2; i++) {
@@ -3950,7 +3984,14 @@ public class WaveTest {
         ps.get(11).reconnect();
         server.getScheduler().performTicks(10);
         String join = drain(admin);
-        assertTrue(join.contains("[🏆 돈 1위]") && join.contains("R12"), join);
+        assertTrue(join.contains("[👑 돈 TOP 1]") && join.contains("R12"), join);
+        // 4~10위는 Ranking #순위
+        drain(admin);
+        ps.get(5).disconnect();
+        ps.get(5).reconnect();
+        server.getScheduler().performTicks(10);
+        String join7 = drain(admin);
+        assertTrue(join7.contains("돈 Ranking #7") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인
         drain(admin);
         assertTrue(admin.performCommand("순위 보상"));
@@ -3962,6 +4003,9 @@ public class WaveTest {
         assertTrue(top.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")), "순위가 새겨진 트로피");
         ItemStack trophy = top.mailbox.stream().filter(it -> Msg.name(it).contains("트로피")).findFirst().orElseThrow();
         assertFalse(Items.seasonKeepIn(new ItemStack[]{trophy}).isEmpty(), "트로피는 시즌이 지나도 유지");
+        String tl = String.join("\n", trophy.getItemMeta().lore().stream().map(Msg::plain).toList());
+        assertTrue(tl.contains("등급 : TOP 1"), tl);
+        assertTrue(String.join("\n", Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 7, "x", "1원", "S").getItemMeta().lore().stream().map(Msg::plain).toList()).contains("등급 : Ranking"));
         PlayerData r1 = plugin.store().get(ps.get(0));   // 돈 12위지만 처치 1위
         assertTrue(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("처치 순위 트로피 · 1위")));
         assertFalse(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피")), "돈 12위는 돈 보상 없음");
@@ -3969,7 +4013,7 @@ public class WaveTest {
         Gui g = new Gui(1, "&8트로피");
         g.set(2, Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 1, "R12", "120,000원", "S1"));
         g.set(4, Items.rankTrophy("처치", "#FF5A5A", "#FFC2C2", 2, "R5", "87킬", "S1"));
-        g.set(6, Items.rankTrophy("레벨", "#7CFF00", "#C8FFB0", 7, "R9", "Lv.42", "S1"));
+        g.set(6, Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 7, "R6", "60,000원", "S1"));
         g.open(admin);
         GuiSnapshot.save(admin, "trophies.json");
         // 보상 확인 없이 다시 확인하면 거부

@@ -37,8 +37,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 순위 (돈 · 레벨 · 컬렉션 · 처치), 1~200위.
- * - /순위 [돈|레벨|컬렉션|처치] : 순위 창
+ * 순위 (돈 · 처치), 1~200위.
+ * - /순위 [돈|처치] : 순위 창
  * - TOP 10 : 접속 때 순위 입장 메시지, 시즌이 끝나면 순위가 새겨진 트로피 + 보상(config ranking.rewards)
  * - /순위 보상 [확인] : 지금 순위로 TOP 10 보상 지급 (관리자). 시즌 초기화 때는 자동 (ranking.reward-on-season-reset)
  * 계산은 ranking.yml 의 요약 값으로 하고, 접속 중인 사람은 ranking.update-seconds 마다 갱신합니다.
@@ -46,20 +46,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RankingModule extends Module {
 
     public enum Cat {
-        MONEY("money", "돈", Material.GOLD_INGOT, "#FFD84D", "#FF9F1C"),
-        LEVEL("level", "레벨", Material.EXPERIENCE_BOTTLE, "#7CFF00", "#C8FFB0"),
-        COLLECTION("collection", "컬렉션", Material.NETHER_STAR, "#C77DFF", "#F5DAF8"),
-        KILLS("kills", "처치", Material.IRON_SWORD, "#FF5A5A", "#FFC2C2");
+        MONEY("money", "돈", Material.GOLD_INGOT, "#FFD84D", "#FF9F1C", "💰"),
+        KILLS("kills", "처치", Material.IRON_SWORD, "#FF5A5A", "#FFC2C2", "⚔");
 
-        public final String key, label, from, to;
+        public final String key, label, from, to, emoji;
         public final Material icon;
 
-        Cat(String key, String label, Material icon, String from, String to) {
+        Cat(String key, String label, Material icon, String from, String to, String emoji) {
             this.key = key;
             this.label = label;
             this.icon = icon;
             this.from = from;
             this.to = to;
+            this.emoji = emoji;
         }
 
         String grad(String text) {
@@ -72,7 +71,6 @@ public class RankingModule extends Module {
             return switch (s) {
                 case "캐시", "cash" -> MONEY;
                 case "킬", "kill" -> KILLS;
-                case "수집" -> COLLECTION;
                 default -> null;
             };
         }
@@ -83,8 +81,6 @@ public class RankingModule extends Module {
         long value(Cat c) {
             return switch (c) {
                 case MONEY -> money;
-                case LEVEL -> level;
-                case COLLECTION -> collection;
                 case KILLS -> kills;
             };
         }
@@ -92,8 +88,6 @@ public class RankingModule extends Module {
         String shown(Cat c) {
             return switch (c) {
                 case MONEY -> Msg.num(money) + "원";
-                case LEVEL -> "Lv." + level;
-                case COLLECTION -> collection + "개";
                 case KILLS -> Msg.num(kills) + "킬";
             };
         }
@@ -116,7 +110,7 @@ public class RankingModule extends Module {
 
     @Override
     public void enable() {
-        cmd("순위", null, this::rankCmd, (s, a) -> a.length <= 1 ? List.of("돈", "레벨", "컬렉션", "처치", "보상") : List.of(), "ranking", "랭킹");
+        cmd("순위", null, this::rankCmd, (s, a) -> a.length <= 1 ? List.of("돈", "처치", "보상") : List.of(), "ranking", "랭킹");
         if (file().exists()) load();
         else rebuild();
         resort();
@@ -199,11 +193,10 @@ public class RankingModule extends Module {
         List<Entry> all = new ArrayList<>();
         for (Entry e : entries.values()) if (!excluded(e)) all.add(e);
         for (Cat c : Cat.values()) {
-            Comparator<Entry> cmp = Comparator.comparingLong((Entry e) -> e.value(c)).reversed();
-            if (c == Cat.LEVEL) cmp = cmp.thenComparing(Comparator.comparingLong(Entry::exp).reversed());
-            cmp = cmp.thenComparing(Entry::name, String.CASE_INSENSITIVE_ORDER);
+            Comparator<Entry> cmp = Comparator.comparingLong((Entry e) -> e.value(c)).reversed()
+                    .thenComparing(Entry::name, String.CASE_INSENSITIVE_ORDER);
             List<Entry> list = new ArrayList<>();
-            for (Entry e : all) if (e.value(c) > 0 && !(c == Cat.LEVEL && e.level() <= 1 && e.exp() <= 0)) list.add(e);
+            for (Entry e : all) if (e.value(c) > 0) list.add(e);
             list.sort(cmp);
             synchronized (sorted) {
                 sorted.put(c, List.copyOf(list.subList(0, Math.min(size, list.size()))));
@@ -258,6 +251,17 @@ public class RankingModule extends Module {
 
     /* ======================= TOP 10 입장 메시지 ======================= */
 
+    /** 등급 이름: 1 · 2 · 3위는 TOP 1/2/3, 4~10위는 Ranking */
+    public static String tier(int rank) {
+        return rank <= 3 ? "TOP " + rank : "Ranking";
+    }
+
+    private static final Map<Cat, List<String>> JOIN_LINES = Map.of(
+            Cat.MONEY, List.of("님이 두둑한 지갑과 함께 도착했습니다!", "님이 금고 문을 열고 입장했습니다!", "님이 입장했습니다. 오늘도 큰손 등장!",
+                    "님이 반짝이는 금화를 흩뿌리며 나타났습니다!"),
+            Cat.KILLS, List.of("님이 전장에 발을 들였습니다!", "님이 칼을 뽑아 들고 입장했습니다!", "님이 사냥을 시작합니다. 모두 조심하세요!",
+                    "님이 돌아왔습니다. 오늘의 사냥감은 누구일까요?"));
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent e) {
         if (!plugin.getConfig().getBoolean("ranking.join-message", true)) return;
@@ -279,8 +283,25 @@ public class RankingModule extends Module {
             PlayerData d = data(p);
             CoreModule core = plugin.module(CoreModule.class);
             var name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f")) : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));
-            Msg.broadcastFill("<b>" + c.grad("[🏆 " + c.label + " " + r + "위]") + "</b> %name% <gray>님이 입장했습니다!</gray>", "%name%", name);
-            if (r <= 3) for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.35f, 1.6f);
+            List<String> lines = JOIN_LINES.get(c);
+            String line = lines.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(lines.size()));
+            String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
+            String tag = "<b>" + c.grad("[" + medal + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]") + "</b>";
+            if (r == 1) {
+                // 1위: 위아래 장식 줄 + 양옆 반짝임 + 모두에게 효과음
+                String bar = "<color:" + c.from + "><st>                                        </st></color>";
+                Msg.broadcast(bar);
+                Msg.broadcastFill(" <color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad(line) + " <color:" + c.to + "><obf>D</obf></color>", "%name%", name);
+                Msg.broadcast(bar);
+                for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.5f, 1.3f);
+                kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.TOTEM_OF_UNDYING, 60, 0.45);
+            } else if (r <= 3) {
+                Msg.broadcastFill(tag + " %name% " + c.grad(line), "%name%", name);
+                for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.note_block.chime", 0.5f, 1.4f);
+                kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.END_ROD, 25, 0.12);
+            } else {
+                Msg.broadcastFill(tag + " %name% <gray>" + line + "</gray>", "%name%", name);
+            }
         });
     }
 
@@ -311,7 +332,7 @@ public class RankingModule extends Module {
         int pages = Math.max(1, (list.size() + PER - 1) / PER);
         int pg = Math.max(1, Math.min(page, pages));
         Gui g = new Gui(6, "&8&l순위 · " + c.label + " (" + pg + "/" + pages + ")");
-        int[] tabs = {2, 3, 5, 6};
+        int[] tabs = {2, 6};
         for (int i = 0; i < Cat.values().length; i++) {
             Cat t = Cat.values()[i];
             It tab = It.of(t.icon).hide().name("<b>" + t.grad(t.label + " 순위") + "</b>").lore(t == c ? "&a보는 중" : "&e클릭하여 보기");
@@ -422,7 +443,7 @@ public class RankingModule extends Module {
                 plugin.store().saveAuto(d);
                 Player online = op.getPlayer();
                 if (online != null) {
-                    Msg.send(online, "<b>" + c.grad("[🏆 " + c.label + " " + rank + "위]") + "</b> &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
+                    Msg.send(online, "<b>" + c.grad("[🏆 " + c.label + " " + tier(rank) + (rank > 3 ? " #" + rank : "") + "]") + "</b> &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
                     Msg.sound(online, "ui.toast.challenge_complete", 0.8f, 1.2f);
                 }
                 log.append(c.label).append(' ').append(rank).append(". ").append(e.name()).append('\n');
