@@ -3760,7 +3760,7 @@ public class WaveTest {
         assertTrue(all.contains("컬렉션 공개") && all.contains("무기 타격 파티클") && all.contains("칭호") && all.contains("닉네임 색상"), all);
         GuiSnapshot.save(a, "profile_settings.json");
         // 컬렉션 비공개
-        click(a, 29, ClickType.LEFT);
+        click(a, 28, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertFalse(da.collectionPublic);
         assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("비공개"));
@@ -3777,7 +3777,7 @@ public class WaveTest {
         assertTrue(a.performCommand("메뉴"));
         click(a, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(a, 31, ClickType.LEFT);
+        click(a, 30, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("무기 타격 파티클", title(a));
         var inv = a.getOpenInventory().getTopInventory();
@@ -3834,7 +3834,7 @@ public class WaveTest {
         assertTrue(a.performCommand("메뉴"));
         click(a, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(a, 31, ClickType.LEFT);
+        click(a, 30, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         String mixed = allText(a.getOpenInventory().getTopInventory());
         assertTrue(mixed.contains("켜짐") && mixed.contains("꺼짐") && mixed.contains("아이템을 보유하고 있지 않습니다."), mixed);
@@ -3880,6 +3880,62 @@ public class WaveTest {
         String last = allText(p.getOpenInventory().getTopInventory());
         assertTrue(last.contains("레벨 50") && last.contains("Legendary 무기 교환권") && !last.contains("레벨 51"), last);
         GuiSnapshot.save(p, "level_last.json");
+    }
+
+    @Test
+    void joinMessageSetting() {
+        PlayerMock admin = joinFrom("JoinOp", "10.2.0.1");
+        PlayerMock lord = joinFrom("Lord2", "10.2.0.2");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(lord);
+        d.overlordClaimed.add(7);   // OVER LORD 입장 메시지 보유
+        d.money = 5_000_000;        // 돈 1위
+        assertTrue(lord.performCommand("메뉴"));
+        click(lord, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(allText(lord.getOpenInventory().getTopInventory()).contains("입장 메시지"));
+        click(lord, 32, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertEquals("입장 메시지", title(lord));
+        String all = allText(lord.getOpenInventory().getTopInventory());
+        assertTrue(all.contains("OVER LORD") && all.contains("님이 강림하셨습니다") && all.contains("돈 TOP 1") && all.contains("사용 중"), all);
+        GuiSnapshot.save(lord, "join_messages.json");
+        var ol = plugin.module(kr.wave.core.module.OverlordModule.class);
+        java.util.function.Function<String, String[]> join = style -> {
+            d.joinStyle = style;
+            var je = new org.bukkit.event.player.PlayerJoinEvent(lord, net.kyori.adventure.text.Component.text("기본 접속"));
+            ol.onJoin(je);
+            drain(admin);
+            lord.disconnect();
+            lord.reconnect();
+            server.getScheduler().performTicks(10);
+            return new String[]{Msg.plain(je.joinMessage()), drain(admin)};
+        };
+        // 자동: OVER LORD + 순위 줄 둘 다
+        String[] auto = join.apply("auto");
+        assertTrue(auto[0].contains("OVER LORD") && auto[1].contains("돈 TOP 1"), auto[0] + " / " + auto[1]);
+        // 기본만
+        String[] basic = join.apply("basic");
+        assertTrue(basic[0].equals("기본 접속") && !basic[1].contains("TOP 1"), basic[0] + " / " + basic[1]);
+        // 순위만
+        String[] rk = join.apply("ranking");
+        assertTrue(rk[0].equals("기본 접속") && rk[1].contains("돈 TOP 1"), rk[0] + " / " + rk[1]);
+        // OVER LORD 만
+        String[] lo = join.apply("overlord");
+        assertTrue(lo[0].contains("OVER LORD") && !lo[1].contains("TOP 1"), lo[0] + " / " + lo[1]);
+        // 없는 것은 못 고름
+        PlayerMock plain = joinFrom("Plain", "10.2.0.3");
+        server.getScheduler().performTicks(5);
+        assertTrue(plain.performCommand("메뉴"));
+        click(plain, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        click(plain, 32, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        String pa = allText(plain.getOpenInventory().getTopInventory());
+        assertTrue(pa.contains("보유하고 있지 않습니다") && pa.contains("TOP 10 이 아닙니다"), pa);
+        click(plain, 15, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertEquals("auto", plugin.store().get(plain).joinStyle);
     }
 
     /** 접속 주소를 정해서 접속 (MockBukkit 기본은 모두 127.0.0.1) */

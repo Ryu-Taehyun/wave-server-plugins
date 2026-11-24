@@ -194,7 +194,7 @@ public class MenuModule extends Module {
         g.set(14, It.of(Material.IRON_SWORD).hide().name("&e&l킬 특수 효과").lore("&8치장", "&7처치 연출과 크라운 처치 알림 표식을 고릅니다.", "", "&e클릭하여 설정").build(), e -> later(1, () -> killEffects(p)));
         g.set(16, It.of(Material.EMERALD).name("&e&l랭크").lore("&8정보", "&7현재 랭크 : " + ProfileModule.rankLabel(d), "", "&e클릭하여 랭크 조건 보기").build(), e -> later(1, () -> ranks(p)));
         // 개인 설정
-        g.set(29, It.of(d.collectionPublic ? Material.LIME_DYE : Material.GRAY_DYE).name("&a&l컬렉션 공개")
+        g.set(28, It.of(d.collectionPublic ? Material.LIME_DYE : Material.GRAY_DYE).name("&a&l컬렉션 공개")
                 .lore("&8개인 설정", "&7다른 플레이어가 /정보 창에서", "&7내 컬렉션 진행을 볼 수 있게 합니다.", "",
                         "&7상태 : " + (d.collectionPublic ? "&a공개" : "&c비공개"), "", "&e클릭하여 " + (d.collectionPublic ? "비공개로" : "공개로") + " 바꾸기").build(), e -> {
             d.collectionPublic = !d.collectionPublic;
@@ -204,11 +204,67 @@ public class MenuModule extends Module {
             later(1, () -> profile(p));
         });
         long hidden = WeaponModule.FX_WEAPONS.stream().filter(w -> d.hideFx.contains(w.key())).count();
-        g.set(31, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&8개인 설정", "&7가지고 있는 무기의 타격 파티클을", "&7내 화면에서 켜거나 끕니다. (다른 사람에게는 그대로)", "",
+        g.set(30, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&8개인 설정", "&7가지고 있는 무기의 타격 파티클을", "&7내 화면에서 켜거나 끕니다. (다른 사람에게는 그대로)", "",
                 "&7꺼 둔 무기 : &f" + hidden + "개", "", "&e클릭하여 설정").build(), e -> later(1, () -> hitFx(p, 1)));
-        g.set(33, It.of(Material.CLOCK).name("&6&l출석").lore("&8정보", "&7연속 출석 : &f" + d.attendStreak + "일", "", "&e클릭하여 출석 현황 보기").build(),
+        g.set(32, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&8개인 설정", "&7접속할 때 모두에게 보일 입장 메시지를 고릅니다.", "",
+                "&7현재 : &f" + joinStyleName(d.joinStyle), "", "&e클릭하여 설정").build(), e -> later(1, () -> joinMessages(p)));
+        g.set(34, It.of(Material.CLOCK).name("&6&l출석").lore("&8정보", "&7연속 출석 : &f" + d.attendStreak + "일", "", "&e클릭하여 출석 현황 보기").build(),
                 e -> later(1, () -> plugin.module(AttendanceModule.class).open(p)));
         g.nav(p, () -> menu(p)).fill().open(p);
+    }
+
+    private static String joinStyleName(String style) {
+        return switch (style) {
+            case "basic" -> "기본 입장 메시지만";
+            case "overlord" -> "OVER LORD";
+            case "ranking" -> "순위";
+            default -> "자동 (가진 것 모두)";
+        };
+    }
+
+    /** 입장 메시지 고르기: 자동 · 기본 · OVER LORD · 순위 (없는 것은 잠김) */
+    private void joinMessages(Player p) {
+        PlayerData d = data(p);
+        OverlordModule ol = plugin.module(OverlordModule.class);
+        RankingModule rk = plugin.module(RankingModule.class);
+        boolean hasOl = ol != null && ol.hasJoinMessage(d);
+        if (rk != null) rk.refreshOnline();
+        var top = rk == null ? null : rk.bestTop10(p.getUniqueId());
+        String nick = nickName(d.nickColor, p.getName(), "&f");
+        String basic = "&8[&a+&8] " + nick + "&f 님이 서버에 &a접속&f했습니다.";
+        String olLine = "<b><gradient:#FFF176:#FFB732>👑 OVER LORD</gradient></b> <dark_gray>|</dark_gray> " + nick + " <gradient:#FFE9A8:#FFB732>님이 강림하셨습니다.</gradient>";
+        String rkLine = top == null ? null : RankingModule.joinLine(top.getKey(), top.getValue()).replace("%name%", nick);
+        Gui g = new Gui(4, "&8&l입장 메시지");
+        g.set(4, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&7접속할 때 모두에게 보일 메시지를 고릅니다.", "&8OVER LORD · 순위 메시지는 가지고 있을 때만 고를 수 있습니다.").build());
+        Object[][] opts = {
+                {11, "auto", Material.NETHER_STAR, "&e&l자동", true, new String[]{"&7가지고 있는 입장 메시지를 모두 씁니다.", "&8(OVER LORD 가 있으면 OVER LORD, 순위 TOP 10 이면 순위 줄 추가)"}},
+                {13, "basic", Material.PAPER, "&f&l기본만", true, new String[]{"&7미리보기 :", basic}},
+                {15, "overlord", Material.GOLDEN_HELMET, "<b><gradient:#FFF176:#FFB732>OVER LORD</gradient></b>", hasOl,
+                        hasOl ? new String[]{"&7미리보기 :", olLine} : new String[]{"&c보유하고 있지 않습니다.", "&8오버 로드 ★7 보상"}},
+                {22, "ranking", Material.GOLD_INGOT, "&6&l순위", top != null,
+                        top != null ? new String[]{"&7미리보기 :", rkLine} : new String[]{"&c지금 순위 TOP 10 이 아닙니다.", "&8돈 · 처치 순위 10위 안에 들면 쓸 수 있습니다."}},
+        };
+        for (Object[] o : opts) {
+            String key = (String) o[1];
+            boolean has = (boolean) o[4];
+            boolean on = d.joinStyle.equals(key);
+            It it = It.of(has ? (Material) o[2] : Material.GRAY_DYE).hide().name((String) o[3]).lore("");
+            it.lore((String[]) o[5]);
+            it.lore("", has ? (on ? "&a사용 중" : "&e클릭하여 사용") : "&8사용할 수 없음");
+            if (on) it.ench(Enchantment.UNBREAKING, 1);
+            g.set((int) o[0], it.build(), e -> {
+                if (!has) {
+                    Gui.denySound(p);
+                    return;
+                }
+                d.joinStyle = key;
+                plugin.store().save(d);
+                Msg.send(p, "&a[프로필] &7입장 메시지 : &f" + joinStyleName(key));
+                Msg.sound(p, "ui.button.click", 0.6f, 1.3f);
+                later(1, () -> joinMessages(p));
+            });
+        }
+        g.nav(p, () -> profile(p)).fill().open(p);
     }
 
     /** 무기별 타격 파티클 숨기기 (보는 사람 기준) */

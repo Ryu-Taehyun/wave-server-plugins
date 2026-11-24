@@ -251,6 +251,34 @@ public class RankingModule extends Module {
 
     /* ======================= TOP 10 입장 메시지 ======================= */
 
+    /** TOP 10 안에서 가장 높은 순위 (분야, 순위). 없으면 null */
+    public Map.Entry<Cat, Integer> bestTop10(UUID id) {
+        Cat best = null;
+        int bestRank = 0;
+        for (Cat c : Cat.values()) {
+            int r = rankOf(c, id);
+            if (r > 0 && r <= 10 && (bestRank == 0 || r < bestRank)) {
+                best = c;
+                bestRank = r;
+            }
+        }
+        return best == null ? null : Map.entry(best, bestRank);
+    }
+
+    /** 입장 태그 미리보기 (예: [👑 돈 TOP 1]) */
+    public static String joinTag(Cat c, int r) {
+        String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
+        return "<b>" + c.grad("[" + medal + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]") + "</b>";
+    }
+
+    /** 실제 입장 메시지 한 줄 (%name% 자리에 이름) */
+    public static String joinLine(Cat c, int r) {
+        String tag = joinTag(c, r);
+        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b> <color:" + c.to + "><obf>D</obf></color>";
+        if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다!");
+        return tag + " %name% <gray>님이 입장했습니다.</gray>";
+    }
+
     /** 등급 이름: 1 · 2 · 3위는 TOP 1/2/3, 4~10위는 Ranking */
     public static String tier(int rank) {
         return rank <= 3 ? "TOP " + rank : "Ranking";
@@ -260,36 +288,27 @@ public class RankingModule extends Module {
     public void onJoin(PlayerJoinEvent e) {
         if (!plugin.getConfig().getBoolean("ranking.join-message", true)) return;
         Player p = e.getPlayer();
-        Cat best = null;
-        int bestRank = 0;
-        for (Cat c : Cat.values()) {
-            int r = rankOf(c, p.getUniqueId());
-            if (r > 0 && r <= 10 && (bestRank == 0 || r < bestRank)) {
-                best = c;
-                bestRank = r;
-            }
-        }
-        if (best == null) return;
-        Cat c = best;
-        int r = bestRank;
+        String style = data(p).joinStyle;
+        if (!style.equals("auto") && !style.equals("ranking")) return;   // 프로필 설정 → 입장 메시지
+        put(data(p));
+        resort();
+        Map.Entry<Cat, Integer> b = bestTop10(p.getUniqueId());
+        if (b == null) return;
+        Cat c = b.getKey();
+        int r = b.getValue();
         later(5, () -> {
             if (!p.isOnline()) return;
             PlayerData d = data(p);
             CoreModule core = plugin.module(CoreModule.class);
             var name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f")) : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));
-            String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
-            String tag = "<b>" + c.grad("[" + medal + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]") + "</b>";
             // 짧게, 강조만: 순위가 높을수록 글자 · 효과가 강해짐
+            Msg.broadcastFill(joinLine(c, r), "%name%", name);
             if (r == 1) {
-                Msg.broadcastFill("<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b> <color:" + c.to + "><obf>D</obf></color>", "%name%", name);
                 for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.5f, 1.3f);
                 kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.TOTEM_OF_UNDYING, 60, 0.45);
             } else if (r <= 3) {
-                Msg.broadcastFill(tag + " %name% " + c.grad("님이 입장했습니다!"), "%name%", name);
                 for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.note_block.chime", 0.5f, 1.4f);
                 kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.END_ROD, 25, 0.12);
-            } else {
-                Msg.broadcastFill(tag + " %name% <gray>님이 입장했습니다.</gray>", "%name%", name);
             }
         });
     }
