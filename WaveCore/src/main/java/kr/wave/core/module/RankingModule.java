@@ -417,7 +417,7 @@ public class RankingModule extends Module {
         return TITLE_PREFIX + season.replace("|", "/") + "|" + c.key + "|" + rank;
     }
 
-    /** 순위 칭호 키면 보이는 글자 (예: [👑 S7 부의 제왕 1위]), 아니면 null */
+    /** 순위 칭호 키면 보이는 글자 (예: ➤ 부의 제왕 S7·1위), 아니면 null */
     public static String titleText(String key) {
         if (key == null || !key.startsWith(TITLE_PREFIX)) return null;
         String[] p = key.split("\\|");
@@ -430,8 +430,8 @@ public class RankingModule extends Module {
             return null;
         }
         if (c == null) return null;
-        String medal = medal(r);
-        return "<b><gradient:" + titleColors(c, r) + ">[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient></b>";   // 예: [👑 S7 부의 제왕 1위]
+        // 예: ➤ 부의 제왕 S7·1위  (이름은 순위별 그라데이션 + 굵게, 시즌·순위는 회색)
+        return "<b><gradient:" + titleColors(c, r) + ">➤ " + c.titleName + "</gradient></b><gray> " + p[1] + "·" + r + "위</gray>";
     }
 
     /** "S12" -> 12 (숫자가 없으면 0) */
