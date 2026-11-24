@@ -3782,7 +3782,7 @@ public class WaveTest {
         for (int i = 0; i < inv.getSize(); i++) if (inv.getItem(i) != null && Msg.name(inv.getItem(i)).contains("천공의 심판자 클레이모어")) slot = i;
         assertTrue(slot > 0, allText(inv));
         String fxAll = allText(inv);
-        assertTrue(fxAll.contains("보유하지 않음") && fxAll.contains("클릭하여 끄기") && !fxAll.contains("숨기기"), fxAll);
+        assertTrue(fxAll.contains("아이템을 보유하고 있지 않습니다.") && fxAll.contains("클릭하여 끄기") && !fxAll.contains("숨기기"), fxAll);
         click(a, slot, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertTrue(da.hideFx.contains("claymore"));
@@ -3834,7 +3834,7 @@ public class WaveTest {
         click(a, 31, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         String mixed = allText(a.getOpenInventory().getTopInventory());
-        assertTrue(mixed.contains("켜짐") && mixed.contains("꺼짐") && mixed.contains("보유하지 않음"), mixed);
+        assertTrue(mixed.contains("켜짐") && mixed.contains("꺼짐") && mixed.contains("아이템을 보유하고 있지 않습니다."), mixed);
         var mi = a.getOpenInventory().getTopInventory();
         for (int i = 0; i < mi.getSize(); i++) {
             var it = mi.getItem(i);

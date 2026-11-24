@@ -226,7 +226,7 @@ public class MenuModule extends Module {
             ItemStack base = w.icon().get();
             if (!owned.contains(w.key())) {
                 g.set(slots[i], It.of(Material.GRAY_DYE).name("&8" + Msg.name(base))
-                        .lore("", "&7상태 : &c보유하지 않음", "", "&8이 무기를 얻으면 설정할 수 있습니다.").build(), e -> Gui.denySound(p));
+                        .lore("", "&c아이템을 보유하고 있지 않습니다.", "", "&8이 무기를 얻으면 설정할 수 있습니다.").build(), e -> Gui.denySound(p));
                 continue;
             }
             boolean off = d.hideFx.contains(w.key());
