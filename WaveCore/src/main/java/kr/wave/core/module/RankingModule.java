@@ -286,7 +286,7 @@ public class RankingModule extends Module {
 
     /**
      * 실제로 쓸 입장 메시지 하나 (겹쳐 나오지 않음): overlord · ranking · basic.
-     * 자동이면 OVER LORD > 순위 > 기본 순서로 가진 것 하나, 고른 것이 없어졌으면 기본
+     * 고른 것을 더는 쓸 수 없으면 (TOP 10 밖 등) 기본
      */
     public String resolveJoin(Player p) {
         PlayerData d = data(p);
@@ -294,10 +294,9 @@ public class RankingModule extends Module {
         boolean hasOl = ol != null && ol.hasJoinMessage(d);
         boolean hasRank = plugin.getConfig().getBoolean("ranking.join-message", true) && bestTop10(p.getUniqueId()) != null;
         return switch (d.joinStyle) {
-            case "basic" -> "basic";
             case "overlord" -> hasOl ? "overlord" : "basic";
             case "ranking" -> hasRank ? "ranking" : "basic";
-            default -> hasOl ? "overlord" : hasRank ? "ranking" : "basic";
+            default -> "basic";
         };
     }
 

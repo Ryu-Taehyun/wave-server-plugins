@@ -57,8 +57,8 @@ public class PlayerData {
     public boolean collectionPublic = true;
     /** 다른 플레이어 처치 수 (순위용, 시즌 초기화 때 0) */
     public int kills;
-    /** 입장 메시지: auto(가진 것 모두) · basic(기본만) · overlord · ranking */
-    public String joinStyle = "auto";
+    /** 입장 메시지 (하나만): basic(기본) · overlord · ranking */
+    public String joinStyle = "basic";
 
     /* 보관 */
     public final List<ItemStack> mailbox = new ArrayList<>();
@@ -139,7 +139,8 @@ public class PlayerData {
         hideFx.addAll(y.getStringList("hide-fx"));
         collectionPublic = y.getBoolean("collection-public", true);
         kills = y.getInt("kills", 0);
-        joinStyle = y.getString("join-style", "auto");
+        joinStyle = y.getString("join-style", "basic");
+        if (!joinStyle.equals("overlord") && !joinStyle.equals("ranking")) joinStyle = "basic";   // 예전 "auto" 등
         crownOwned = y.getBoolean("crown-owned", crownKill);
         readItems(y.getList("mailbox"), mailbox);
         readItems(y.getList("keep-items"), keepItems);

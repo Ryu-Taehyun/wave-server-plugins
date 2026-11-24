@@ -3904,19 +3904,15 @@ public class WaveTest {
             d.joinStyle = style;
             return joinLine(lord);
         };
-        // 자동: 하나만 (OVER LORD 가 먼저)
-        String auto = join.apply("auto");
-        assertTrue(auto.contains("OVER LORD") && !auto.contains("TOP 1"), auto);
+        assertEquals("basic", d.joinStyle, "처음은 기본");
+        assertFalse(all.contains("자동"), "자동 없음");
         String basic = join.apply("basic");
         assertTrue(!basic.contains("OVER LORD") && !basic.contains("TOP 1") && basic.contains("접속했습니다"), basic);
         String rk = join.apply("ranking");
         assertTrue(rk.contains("돈 TOP 1") && !rk.contains("OVER LORD"), rk);
         String lo = join.apply("overlord");
         assertTrue(lo.contains("OVER LORD") && !lo.contains("TOP 1"), lo);
-        // OVER LORD 가 없으면 자동 = 순위
         d.overlordClaimed.remove(7);
-        String auto2 = join.apply("auto");
-        assertTrue(auto2.contains("돈 TOP 1") && !auto2.contains("OVER LORD"), auto2);
         // 고른 것이 없어지면 기본
         String gone = join.apply("overlord");
         assertTrue(!gone.contains("OVER LORD") && !gone.contains("TOP 1") && gone.contains("Lord2"), gone);
@@ -3932,7 +3928,7 @@ public class WaveTest {
         assertTrue(pa.contains("보유하고 있지 않습니다") && pa.contains("TOP 10 이 아닙니다"), pa);
         click(plain, 15, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        assertEquals("auto", plugin.store().get(plain).joinStyle);
+        assertEquals("basic", plugin.store().get(plain).joinStyle);
     }
 
     /** 실제 입장 이벤트를 다시 보내 입장 메시지 한 줄을 얻음 (MockBukkit 은 입장 메시지를 채팅으로 보내지 않음) */
@@ -4045,6 +4041,8 @@ public class WaveTest {
         server.getPluginManager().callEvent(new org.bukkit.event.entity.PlayerDeathEvent(twin, org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.PLAYER_ATTACK).withCausingEntity(k).withDirectEntity(k).build(), new java.util.ArrayList<>(), 0, null));
         assertEquals(1, plugin.store().get(k).kills, "같은 곳(부계정) 처치는 세지 않음");
         // TOP 10 입장 메시지
+        plugin.store().get(ps.get(11)).joinStyle = "ranking";
+        plugin.store().get(ps.get(5)).joinStyle = "ranking";
         String join = joinLine(ps.get(11));
         assertTrue(join.contains("[👑 돈 TOP 1]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
         // 4~10위는 Ranking #순위

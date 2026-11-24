@@ -141,9 +141,7 @@ public class OverlordModule extends Module {
             case 4 -> d.backpackRows = Math.max(d.backpackRows, 3);
             case 5 -> It.give(p, Items.legendVoucher());
             case 6 -> d.money += 750_000;
-            case 7 -> {
-                // 전용 입장 메시지: 받은 것만으로 적용 (CoreModule 입장 처리에서 확인)
-            }
+            case 7 -> d.joinStyle = "overlord";   // 받으면 바로 사용 (프로필 → 입장 메시지에서 바꿀 수 있음)
             case 8 -> {
                 d.crownOwned = true;
                 d.crownKill = true;
