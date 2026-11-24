@@ -256,12 +256,6 @@ public class RankingModule extends Module {
         return rank <= 3 ? "TOP " + rank : "Ranking";
     }
 
-    private static final Map<Cat, List<String>> JOIN_LINES = Map.of(
-            Cat.MONEY, List.of("님이 두둑한 지갑과 함께 도착했습니다!", "님이 금고 문을 열고 입장했습니다!", "님이 입장했습니다. 오늘도 큰손 등장!",
-                    "님이 반짝이는 금화를 흩뿌리며 나타났습니다!"),
-            Cat.KILLS, List.of("님이 전장에 발을 들였습니다!", "님이 칼을 뽑아 들고 입장했습니다!", "님이 사냥을 시작합니다. 모두 조심하세요!",
-                    "님이 돌아왔습니다. 오늘의 사냥감은 누구일까요?"));
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent e) {
         if (!plugin.getConfig().getBoolean("ranking.join-message", true)) return;
@@ -283,24 +277,19 @@ public class RankingModule extends Module {
             PlayerData d = data(p);
             CoreModule core = plugin.module(CoreModule.class);
             var name = core == null ? Msg.c(nickName(d.nickColor, p.getName(), "&f")) : core.nameTag(p, nickName(d.nickColor, p.getName(), "&f"));
-            List<String> lines = JOIN_LINES.get(c);
-            String line = lines.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(lines.size()));
             String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
             String tag = "<b>" + c.grad("[" + medal + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]") + "</b>";
+            // 짧게, 강조만: 순위가 높을수록 글자 · 효과가 강해짐
             if (r == 1) {
-                // 1위: 위아래 장식 줄 + 양옆 반짝임 + 모두에게 효과음
-                String bar = "<color:" + c.from + "><st>                                        </st></color>";
-                Msg.broadcast(bar);
-                Msg.broadcastFill(" <color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad(line) + " <color:" + c.to + "><obf>D</obf></color>", "%name%", name);
-                Msg.broadcast(bar);
+                Msg.broadcastFill("<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b> <color:" + c.to + "><obf>D</obf></color>", "%name%", name);
                 for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.5f, 1.3f);
                 kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.TOTEM_OF_UNDYING, 60, 0.45);
             } else if (r <= 3) {
-                Msg.broadcastFill(tag + " %name% " + c.grad(line), "%name%", name);
+                Msg.broadcastFill(tag + " %name% " + c.grad("님이 입장했습니다!"), "%name%", name);
                 for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.note_block.chime", 0.5f, 1.4f);
                 kr.wave.core.util.Fx.burst(p.getLocation().add(0, 1, 0), org.bukkit.Particle.END_ROD, 25, 0.12);
             } else {
-                Msg.broadcastFill(tag + " %name% <gray>" + line + "</gray>", "%name%", name);
+                Msg.broadcastFill(tag + " %name% <gray>님이 입장했습니다.</gray>", "%name%", name);
             }
         });
     }

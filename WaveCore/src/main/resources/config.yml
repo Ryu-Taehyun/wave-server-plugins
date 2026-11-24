@@ -314,7 +314,7 @@ ranking:
   size: 200
   update-seconds: 60
   exclude: []
-  # TOP 10 이 접속하면 순위 입장 메시지 (1위는 장식 줄 + 효과음, 2 · 3위는 효과음, 여러 분야면 가장 높은 순위)
+  # TOP 10 이 접속하면 "[👑 돈 TOP 1] 닉네임 님이 입장했습니다!" (1위 반짝임 · 효과음, 2 · 3위 효과음, 여러 분야면 가장 높은 순위)
   join-message: true
   # 시즌 초기화(/시즌 초기화) 때 TOP 10 에게 자동 지급. 아니면 /순위 보상 으로 직접
   reward-on-season-reset: true
