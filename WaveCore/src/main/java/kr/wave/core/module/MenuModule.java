@@ -225,7 +225,7 @@ public class MenuModule extends Module {
             WeaponModule.FxWeapon w = list.get((page - 1) * per + i);
             ItemStack base = w.icon().get();
             if (!owned.contains(w.key())) {
-                g.set(slots[i], It.of(base.getType()).hide().name("&8" + Msg.name(base))
+                g.set(slots[i], It.of(Material.GRAY_DYE).name("&8" + Msg.name(base))
                         .lore("", "&7상태 : &c보유하지 않음", "", "&8이 무기를 얻으면 설정할 수 있습니다.").build(), e -> Gui.denySound(p));
                 continue;
             }
