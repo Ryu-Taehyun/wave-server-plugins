@@ -242,16 +242,6 @@ public class MenuModule extends Module {
                 later(1, () -> hitFx(p, page));
             });
         }
-        g.set(30, It.of(Material.LIME_DYE).name("&a&l모두 활성화").lore("&7가지고 있는 무기의 타격 파티클을 모두 켭니다.").build(), e -> {
-            d.hideFx.removeAll(owned);
-            plugin.store().save(d);
-            later(1, () -> hitFx(p, page));
-        });
-        g.set(32, It.of(Material.GRAY_DYE).name("&c&l모두 끄기").lore("&7가지고 있는 무기의 타격 파티클을 모두 끕니다.").build(), e -> {
-            d.hideFx.addAll(owned);
-            plugin.store().save(d);
-            later(1, () -> hitFx(p, page));
-        });
         g.pages(p, page, pages, n -> later(1, () -> hitFx(p, n)));
         g.nav(p, () -> profile(p)).fill().open(p);
     }

@@ -3794,9 +3794,8 @@ public class WaveTest {
             server.getScheduler().performTicks(2);
         }
         assertFalse(da.hideFx.contains("chaos"));
-        click(a, 32, ClickType.LEFT);   // 모두 끄기 = 가진 무기만
-        server.getScheduler().performTicks(2);
         assertEquals(java.util.Set.of("claymore"), da.hideFx);
+        assertFalse(allText(a.getOpenInventory().getTopInventory()).contains("모두"), "모두 켜기 · 끄기 버튼 없음");
         GuiSnapshot.save(a, "hit_fx.json");
         assertEquals("claymore", kr.wave.core.module.WeaponModule.fxKey(Items.N_CLAYMORE_SD));
         assertEquals("chaos", kr.wave.core.module.WeaponModule.fxKey(Msg.name(Items.chaosApocalypse())));
@@ -3821,8 +3820,8 @@ public class WaveTest {
         kr.wave.core.util.Fx.scoped("claymore", () -> kr.wave.core.util.Fx.p(a.getLocation(), org.bukkit.Particle.CRIT, 3, 0.2, 0));
         assertTrue(seen[0] > 0 && seen[1] > 0, "보는 사람마다 확인");
         kr.wave.core.util.Fx.hides((pl, k) -> plugin.store().get(pl).hideFx.contains(k));
-        // 모두 보이기
-        click(a, 30, ClickType.LEFT);
+        // 다시 클릭하면 활성화
+        click(a, slot, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertTrue(da.hideFx.isEmpty());
     }
