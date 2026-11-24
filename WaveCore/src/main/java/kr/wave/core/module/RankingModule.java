@@ -430,8 +430,8 @@ public class RankingModule extends Module {
             return null;
         }
         if (c == null) return null;
-        // 예: ➤ 부의 제왕 S7·1위  (이름은 순위별 그라데이션 + 굵게, 시즌·순위는 회색)
-        return "<b><gradient:" + titleColors(c, r) + ">➤ " + c.titleName + "</gradient></b><gray> " + p[1] + "·" + r + "위</gray>";
+        // 예: ➤ 부의 제왕 S7 · 1위 (게임 글꼴에서 · 가 작아서 양옆을 띄움)  (이름은 순위별 그라데이션 + 굵게, 시즌·순위는 회색)
+        return "<b><gradient:" + titleColors(c, r) + ">➤ " + c.titleName + "</gradient></b><gray> " + p[1] + " · " + r + "위</gray>";
     }
 
     /** "S12" -> 12 (숫자가 없으면 0) */
