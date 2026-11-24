@@ -4075,7 +4075,7 @@ public class WaveTest {
         assertTrue(join.contains("[👑 부의 제왕 1위]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
         // 4~10위는 Ranking #순위
         var jl = Msg.c(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1).replace("%name%", "X"));
-        assertFalse(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "입장 메시지는 굵게 하지 않음");
+        assertTrue(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "입장 메시지는 굵게");
         String join7 = joinLine(ps.get(5));
         assertTrue(join7.contains("[★ 부의 제왕 7위]") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인

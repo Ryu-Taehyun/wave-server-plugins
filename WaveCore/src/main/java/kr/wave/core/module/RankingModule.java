@@ -269,15 +269,16 @@ public class RankingModule extends Module {
     /** 입장 태그 (예: [👑 부의 제왕 1위]) */
     public static String joinTag(Cat c, int r) {
         String medal = medal(r);
-        return "<gradient:" + titleColors(c, r) + ">[" + medal + " " + c.titleName + " " + r + "위]</gradient>";
+        return "<b><gradient:" + titleColors(c, r) + ">[" + medal + " " + c.titleName + " " + r + "위]</gradient></b>";
     }
 
     /** 실제 입장 메시지 한 줄 (%name% 자리에 이름) */
     public static String joinLine(Cat c, int r) {
         String tag = joinTag(c, r);
-        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad("님이 입장했습니다!") + " <color:" + c.to + "><obf>D</obf></color>";
-        if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다!");
-        return tag + " %name% <gray>님이 입장했습니다.</gray>";
+        // 태그와 문구는 굵게 (닉네임은 그대로)
+        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b> <color:" + c.to + "><obf>D</obf></color>";
+        if (r <= 3) return tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b>";
+        return tag + " %name% <b><gray>님이 입장했습니다.</gray></b>";
     }
 
     /**
