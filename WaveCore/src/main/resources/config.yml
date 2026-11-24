@@ -319,7 +319,7 @@ ranking:
   join-message: true
   # 시즌 초기화(/시즌 초기화) 때 TOP 10 에게 자동 지급. 아니면 /순위 보상 으로 직접
   reward-on-season-reset: true
-  # 트로피에 새길 시즌 이름 (비우면 날짜)
+  # 트로피 · 순위 칭호에 새길 시즌 이름 (예: "S7", 비우면 연.월 예: 2026.11)
   season-name: ""
   # 순위 범위별 보상 (트로피는 항상 우편함으로). money: 캐시, keys: {상자ID: 개수}, commands: {player} {rank} {category}
   rewards:

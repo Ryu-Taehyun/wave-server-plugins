@@ -495,7 +495,31 @@ public class MenuModule extends Module {
                 later(1, () -> titles(p));
             });
         }
-        if (n == 0) g.set(22, none("칭호", "랭크 달성 · 컬렉션 완성 · 출석 등으로 얻을 수 있습니다."));
+        // 순위 칭호 (시즌 TOP 10 보상): 최근 시즌부터
+        java.util.List<String> rankTitles = new java.util.ArrayList<>();
+        for (String k : d.titles) if (RankingModule.titleText(k) != null) rankTitles.add(k);
+        rankTitles.sort(RankingModule.titleOrder());
+        for (String key : rankTitles) {
+            if (n >= slots.length) break;
+            String text = RankingModule.titleText(key);
+            boolean active = key.equals(d.activeTitle);
+            g.set(slots[n++], toggleIcon(Material.GOLD_INGOT, Material.GOLD_INGOT, text, true, active,
+                    "&7미리보기 : " + text + " &7- &f" + p.getName(), "시즌 순위 TOP 10 보상"), e -> {
+                boolean on = !key.equals(d.activeTitle);
+                if (on) {
+                    plugin.module(CoreModule.class).applyTitle(p, "\"" + text + "\"");
+                    d.activeTitle = key;
+                } else {
+                    console("lp user " + p.getName() + " meta clear");
+                    d.activeTitle = null;
+                }
+                plugin.store().save(d);
+                Msg.send(p, "&e[!] &7칭호 " + text + (on ? " &a적용&7되었습니다." : " &c해제&7되었습니다."));
+                Msg.sound(p, on ? "entity.player.levelup" : "block.note_block.bass", 0.6f, on ? 1.8f : 1f);
+                later(1, () -> titles(p));
+            });
+        }
+        if (n == 0) g.set(22, none("칭호", "랭크 달성 · 컬렉션 완성 · 출석 · 시즌 순위 TOP 10 등으로 얻을 수 있습니다."));
         g.nav(p, () -> profile(p)).border().open(p);
     }
 

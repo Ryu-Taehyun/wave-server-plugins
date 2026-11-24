@@ -63,7 +63,9 @@ public class ProfileModule extends Module {
             String pre = plugin.hooks().prefix(t.getPlayer());
             if (pre != null && !pre.isBlank()) return pre;
         }
-        return d.activeTitle == null ? "&8없음" : "&f" + d.activeTitle;
+        if (d.activeTitle == null) return "&8없음";
+        String rank = RankingModule.titleText(d.activeTitle);
+        return rank != null ? rank : "&f" + d.activeTitle;
     }
 
     private String seenLine(OfflinePlayer t, PlayerData d) {

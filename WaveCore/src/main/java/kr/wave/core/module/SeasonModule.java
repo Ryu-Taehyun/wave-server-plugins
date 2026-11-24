@@ -244,7 +244,7 @@ public class SeasonModule extends Module {
         for (Player p : Bukkit.getOnlinePlayers()) deliver(p, data(p), true);   // 접속 중인 사람은 바로 배낭으로
         if (ranking != null) {
             if (top10 != null) {
-                int n = ranking.payout(top10, ranking.seasonName(LocalDateTime.now().toLocalDate().toString()));
+                int n = ranking.payout(top10, ranking.seasonName(RankingModule.defaultSeason()));
                 done.add("순위 TOP 10 보상 " + n + "건");
             }
             ranking.rebuild();

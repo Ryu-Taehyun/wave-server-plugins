@@ -388,6 +388,50 @@ public class RankingModule extends Module {
 
     /* ======================= TOP 10 보상 ======================= */
 
+    /** 시즌 이름을 정하지 않았을 때: 연.월 (예: 2026.11) */
+    public static String defaultSeason() {
+        return LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM"));
+    }
+
+    /* ---------------- 순위 칭호 (시즌 보상, 영구) ---------------- */
+
+    private static final String TITLE_PREFIX = "rank|";
+
+    /** 칭호 키: rank|시즌|분야|순위 */
+    public static String titleKey(String season, Cat c, int rank) {
+        return TITLE_PREFIX + season.replace("|", "/") + "|" + c.key + "|" + rank;
+    }
+
+    /** 순위 칭호 키면 보이는 글자 (예: [👑 2026.11 돈 TOP 1]), 아니면 null */
+    public static String titleText(String key) {
+        if (key == null || !key.startsWith(TITLE_PREFIX)) return null;
+        String[] p = key.split("\\|");
+        if (p.length < 4) return null;
+        Cat c = Cat.of(p[2]);
+        int r;
+        try {
+            r = Integer.parseInt(p[3]);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        if (c == null) return null;
+        String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
+        return c.grad("[" + medal + " " + p[1] + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]");
+    }
+
+    /** 순위 칭호 정렬: 최근 시즌 먼저, 같은 시즌이면 돈 → 처치, 순위 순 */
+    public static java.util.Comparator<String> titleOrder() {
+        return java.util.Comparator.comparing((String k) -> k.split("\\|")[1], java.util.Comparator.reverseOrder())
+                .thenComparing(k -> k.split("\\|")[2])
+                .thenComparingInt(k -> {
+                    try {
+                        return Integer.parseInt(k.split("\\|")[3]);
+                    } catch (RuntimeException e) {
+                        return 99;
+                    }
+                });
+    }
+
     /** 트로피에 새길 시즌 이름 (config ranking.season-name, 비어 있으면 fallback) */
     public String seasonName(String fallback) {
         String s = plugin.getConfig().getString("ranking.season-name", "");
@@ -416,7 +460,7 @@ public class RankingModule extends Module {
                 Msg.send(s, "&c먼저 &f/순위 보상 &c으로 미리보기를 확인한 뒤 60초 안에 입력하세요.");
                 return;
             }
-            int n = payout(snapshotTop10(), seasonName(LocalDate.now().toString()));
+            int n = payout(snapshotTop10(), seasonName(defaultSeason()));
             Msg.send(s, "&a[순위] &7TOP 10 보상을 &f" + n + "명&7에게 우편함으로 보냈습니다.");
             return;
         }
@@ -446,6 +490,7 @@ public class RankingModule extends Module {
                 OfflinePlayer op = Bukkit.getOfflinePlayer(e.id());
                 PlayerData d = plugin.store().get(op);
                 d.mailbox.add(Items.rankTrophy(c.label, c.from, c.to, rank, e.name(), e.shown(c), season));
+                d.titles.add(titleKey(season, c, rank));   // 순위 칭호 (영구, 프로필 → 칭호에서 사용)
                 ConfigurationSection r = rewardFor(rank);
                 if (r != null) {
                     long money = r.getLong("money", 0);
@@ -467,6 +512,7 @@ public class RankingModule extends Module {
                 Player online = op.getPlayer();
                 if (online != null) {
                     Msg.send(online, c.grad("[🏆 " + c.label + " " + tier(rank) + (rank > 3 ? " #" + rank : "") + "]") + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
+                    Msg.send(online, "&7순위 칭호 " + titleText(titleKey(season, c, rank)) + " &7획득! &8(프로필 → 칭호)");
                     Msg.sound(online, "ui.toast.challenge_complete", 0.8f, 1.2f);
                 }
                 log.append(c.label).append(' ').append(rank).append(". ").append(e.name()).append('\n');
