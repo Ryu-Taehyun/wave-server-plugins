@@ -233,28 +233,21 @@ public class MenuModule extends Module {
         String basic = "&8[&a+&8] " + nick + "&f 님이 서버에 &a접속&f했습니다.";
         String olLine = "<b><gradient:#FFF176:#FFB732>👑 OVER LORD</gradient></b> <dark_gray>|</dark_gray> " + nick + " <gradient:#FFE9A8:#FFB732>님이 강림하셨습니다.</gradient>";
         String rkLine = top == null ? null : RankingModule.joinLine(top.getKey(), top.getValue()).replace("%name%", nick);
-        Gui g = new Gui(3, "&8&l입장 메시지");
-        g.set(4, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&7접속할 때 모두에게 보일 메시지를 하나 고릅니다.", "&8OVER LORD · 순위 메시지는 가지고 있을 때만 고를 수 있습니다.").build());
-        Object[][] opts = {
-                {11, "basic", Material.PAPER, "&f&l기본", true, new String[]{"&7미리보기 :", basic}},
-                {13, "overlord", Material.GOLDEN_HELMET, "<b><gradient:#FFF176:#FFB732>OVER LORD</gradient></b>", hasOl,
-                        hasOl ? new String[]{"&7미리보기 :", olLine} : new String[]{"&c보유하고 있지 않습니다.", "&8오버 로드 ★7 보상"}},
-                {15, "ranking", Material.GOLD_INGOT, "&6&l순위", top != null,
-                        top != null ? new String[]{"&7미리보기 :", rkLine} : new String[]{"&c지금 순위 TOP 10 이 아닙니다.", "&8돈 · 처치 순위 10위 안에 들면 쓸 수 있습니다."}},
-        };
-        for (Object[] o : opts) {
-            String key = (String) o[1];
-            boolean has = (boolean) o[4];
+        Gui g = new Gui(5, "&8&l입장 메시지");
+        g.set(4, It.of(Material.OAK_SIGN).name("&b&l입장 메시지").lore("&7접속할 때 모두에게 보일 메시지를 하나 고릅니다.", "&8가지고 있는 입장 메시지만 보입니다.").build());
+        // 가진 것만, 10번 칸부터 차례대로
+        java.util.List<Object[]> opts = new java.util.ArrayList<>();
+        opts.add(new Object[]{"basic", Material.PAPER, "&f&l기본", basic});
+        if (hasOl) opts.add(new Object[]{"overlord", Material.GOLDEN_HELMET, "<b><gradient:#FFF176:#FFB732>OVER LORD</gradient></b>", olLine});
+        if (top != null) opts.add(new Object[]{"ranking", Material.GOLD_INGOT, "&6&l순위", rkLine});
+        int[] slots = g.inner();
+        for (int n = 0; n < opts.size() && n < slots.length; n++) {
+            Object[] o = opts.get(n);
+            String key = (String) o[0];
             boolean on = d.joinStyle.equals(key);
-            It it = It.of(has ? (Material) o[2] : Material.GRAY_DYE).hide().name((String) o[3]).lore("");
-            it.lore((String[]) o[5]);
-            it.lore("", has ? (on ? "&a사용 중" : "&e클릭하여 사용") : "&8사용할 수 없음");
+            It it = It.of((Material) o[1]).hide().name((String) o[2]).lore("", "&7미리보기 :", (String) o[3], "", on ? "&a사용 중" : "&e클릭하여 사용");
             if (on) it.ench(Enchantment.UNBREAKING, 1);
-            g.set((int) o[0], it.build(), e -> {
-                if (!has) {
-                    Gui.denySound(p);
-                    return;
-                }
+            g.set(slots[n], it.build(), e -> {
                 d.joinStyle = key;
                 plugin.store().save(d);
                 Msg.send(p, "&a[프로필] &7입장 메시지 : &f" + joinStyleName(key));
@@ -262,7 +255,7 @@ public class MenuModule extends Module {
                 later(1, () -> joinMessages(p));
             });
         }
-        g.nav(p, () -> profile(p)).fill().open(p);
+        g.nav(p, () -> profile(p)).border().open(p);
     }
 
     /** 무기별 타격 파티클 숨기기 (보는 사람 기준) */

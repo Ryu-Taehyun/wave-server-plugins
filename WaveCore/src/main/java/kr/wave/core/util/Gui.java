@@ -76,6 +76,27 @@ public class Gui implements InventoryHolder {
         return fill(FILLER);
     }
 
+    /** 바깥 테두리(첫 줄 · 마지막 줄 · 양 옆 칸)의 빈칸만 판유리로 채움. 안쪽 빈칸은 그대로 */
+    public Gui border() {
+        ItemStack f = It.pane(FILLER, " ");
+        int rows = inv.getSize() / 9;
+        for (int i = 0; i < inv.getSize(); i++) {
+            int r = i / 9, c = i % 9;
+            boolean edge = r == 0 || r == rows - 1 || c == 0 || c == 8;
+            if (edge && It.isAir(inv.getItem(i))) inv.setItem(i, f);
+        }
+        return this;
+    }
+
+    /** 테두리 안쪽 칸 번호 (10, 11 ... 16, 19 ...) */
+    public int[] inner() {
+        int rows = inv.getSize() / 9;
+        int[] out = new int[Math.max(0, (rows - 2) * 7)];
+        int n = 0;
+        for (int r = 1; r < rows - 1; r++) for (int c = 1; c <= 7; c++) out[n++] = r * 9 + c;
+        return out;
+    }
+
     /** 마지막 줄 첫 칸 번호 */
     public int last() {
         return inv.getSize() - 9;

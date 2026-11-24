@@ -3899,6 +3899,10 @@ public class WaveTest {
         assertEquals("입장 메시지", title(lord));
         String all = allText(lord.getOpenInventory().getTopInventory());
         assertTrue(all.contains("OVER LORD") && all.contains("님이 강림하셨습니다") && all.contains("돈 TOP 1") && all.contains("사용 중"), all);
+        var linv = lord.getOpenInventory().getTopInventory();
+        assertEquals(Material.PAPER, linv.getItem(10).getType());
+        assertEquals(Material.GOLDEN_HELMET, linv.getItem(11).getType());
+        assertEquals(Material.GOLD_INGOT, linv.getItem(12).getType(), "가진 것은 10, 11, 12 차례대로");
         GuiSnapshot.save(lord, "join_messages.json");
         java.util.function.Function<String, String> join = style -> {
             d.joinStyle = style;
@@ -3924,10 +3928,15 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         click(plain, 32, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        String pa = allText(plain.getOpenInventory().getTopInventory());
-        assertTrue(pa.contains("보유하고 있지 않습니다") && pa.contains("TOP 10 이 아닙니다"), pa);
-        click(plain, 15, ClickType.LEFT);
-        server.getScheduler().performTicks(2);
+        var pinv = plain.getOpenInventory().getTopInventory();
+        String pa = allText(pinv);
+        assertEquals(45, pinv.getSize(), "5줄");
+        assertTrue(pa.contains("기본") && !pa.contains("OVER LORD") && !pa.contains("순위"), "없는 것은 아예 안 보임: " + pa);
+        assertEquals(Material.PAPER, pinv.getItem(10).getType(), "10번 칸부터");
+        assertNull(pinv.getItem(11), "안쪽 빈칸은 비워 둠");
+        assertNull(pinv.getItem(22));
+        assertEquals(Gui.FILLER, pinv.getItem(9).getType(), "테두리만 판유리");
+        assertEquals(Gui.FILLER, pinv.getItem(17).getType());
         assertEquals("basic", plugin.store().get(plain).joinStyle);
     }
 
