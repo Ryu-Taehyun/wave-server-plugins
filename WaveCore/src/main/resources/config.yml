@@ -217,6 +217,7 @@ skills:
 # 실행 전에 plugins/WaveCore/backups/season-날짜.zip 으로 전체 백업을 만들고, logs/season-reset.log 에 기록합니다.
 # true = 초기화, false = 유지
 season-reset:
+  number: 1            # 지금 시즌 번호. /시즌 초기화 때마다 1 올라갑니다 (순위 칭호 · 트로피의 "시즌 N")
   money: true          # 일반 캐시 (보유 · 누적)
   exmoney: false       # 유료 캐시 (보유 · 누적 · 랭크 진행). 결제한 금액이므로 보통 false
   level: true          # 레벨 · 경험치
@@ -319,7 +320,7 @@ ranking:
   join-message: true
   # 시즌 초기화(/시즌 초기화) 때 TOP 10 에게 자동 지급. 아니면 /순위 보상 으로 직접
   reward-on-season-reset: true
-  # 트로피 · 순위 칭호에 새길 시즌 이름 (예: "S7", 비우면 연.월 예: 2026.11)
+  # 트로피 · 순위 칭호에 새길 시즌 이름. 비우면 "시즌 N" (N = season-reset.number). 직접 쓰면 그 글자 그대로
   season-name: ""
   # 순위 범위별 보상 (트로피는 항상 우편함으로). money: 캐시, keys: {상자ID: 개수}, commands: {player} {rank} {category}
   rewards:

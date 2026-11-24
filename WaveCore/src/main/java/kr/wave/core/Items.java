@@ -326,7 +326,7 @@ public final class Items {
                 .name("<b><gradient:" + from + ":" + to + "><italic:false>[" + medal + "] " + category + " " + N_RANK_TROPHY + " · " + rank + "위</gradient></b>")
                 .lore("&7등급 : " + tier,
                         "&8──────────────────",
-                        "&7" + season + " 시즌 " + category + " 순위 &f" + rank + "위&7의 증표.",
+                        "&7" + season + " " + category + " 순위 &f" + rank + "위&7의 증표.",
                         "",
                         "&7주인 : &f" + owner,
                         "&7기록 : &f" + record,

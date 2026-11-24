@@ -3304,6 +3304,8 @@ public class WaveTest {
         assertEquals(1_000_000, d.money, "초기화 뒤 순위 보상만 남음");
         assertEquals(1_000_000, d.moneyTotal);
         assertEquals(1, d.mailbox.stream().filter(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")).count());
+        assertTrue(d.titles.contains(kr.wave.core.module.RankingModule.titleKey("시즌 1", kr.wave.core.module.RankingModule.Cat.MONEY, 1)), "끝난 시즌(1) 칭호");
+        assertEquals(2, plugin.getConfig().getInt("season-reset.number"), "다음 시즌으로");
         assertEquals(30_000, d.exMoney, "유료 캐시는 기본으로 유지");
         assertEquals(30_000, d.exMoneyTotal);
         assertEquals(1, d.level);
@@ -4095,14 +4097,16 @@ public class WaveTest {
         assertFalse(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피")), "돈 12위는 돈 보상 없음");
         assertEquals(30_000 + 100, plugin.store().get(ps.get(2)).money, "10위(R3) 100");
         // 순위 칭호 (영구): 칭호 창에 나오고 적용 가능
-        String season = kr.wave.core.module.RankingModule.defaultSeason();
+        String season = rm.defaultSeason();
+        assertEquals("시즌 1", season);
         String tkey = kr.wave.core.module.RankingModule.titleKey(season, kr.wave.core.module.RankingModule.Cat.MONEY, 1);
         assertTrue(top.titles.contains(tkey), top.titles.toString());
         assertTrue(Msg.plainOf(kr.wave.core.module.RankingModule.titleText(tkey)).equals("[👑 " + season + " 돈 TOP 1]"));
         assertTrue(plugin.store().get(ps.get(5)).titles.stream().anyMatch(tk -> Msg.plainOf(String.valueOf(kr.wave.core.module.RankingModule.titleText(tk))).contains("돈 Ranking #7")));
         PlayerMock champ = ps.get(11);
         top.titles.add("ace");
-        top.titles.add(kr.wave.core.module.RankingModule.titleKey("2026.08", kr.wave.core.module.RankingModule.Cat.KILLS, 3));
+        top.titles.add(kr.wave.core.module.RankingModule.titleKey("시즌 9", kr.wave.core.module.RankingModule.Cat.KILLS, 3));
+        top.titles.add(kr.wave.core.module.RankingModule.titleKey("시즌 10", kr.wave.core.module.RankingModule.Cat.MONEY, 5));
         champ.closeInventory();
         assertTrue(champ.performCommand("메뉴"));
         click(champ, 19, ClickType.LEFT);
@@ -4111,10 +4115,11 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         var tinv = champ.getOpenInventory().getTopInventory();
         assertTrue(Msg.name(tinv.getItem(10)).contains("Ace"), "일반 칭호 먼저");
-        assertTrue(Msg.name(tinv.getItem(11)).contains(season + " 돈 TOP 1"), "최근 시즌 순위 칭호 다음: " + Msg.name(tinv.getItem(11)));
-        assertTrue(Msg.name(tinv.getItem(12)).contains("2026.08 처치 TOP 3"));
+        assertTrue(Msg.name(tinv.getItem(11)).contains("시즌 10 돈 Ranking #5"), "최근 시즌(10) 먼저: " + Msg.name(tinv.getItem(11)));
+        assertTrue(Msg.name(tinv.getItem(12)).contains("시즌 9 처치 TOP 3"), Msg.name(tinv.getItem(12)));
+        assertTrue(Msg.name(tinv.getItem(13)).contains("시즌 1 돈 TOP 1"), Msg.name(tinv.getItem(13)));
         GuiSnapshot.save(champ, "titles_rank.json");
-        click(champ, 11, ClickType.LEFT);
+        click(champ, 13, ClickType.LEFT);
         assertEquals(tkey, top.activeTitle, "순위 칭호 적용");
         champ.closeInventory();
         assertTrue(admin.performCommand("조회 R12"));

@@ -388,9 +388,14 @@ public class RankingModule extends Module {
 
     /* ======================= TOP 10 보상 ======================= */
 
-    /** 시즌 이름을 정하지 않았을 때: 연.월 (예: 2026.11) */
-    public static String defaultSeason() {
-        return LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM"));
+    /** 지금 시즌 번호 (config season-reset.number, /시즌 초기화 때마다 1 올라감) */
+    public int seasonNumber() {
+        return Math.max(1, plugin.getConfig().getInt("season-reset.number", 1));
+    }
+
+    /** 시즌 이름을 정하지 않았을 때: "시즌 N" */
+    public String defaultSeason() {
+        return "시즌 " + seasonNumber();
     }
 
     /* ---------------- 순위 칭호 (시즌 보상, 영구) ---------------- */
@@ -419,9 +424,16 @@ public class RankingModule extends Module {
         return c.grad("[" + medal + " " + p[1] + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]");
     }
 
-    /** 순위 칭호 정렬: 최근 시즌 먼저, 같은 시즌이면 돈 → 처치, 순위 순 */
+    /** "시즌 12" -> 12 (숫자가 없으면 0) */
+    private static long seasonNo(String season) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)\\D*$").matcher(season);
+        return m.find() ? Long.parseLong(m.group(1)) : 0;
+    }
+
+    /** 순위 칭호 정렬: 최근 시즌 먼저 (시즌 10 > 시즌 9), 같은 시즌이면 돈 → 처치, 순위 순 */
     public static java.util.Comparator<String> titleOrder() {
-        return java.util.Comparator.comparing((String k) -> k.split("\\|")[1], java.util.Comparator.reverseOrder())
+        return java.util.Comparator.comparingLong((String k) -> -seasonNo(k.split("\\|")[1]))
+                .thenComparing((String k) -> k.split("\\|")[1], java.util.Comparator.reverseOrder())
                 .thenComparing(k -> k.split("\\|")[2])
                 .thenComparingInt(k -> {
                     try {

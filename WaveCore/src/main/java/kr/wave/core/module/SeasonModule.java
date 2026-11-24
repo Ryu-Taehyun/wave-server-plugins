@@ -244,7 +244,7 @@ public class SeasonModule extends Module {
         for (Player p : Bukkit.getOnlinePlayers()) deliver(p, data(p), true);   // 접속 중인 사람은 바로 배낭으로
         if (ranking != null) {
             if (top10 != null) {
-                int n = ranking.payout(top10, ranking.seasonName(RankingModule.defaultSeason()));
+                int n = ranking.payout(top10, ranking.seasonName(ranking.defaultSeason()));
                 done.add("순위 TOP 10 보상 " + n + "건");
             }
             ranking.rebuild();
@@ -257,6 +257,8 @@ public class SeasonModule extends Module {
         }
         String now = LocalDateTime.now().format(SHOW_TIME);
         plugin.getConfig().set("season-reset.last", now);
+        // 시즌 번호: 끝난 시즌의 보상을 준 뒤 다음 시즌으로
+        plugin.getConfig().set("season-reset.number", Math.max(1, plugin.getConfig().getInt("season-reset.number", 1)) + 1);
         plugin.saveConfig();
         String summary = String.join(", ", done);
         log(s.getName() + " | 플레이어 " + players + "명 | " + summary + " | 백업 " + backup.getName());
