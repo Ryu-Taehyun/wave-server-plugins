@@ -181,14 +181,73 @@ public class MenuModule extends Module {
             case 6 -> GLACIER + "Glacier</gradient>";
             default -> "&c설정되지 않음";
         };
-        Gui g = new Gui(3, "&8&l프로필");
-        g.set(4, It.of(Material.PLAYER_HEAD).skull(p).name("&e" + p.getName())
-                .lore("&7현재 칭호 : " + plugin.hooks().prefix(p) + "%nl%&7설정된 닉네임 색상 : " + color).build());
-        g.set(10, It.of(Material.IRON_SWORD).name("&6&l킬 특수 효과 설정").lore("&7킬 특수 효과와 크라운 처치 알림 표식을 설정합니다.").build(), e -> later(1, () -> killEffects(p)));
-        g.set(12, It.of(Material.PAPER).name("&6&l닉네임 색상 설정").lore("&7닉네임 색상을 설정합니다.").build(), e -> later(1, () -> nickColors(p)));
-        g.set(14, It.of(Material.EMERALD).name("&6&l랭크 확인").lore("&7랭크를 확인합니다.").build(), e -> later(1, () -> ranks(p)));
-        g.set(16, It.of(Material.BOOK).name("&6&l칭호 설정").lore("&7칭호를 설정할 수 있습니다.").build(), e -> later(1, () -> titles(p)));
+        String title = plugin.hooks().prefix(p);
+        Gui g = new Gui(5, "&8&l프로필");
+        g.set(4, It.of(Material.PLAYER_HEAD).skull(p).name(nickName(d.nickColor, p.getName(), "&e"))
+                .lore("&7레벨 : &e" + d.level + " &8· &7랭크 : " + ProfileModule.rankLabel(d),
+                        "&7칭호 : " + (title == null || title.isBlank() ? "&8없음" : title),
+                        "&7닉네임 색상 : " + color, "", "&e클릭 &7: 다른 사람에게 보이는 내 정보 창").build(),
+                e -> later(1, () -> plugin.module(ProfileModule.class).open(p, p)));
+        // 치장
+        g.set(10, It.of(Material.NAME_TAG).name("&e&l칭호").lore("&8치장", "&7모은 칭호 중 하나를 달 수 있습니다.", "&7모은 칭호 : &f" + d.titles.size() + "개", "", "&e클릭하여 설정").build(), e -> later(1, () -> titles(p)));
+        g.set(12, It.of(Material.PAPER).name("&e&l닉네임 색상").lore("&8치장", "&7채팅 · 탭 목록 이름 색을 바꿉니다.", "&7현재 : " + color, "", "&e클릭하여 설정").build(), e -> later(1, () -> nickColors(p)));
+        g.set(14, It.of(Material.IRON_SWORD).hide().name("&e&l킬 특수 효과").lore("&8치장", "&7처치 연출과 크라운 처치 알림 표식을 고릅니다.", "", "&e클릭하여 설정").build(), e -> later(1, () -> killEffects(p)));
+        g.set(16, It.of(Material.EMERALD).name("&e&l랭크").lore("&8정보", "&7현재 랭크 : " + ProfileModule.rankLabel(d), "", "&e클릭하여 랭크 조건 보기").build(), e -> later(1, () -> ranks(p)));
+        // 개인 설정
+        g.set(29, It.of(d.collectionPublic ? Material.LIME_DYE : Material.GRAY_DYE).name("&a&l컬렉션 공개")
+                .lore("&8개인 설정", "&7다른 플레이어가 /정보 창에서", "&7내 컬렉션 진행을 볼 수 있게 합니다.", "",
+                        "&7상태 : " + (d.collectionPublic ? "&a공개" : "&c비공개"), "", "&e클릭하여 " + (d.collectionPublic ? "비공개로" : "공개로") + " 바꾸기").build(), e -> {
+            d.collectionPublic = !d.collectionPublic;
+            plugin.store().save(d);
+            Msg.send(p, "&a[프로필] &7컬렉션 진행이 이제 " + (d.collectionPublic ? "&a공개" : "&c비공개") + "&7입니다.");
+            Msg.sound(p, "ui.button.click", 0.6f, d.collectionPublic ? 1.4f : 0.9f);
+            later(1, () -> profile(p));
+        });
+        long hidden = WeaponModule.FX_WEAPONS.stream().filter(w -> d.hideFx.contains(w.key())).count();
+        g.set(31, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&8개인 설정", "&7특정 무기의 타격 파티클을", "&7내 화면에서만 숨깁니다. (다른 사람에게는 그대로)", "",
+                "&7숨긴 무기 : &f" + hidden + "개", "", "&e클릭하여 설정").build(), e -> later(1, () -> hitFx(p, 1)));
+        g.set(33, It.of(Material.CLOCK).name("&6&l출석").lore("&8정보", "&7연속 출석 : &f" + d.attendStreak + "일", "", "&e클릭하여 출석 현황 보기").build(),
+                e -> later(1, () -> plugin.module(AttendanceModule.class).open(p)));
         g.nav(p, () -> menu(p)).fill().open(p);
+    }
+
+    /** 무기별 타격 파티클 숨기기 (보는 사람 기준) */
+    private void hitFx(Player p, int page) {
+        PlayerData d = data(p);
+        var list = WeaponModule.FX_WEAPONS;
+        int per = 14, pages = Math.max(1, (list.size() + per - 1) / per);
+        Gui g = new Gui(5, "&8&l무기 타격 파티클");
+        g.set(4, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&7무기를 클릭하면 그 무기의 타격 파티클을", "&7내 화면에서 숨기거나 다시 보이게 합니다.",
+                "", "&8다른 플레이어 화면과 무기 성능은 바뀌지 않습니다.", "&8(천둥의 심판 번개 자체는 숨길 수 없습니다)").build());
+        int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+        for (int i = 0; i < per && (page - 1) * per + i < list.size(); i++) {
+            WeaponModule.FxWeapon w = list.get((page - 1) * per + i);
+            boolean hide = d.hideFx.contains(w.key());
+            ItemStack icon = w.icon().get();
+            if (hide) icon = It.of(Material.GRAY_DYE).name("&7" + Msg.name(icon)).build();
+            var meta = icon.getItemMeta();
+            meta.lore(Msg.lore("", "&7타격 파티클 : " + (hide ? "&c숨김" : "&a보임"), "", hide ? "&e클릭하여 다시 보기" : "&e클릭하여 숨기기"));
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
+            icon.setItemMeta(meta);
+            g.set(slots[i], icon, e -> {
+                if (!d.hideFx.remove(w.key())) d.hideFx.add(w.key());
+                plugin.store().save(d);
+                Msg.sound(p, "ui.button.click", 0.6f, d.hideFx.contains(w.key()) ? 0.9f : 1.4f);
+                later(1, () -> hitFx(p, page));
+            });
+        }
+        g.set(30, It.of(Material.LIME_DYE).name("&a&l모두 보이기").build(), e -> {
+            d.hideFx.clear();
+            plugin.store().save(d);
+            later(1, () -> hitFx(p, page));
+        });
+        g.set(32, It.of(Material.GRAY_DYE).name("&c&l모두 숨기기").build(), e -> {
+            for (WeaponModule.FxWeapon w : list) d.hideFx.add(w.key());
+            plugin.store().save(d);
+            later(1, () -> hitFx(p, page));
+        });
+        g.pages(p, page, pages, n -> later(1, () -> hitFx(p, n)));
+        g.nav(p, () -> profile(p)).fill().open(p);
     }
 
     /** 킬 특수 효과 / 크라운 표식 버튼: 상태 + 클릭 안내 (모두 같은 형식) */

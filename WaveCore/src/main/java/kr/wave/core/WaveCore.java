@@ -52,6 +52,7 @@ public class WaveCore extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(store, this);
         Bukkit.getPluginManager().registerEvents(new Gui.Listen(), this);
+        kr.wave.core.util.Fx.hides((p, key) -> store.get(p).hideFx.contains(key));
 
         modules.add(new CoreModule(this));          // maincore.sk, motd.sk, newbieprotect.sk, viewweapon.sk, whisper.sk
         modules.add(new EconomyModule(this));       // shop.sk(캐시), 유료캐시, 도박, /돈확인

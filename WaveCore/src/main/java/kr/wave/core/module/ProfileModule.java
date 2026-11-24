@@ -94,8 +94,13 @@ public class ProfileModule extends Module {
         g.set(21, It.of(Material.DIAMOND).name("&b&l랭크").lore("&7현재 랭크 : " + rankLabel(d)).build());
         g.set(22, It.of(Material.WHITE_BANNER).name("&c&l팀").lore("&7소속 : " + teamLine(t)).build());
         CollectionModule cm = plugin.module(CollectionModule.class);
-        g.set(23, It.of(Material.NETHER_STAR).name("&d&l컬렉션").lore("&7컬렉션 진행 현황을 봅니다.", "", "&e클릭하여 자세히 보기").build(),
-                e -> cm.view(viewer, d, name, () -> open(viewer, t)));
+        boolean canSee = d.collectionPublic || viewer.getUniqueId().equals(t.getUniqueId()) || viewer.hasPermission(ADMIN);
+        if (canSee) {
+            g.set(23, It.of(Material.NETHER_STAR).name("&d&l컬렉션").lore("&7컬렉션 진행 현황을 봅니다.", "", "&e클릭하여 자세히 보기").build(),
+                    e -> cm.view(viewer, d, name, () -> open(viewer, t)));
+        } else {
+            g.set(23, It.of(Material.GRAY_DYE).name("&7&l컬렉션 &8(비공개)").lore("&7이 플레이어는 컬렉션 진행을", "&7공개하지 않았습니다.").build());
+        }
         g.set(24, It.of(Material.DIAMOND_CHESTPLATE).hide().name("&f&l장비 보기").lore("&7착용 중인 장비를 봅니다.", "", "&e클릭하여 보기").build(), e -> {
             viewer.closeInventory();
             if (t.isOnline()) viewer.performCommand("stats " + name);

@@ -23,6 +23,48 @@ public final class Fx {
     private Fx() {
     }
 
+    /* ======================= 보는 사람별 숨기기 ======================= */
+
+    /** 지금 그리는 연출이 어느 무기의 타격 연출인지 (null = 모두에게 보임) */
+    private static final ThreadLocal<String> SCOPE = new ThreadLocal<>();
+    /** (보는 사람, 무기 키) -> 숨김 여부. WaveCore 가 켜질 때 설정 */
+    private static java.util.function.BiPredicate<org.bukkit.entity.Player, String> hides = (p, k) -> false;
+
+    public static void hides(java.util.function.BiPredicate<org.bukkit.entity.Player, String> h) {
+        hides = h == null ? (p, k) -> false : h;
+    }
+
+    /** key 무기의 타격 연출로 그림: 그 무기를 숨긴 플레이어에게는 보내지 않음 */
+    public static void scoped(String key, Runnable r) {
+        String prev = SCOPE.get();
+        if (key == null) SCOPE.remove();
+        else SCOPE.set(key);
+        try {
+            r.run();
+        } finally {
+            if (prev == null) SCOPE.remove();
+            else SCOPE.set(prev);
+        }
+    }
+
+    private static <T> void spawn(Location l, Particle type, int count, double sx, double sy, double sz, double speed, T data) {
+        World w = l.getWorld();
+        if (w == null) return;
+        try {
+            String key = SCOPE.get();
+            if (key == null) {
+                w.spawnParticle(type, l, count, sx, sy, sz, speed, data, true);
+                return;
+            }
+            for (org.bukkit.entity.Player p : w.getPlayers()) {
+                if (p.getLocation().distanceSquared(l) > 160 * 160 || hides.test(p, key)) continue;
+                p.spawnParticle(type, l, count, sx, sy, sz, speed, data);
+            }
+        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
+            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
+        }
+    }
+
     public static Color rgb(int hex) {
         return Color.fromRGB(hex);
     }
@@ -30,54 +72,24 @@ public final class Fx {
     /* ======================= 기본 ======================= */
 
     public static void p(Location l, Particle type, int count, double spread, double speed) {
-        World w = l.getWorld();
-        if (w == null) return;
-        try {
-            w.spawnParticle(type, l, count, spread, spread, spread, speed, null, true);
-        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
-            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
-        }
+        spawn(l, type, count, spread, spread, spread, speed, null);
     }
 
     public static void p(Location l, Particle type, int count, double sx, double sy, double sz, double speed) {
-        World w = l.getWorld();
-        if (w == null) return;
-        try {
-            w.spawnParticle(type, l, count, sx, sy, sz, speed, null, true);
-        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
-            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
-        }
+        spawn(l, type, count, sx, sy, sz, speed, null);
     }
 
     public static void dust(Location l, Color c, float size, int count, double spread) {
-        World w = l.getWorld();
-        if (w == null) return;
-        try {
-            w.spawnParticle(Particle.DUST, l, count, spread, spread, spread, 0, new Particle.DustOptions(c, size), true);
-        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
-            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
-        }
+        spawn(l, Particle.DUST, count, spread, spread, spread, 0, new Particle.DustOptions(c, size));
     }
 
     /** from 색에서 to 색으로 변하는 먼지 */
     public static void fade(Location l, Color from, Color to, float size, int count, double spread) {
-        World w = l.getWorld();
-        if (w == null) return;
-        try {
-            w.spawnParticle(Particle.DUST_COLOR_TRANSITION, l, count, spread, spread, spread, 0, new Particle.DustTransition(from, to, size), true);
-        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
-            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
-        }
+        spawn(l, Particle.DUST_COLOR_TRANSITION, count, spread, spread, spread, 0, new Particle.DustTransition(from, to, size));
     }
 
     public static void block(Location l, Particle type, BlockData data, int count, double spread) {
-        World w = l.getWorld();
-        if (w == null) return;
-        try {
-            w.spawnParticle(type, l, count, spread, spread, spread, 0, data, true);
-        } catch (RuntimeException e) {   // 서버 버전에 따라 없는 파티클 · 잘못된 데이터: 연출만 생략
-            Log.once("fx:" + e.getClass().getSimpleName() + ":" + e.getMessage(), "파티클을 표시하지 못했습니다: " + e);
-        }
+        spawn(l, type, count, spread, spread, spread, 0, data);
     }
 
     /** 번개 효과 (피해 없음) */
@@ -170,9 +182,10 @@ public final class Fx {
     private static BukkitTask timer(long period, IntPredicate step) {
         int[] t = {0};
         BukkitTask[] task = new BukkitTask[1];
-        task[0] = Bukkit.getScheduler().runTaskTimer(WaveCore.get(), () -> {
+        String key = SCOPE.get();   // 타격 연출 중에 시작한 움직이는 모양도 같은 무기로
+        task[0] = Bukkit.getScheduler().runTaskTimer(WaveCore.get(), () -> scoped(key, () -> {
             if (!step.test(t[0]++)) task[0].cancel();
-        }, 0L, period);
+        }), 0L, period);
         return task[0];
     }
 

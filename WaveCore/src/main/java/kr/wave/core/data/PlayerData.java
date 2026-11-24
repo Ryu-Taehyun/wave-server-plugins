@@ -51,6 +51,10 @@ public class PlayerData {
     public final Set<String> killLogOff = new HashSet<>();
     /** 파티클 연출을 끈 무기 (claymore / frost). 능력은 그대로 */
     public final Set<String> fxOff = new HashSet<>();
+    /** 내 화면에서 숨길 무기 타격 파티클 (무기 키: chaos, claymore ...) */
+    public final Set<String> hideFx = new HashSet<>();
+    /** 다른 사람이 /정보 에서 내 컬렉션 진행을 볼 수 있는지 */
+    public boolean collectionPublic = true;
 
     /* 보관 */
     public final List<ItemStack> mailbox = new ArrayList<>();
@@ -128,6 +132,8 @@ public class PlayerData {
         crownKill = y.getBoolean("crown-kill");
         killLogOff.addAll(y.getStringList("kill-log-off"));
         fxOff.addAll(y.getStringList("fx-off"));
+        hideFx.addAll(y.getStringList("hide-fx"));
+        collectionPublic = y.getBoolean("collection-public", true);
         crownOwned = y.getBoolean("crown-owned", crownKill);
         readItems(y.getList("mailbox"), mailbox);
         readItems(y.getList("keep-items"), keepItems);
@@ -191,6 +197,8 @@ public class PlayerData {
         y.set("crown-kill", crownKill);
         y.set("kill-log-off", new java.util.ArrayList<>(killLogOff));
         y.set("fx-off", new java.util.ArrayList<>(fxOff));
+        y.set("hide-fx", new java.util.ArrayList<>(hideFx));
+        y.set("collection-public", collectionPublic);
         y.set("crown-owned", crownOwned);
         y.set("mailbox", new ArrayList<>(mailbox));
         y.set("keep-items", new ArrayList<>(keepItems));

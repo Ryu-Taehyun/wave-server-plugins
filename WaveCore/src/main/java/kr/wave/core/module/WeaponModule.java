@@ -441,9 +441,43 @@ public class WeaponModule extends Module {
         e.setHealth(Math.max(0, e.getHealth() - amount));
     }
 
+    /** 타격 파티클을 숨길 수 있는 무기 (키, 이름 일부, 아이콘). 프로필 설정 → 무기 타격 파티클 */
+    public record FxWeapon(String key, String name, java.util.function.Supplier<org.bukkit.inventory.ItemStack> icon) {
+    }
+
+    public static final java.util.List<FxWeapon> FX_WEAPONS = java.util.List.of(
+            new FxWeapon("chaos", Items.N_CHAOS, Items::chaosApocalypse),
+            new FxWeapon("claymore", Items.N_CLAYMORE_SD, Items::claymoreSd),
+            new FxWeapon("frost", Items.N_FROST, Items::frostGrave),
+            new FxWeapon("sealed", Items.N_SEALED_SWORD, Items::sealedSword),
+            new FxWeapon("ruiner", Items.N_RUINER_SCYTHE, Items::ruinerScythe),
+            new FxWeapon("void", Items.N_VOID_BOW, Items::voidBow),
+            new FxWeapon("quantum", Items.N_QUANTUM_SWORD, Items::quantumSword),
+            new FxWeapon("thunder", Items.N_THUNDER, Items::thunderAxe),
+            new FxWeapon("chronos", Items.N_CHRONOS, () -> Items.chronos(6)),
+            new FxWeapon("ember", Items.N_EMBER, Items::emberBrand),
+            new FxWeapon("shade", Items.N_SHADE, Items::umbralChain),
+            new FxWeapon("bell", Items.N_BELL, Items::echoBell),
+            new FxWeapon("timewind", Items.N_TIME_WIND, Items::timePiecerWind));
+
+    /** 들고 있는 무기 이름 -> 타격 파티클 키 (없으면 null) */
+    public static String fxKey(String toolName) {
+        if (toolName == null || toolName.isEmpty()) return null;
+        for (FxWeapon w : FX_WEAPONS) if (toolName.contains(w.name())) return w.key();
+        return null;
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent e) {
         if (probing) return;
+        Player who = e.getDamager() instanceof Player p ? p
+                : e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
+        // 무기 타격 연출은 그 무기를 숨긴 플레이어 화면에는 그리지 않음
+        String key = who == null ? null : fxKey(Msg.name(who.getInventory().getItemInMainHand()));
+        Fx.scoped(key, () -> hit(e));
+    }
+
+    private void hit(EntityDamageByEntityEvent e) {
         if (!(e.getEntity() instanceof LivingEntity victim)) return;
         Player attacker = e.getDamager() instanceof Player p ? p : null;
         Player shooter = e.getDamager() instanceof Projectile pr && pr.getShooter() instanceof Player sp ? sp : null;
@@ -465,12 +499,12 @@ public class WeaponModule extends Module {
                     victim.setHealth(victim.getHealth() / 2);
                     // 혼돈의 재앙: 어둠이 빨려 들어간 뒤 터짐
                     Fx.implode(mid, CHAOS_D, 2.4, 10);
-                    later(10, () -> {
+                    later(10, () -> Fx.scoped("chaos", () -> {
                         Fx.p(mid, Particle.SONIC_BOOM, 1, 0, 0);
                         Fx.p(mid, Particle.SCULK_SOUL, 30, 0.6, 0.08);
                         Fx.shockwave(vl, CHAOS_L, 3.5, 8);
                         Msg.soundAt(mid, "entity.warden.sonic_boom", 0.6f, 1.4f);
-                    });
+                    }));
                 }
             }
             if (tool.contains(Items.N_RUINER_SCYTHE)) {

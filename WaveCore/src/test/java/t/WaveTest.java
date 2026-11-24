@@ -314,7 +314,7 @@ public class WaveTest {
         click(p, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("프로필", title(p));
-        click(p, 16, ClickType.LEFT);
+        click(p, 10, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertEquals("칭호 설정", title(p));
         Gui t = (Gui) p.getOpenInventory().getTopInventory().getHolder();
@@ -1590,7 +1590,7 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         assertEquals("프로필", title(p));
         assertFalse(allText(p.getOpenInventory().getTopInventory()).contains("크라운 처치 알림 표식 ["), "프로필에는 크라운 버튼 없음");
-        click(p, 10, ClickType.LEFT);   // 킬 특수 효과
+        click(p, 14, ClickType.LEFT);   // 킬 특수 효과
         server.getScheduler().performTicks(2);
         assertEquals("킬 특수 효과 설정", title(p));
         var inv = p.getOpenInventory().getTopInventory();
@@ -1618,7 +1618,7 @@ public class WaveTest {
         p.performCommand("메뉴");
         click(p, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(p, 10, ClickType.LEFT);
+        click(p, 14, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         click(p, 16, ClickType.LEFT);
         assertFalse(d.crownKill, "해제");
@@ -1708,7 +1708,7 @@ public class WaveTest {
         p.performCommand("메뉴");
         click(p, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(p, 16, ClickType.LEFT);   // 칭호 설정
+        click(p, 10, ClickType.LEFT);   // 칭호 설정
         server.getScheduler().performTicks(2);
         assertEquals("칭호 설정", title(p));
         var inv = p.getOpenInventory().getTopInventory();
@@ -1971,7 +1971,7 @@ public class WaveTest {
         p.performCommand("메뉴");
         click(p, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(p, 14, ClickType.LEFT);   // 랭크 확인
+        click(p, 16, ClickType.LEFT);   // 랭크 확인
         server.getScheduler().performTicks(2);
         assertTrue(Msg.name(p.getOpenInventory().getTopInventory().getItem(22)).contains("OVER LORD"));
     }
@@ -3741,6 +3741,76 @@ public class WaveTest {
         }
         Thread.sleep(50);
         server.getScheduler().performTicks(2);
+    }
+
+    @Test
+    void profileSettingsCollectionPrivacyAndHitFx() {
+        PlayerMock a = server.addPlayer("Owner");
+        PlayerMock b = server.addPlayer("Looker");
+        server.getScheduler().performTicks(5);
+        PlayerData da = plugin.store().get(a);
+        assertTrue(a.performCommand("메뉴"));
+        click(a, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertEquals("프로필", title(a));
+        String all = allText(a.getOpenInventory().getTopInventory());
+        assertTrue(all.contains("컬렉션 공개") && all.contains("무기 타격 파티클") && all.contains("칭호") && all.contains("닉네임 색상"), all);
+        GuiSnapshot.save(a, "profile_settings.json");
+        // 컬렉션 비공개
+        click(a, 29, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertFalse(da.collectionPublic);
+        assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("비공개"));
+        assertTrue(b.performCommand("정보 Owner"));
+        String info = allText(b.getOpenInventory().getTopInventory());
+        assertTrue(info.contains("비공개") && !info.contains("자세히 보기"), info);
+        click(b, 23, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(title(b).contains("플레이어 정보"), "비공개면 컬렉션 창이 안 열림");
+        assertTrue(a.performCommand("정보 Owner"));
+        assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("자세히 보기"), "본인은 볼 수 있음");
+        // 무기 타격 파티클: 클레이모어 숨기기
+        assertTrue(a.performCommand("메뉴"));
+        click(a, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        click(a, 31, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertEquals("무기 타격 파티클", title(a));
+        var inv = a.getOpenInventory().getTopInventory();
+        int slot = -1;
+        for (int i = 0; i < inv.getSize(); i++) if (inv.getItem(i) != null && Msg.name(inv.getItem(i)).contains("천공의 심판자 클레이모어")) slot = i;
+        assertTrue(slot > 0, allText(inv));
+        click(a, slot, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(da.hideFx.contains("claymore"));
+        GuiSnapshot.save(a, "hit_fx.json");
+        assertEquals("claymore", kr.wave.core.module.WeaponModule.fxKey(Items.N_CLAYMORE_SD));
+        assertEquals("chaos", kr.wave.core.module.WeaponModule.fxKey(Msg.name(Items.chaosApocalypse())));
+        assertNull(kr.wave.core.module.WeaponModule.fxKey("돌 검"));
+        // 저장 후 다시 읽어도 유지
+        var y = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            y.loadFromString(da.toYaml());
+        } catch (org.bukkit.configuration.InvalidConfigurationException ex) {
+            throw new RuntimeException(ex);
+        }
+        PlayerData copy = new PlayerData(a.getUniqueId());
+        copy.load(y);
+        assertTrue(copy.hideFx.contains("claymore") && !copy.collectionPublic);
+        // 클레이모어로 때리면: 숨긴 a 에게는 파티클 안 감, b 에게는 감 (Fx 범위 확인)
+        int[] seen = {0, 0};
+        kr.wave.core.util.Fx.hides((pl, k) -> {
+            if (pl == a) seen[0]++;
+            if (pl == b) seen[1]++;
+            return plugin.store().get(pl).hideFx.contains(k);
+        });
+        kr.wave.core.util.Fx.scoped("claymore", () -> kr.wave.core.util.Fx.p(a.getLocation(), org.bukkit.Particle.CRIT, 3, 0.2, 0));
+        assertTrue(seen[0] > 0 && seen[1] > 0, "보는 사람마다 확인");
+        kr.wave.core.util.Fx.hides((pl, k) -> plugin.store().get(pl).hideFx.contains(k));
+        // 모두 보이기
+        click(a, 30, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        assertTrue(da.hideFx.isEmpty());
     }
 
     private static net.kyori.adventure.text.event.ClickEvent clickOwner(net.kyori.adventure.text.Component c) {
