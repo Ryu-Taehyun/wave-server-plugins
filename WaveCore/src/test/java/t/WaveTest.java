@@ -3769,7 +3769,8 @@ public class WaveTest {
         assertTrue(title(b).contains("플레이어 정보"), "비공개면 컬렉션 창이 안 열림");
         assertTrue(a.performCommand("정보 Owner"));
         assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("자세히 보기"), "본인은 볼 수 있음");
-        // 무기 타격 파티클: 클레이모어 숨기기
+        // 무기 타격 파티클: 가진 무기(클레이모어)만 설정 가능
+        a.getInventory().addItem(Items.claymoreSd());
         assertTrue(a.performCommand("메뉴"));
         click(a, 19, ClickType.LEFT);
         server.getScheduler().performTicks(2);
@@ -3780,9 +3781,22 @@ public class WaveTest {
         int slot = -1;
         for (int i = 0; i < inv.getSize(); i++) if (inv.getItem(i) != null && Msg.name(inv.getItem(i)).contains("천공의 심판자 클레이모어")) slot = i;
         assertTrue(slot > 0, allText(inv));
+        String fxAll = allText(inv);
+        assertTrue(fxAll.contains("보유하지 않음") && fxAll.contains("클릭하여 끄기") && !fxAll.contains("숨기기"), fxAll);
         click(a, slot, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         assertTrue(da.hideFx.contains("claymore"));
+        assertTrue(allText(a.getOpenInventory().getTopInventory()).contains("클릭하여 활성화"));
+        // 없는 무기는 눌러도 안 바뀜
+        var inv2 = a.getOpenInventory().getTopInventory();
+        for (int i = 0; i < inv2.getSize(); i++) if (inv2.getItem(i) != null && Msg.name(inv2.getItem(i)).contains("혼돈의 아포칼립스")) {
+            click(a, i, ClickType.LEFT);
+            server.getScheduler().performTicks(2);
+        }
+        assertFalse(da.hideFx.contains("chaos"));
+        click(a, 32, ClickType.LEFT);   // 모두 끄기 = 가진 무기만
+        server.getScheduler().performTicks(2);
+        assertEquals(java.util.Set.of("claymore"), da.hideFx);
         GuiSnapshot.save(a, "hit_fx.json");
         assertEquals("claymore", kr.wave.core.module.WeaponModule.fxKey(Items.N_CLAYMORE_SD));
         assertEquals("chaos", kr.wave.core.module.WeaponModule.fxKey(Msg.name(Items.chaosApocalypse())));

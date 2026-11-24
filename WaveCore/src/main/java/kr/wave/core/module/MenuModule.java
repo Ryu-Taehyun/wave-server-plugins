@@ -204,8 +204,8 @@ public class MenuModule extends Module {
             later(1, () -> profile(p));
         });
         long hidden = WeaponModule.FX_WEAPONS.stream().filter(w -> d.hideFx.contains(w.key())).count();
-        g.set(31, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&8개인 설정", "&7특정 무기의 타격 파티클을", "&7내 화면에서만 숨깁니다. (다른 사람에게는 그대로)", "",
-                "&7숨긴 무기 : &f" + hidden + "개", "", "&e클릭하여 설정").build(), e -> later(1, () -> hitFx(p, 1)));
+        g.set(31, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&8개인 설정", "&7가지고 있는 무기의 타격 파티클을", "&7내 화면에서 켜거나 끕니다. (다른 사람에게는 그대로)", "",
+                "&7꺼 둔 무기 : &f" + hidden + "개", "", "&e클릭하여 설정").build(), e -> later(1, () -> hitFx(p, 1)));
         g.set(33, It.of(Material.CLOCK).name("&6&l출석").lore("&8정보", "&7연속 출석 : &f" + d.attendStreak + "일", "", "&e클릭하여 출석 현황 보기").build(),
                 e -> later(1, () -> plugin.module(AttendanceModule.class).open(p)));
         g.nav(p, () -> menu(p)).fill().open(p);
@@ -215,18 +215,24 @@ public class MenuModule extends Module {
     private void hitFx(Player p, int page) {
         PlayerData d = data(p);
         var list = WeaponModule.FX_WEAPONS;
+        java.util.Set<String> owned = ownedFxWeapons(p, d);
         int per = 14, pages = Math.max(1, (list.size() + per - 1) / per);
         Gui g = new Gui(5, "&8&l무기 타격 파티클");
-        g.set(4, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&7무기를 클릭하면 그 무기의 타격 파티클을", "&7내 화면에서 숨기거나 다시 보이게 합니다.",
-                "", "&8다른 플레이어 화면과 무기 성능은 바뀌지 않습니다.", "&8(천둥의 심판 번개 자체는 숨길 수 없습니다)").build());
+        g.set(4, It.of(Material.BLAZE_POWDER).name("&6&l무기 타격 파티클").lore("&7가지고 있는 무기를 클릭하면 그 무기의", "&7타격 파티클을 내 화면에서 켜거나 끕니다.",
+                "", "&8다른 플레이어 화면과 무기 성능은 바뀌지 않습니다.", "&8(천둥의 심판 번개 자체는 끌 수 없습니다)").build());
         int[] slots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
         for (int i = 0; i < per && (page - 1) * per + i < list.size(); i++) {
             WeaponModule.FxWeapon w = list.get((page - 1) * per + i);
-            boolean hide = d.hideFx.contains(w.key());
-            ItemStack icon = w.icon().get();
-            if (hide) icon = It.of(Material.GRAY_DYE).name("&7" + Msg.name(icon)).build();
+            ItemStack base = w.icon().get();
+            if (!owned.contains(w.key())) {
+                g.set(slots[i], It.of(base.getType()).hide().name("&8" + Msg.name(base))
+                        .lore("", "&7상태 : &c보유하지 않음", "", "&8이 무기를 얻으면 설정할 수 있습니다.").build(), e -> Gui.denySound(p));
+                continue;
+            }
+            boolean off = d.hideFx.contains(w.key());
+            ItemStack icon = off ? It.of(Material.GRAY_DYE).name("&7" + Msg.name(base)).build() : base;
             var meta = icon.getItemMeta();
-            meta.lore(Msg.lore("", "&7타격 파티클 : " + (hide ? "&c숨김" : "&a보임"), "", hide ? "&e클릭하여 다시 보기" : "&e클릭하여 숨기기"));
+            meta.lore(Msg.lore("", "&7타격 파티클 : " + (off ? "&c꺼짐" : "&a켜짐"), "", off ? "&e클릭하여 활성화" : "&e클릭하여 끄기"));
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
             icon.setItemMeta(meta);
             g.set(slots[i], icon, e -> {
@@ -236,18 +242,38 @@ public class MenuModule extends Module {
                 later(1, () -> hitFx(p, page));
             });
         }
-        g.set(30, It.of(Material.LIME_DYE).name("&a&l모두 보이기").build(), e -> {
-            d.hideFx.clear();
+        g.set(30, It.of(Material.LIME_DYE).name("&a&l모두 활성화").lore("&7가지고 있는 무기의 타격 파티클을 모두 켭니다.").build(), e -> {
+            d.hideFx.removeAll(owned);
             plugin.store().save(d);
             later(1, () -> hitFx(p, page));
         });
-        g.set(32, It.of(Material.GRAY_DYE).name("&c&l모두 숨기기").build(), e -> {
-            for (WeaponModule.FxWeapon w : list) d.hideFx.add(w.key());
+        g.set(32, It.of(Material.GRAY_DYE).name("&c&l모두 끄기").lore("&7가지고 있는 무기의 타격 파티클을 모두 끕니다.").build(), e -> {
+            d.hideFx.addAll(owned);
             plugin.store().save(d);
             later(1, () -> hitFx(p, page));
         });
         g.pages(p, page, pages, n -> later(1, () -> hitFx(p, n)));
         g.nav(p, () -> profile(p)).fill().open(p);
+    }
+
+    /** 가지고 있는 무기 (인벤토리 · 엔더 상자 · 배낭과 그 안의 셜커 상자, 한 번이라도 수집한 컬렉션 무기) */
+    private java.util.Set<String> ownedFxWeapons(Player p, PlayerData d) {
+        java.util.List<String> names = new java.util.ArrayList<>(d.collected);
+        java.util.List<ItemStack> all = new java.util.ArrayList<>();
+        java.util.Collections.addAll(all, p.getInventory().getContents());
+        java.util.Collections.addAll(all, p.getEnderChest().getContents());
+        java.util.Collections.addAll(all, d.backpack);
+        for (int i = 0; i < all.size(); i++) {
+            ItemStack it = all.get(i);
+            if (It.isAir(it)) continue;
+            names.add(Msg.name(it));
+            if (it.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta bsm && bsm.getBlockState() instanceof org.bukkit.block.ShulkerBox box)
+                java.util.Collections.addAll(all, box.getInventory().getContents());
+        }
+        java.util.Set<String> out = new java.util.HashSet<>();
+        for (WeaponModule.FxWeapon w : WeaponModule.FX_WEAPONS)
+            for (String n : names) if (n.contains(w.name())) out.add(w.key());
+        return out;
     }
 
     /** 킬 특수 효과 / 크라운 표식 버튼: 상태 + 클릭 안내 (모두 같은 형식) */
