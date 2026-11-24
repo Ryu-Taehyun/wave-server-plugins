@@ -1755,8 +1755,7 @@ public class WaveTest {
         assertEquals(5, kd.nickColor, "Gradient Gold 적용");
         // 채팅 이름이 그라데이션으로 (색이 섞여 있어야 함)
         drain(w);
-        k.chat("hello");
-        server.getScheduler().performTicks(2);
+        chatAndWait(k, "hello");
         net.kyori.adventure.text.Component c;
         boolean grad = false;
         while ((c = w.nextComponentMessage()) != null) {
@@ -1826,7 +1825,8 @@ public class WaveTest {
                 var owner = hoverOwner(c, "Mint");
                 assertNotNull(owner, "처치자 이름 마우스 정보");
                 String info = Msg.plain((net.kyori.adventure.text.Component) owner.hoverEvent().value());
-                assertTrue(info.contains("레벨 : 7") && info.contains("칭호") && info.contains("소속 팀") && info.contains("랭크") && info.contains("Shift+클릭"), info);
+                assertTrue(info.contains("Mint") && info.contains("클릭 : 플레이어 정보 보기") && info.contains("Shift+클릭 : 귓속말 보내기")
+                        && !info.contains("레벨") && !info.contains("칭호"), info);
                 assertEquals("/정보 Mint", owner.clickEvent().value(), "클릭 = 플레이어 정보");
                 assertEquals("/귓 Mint ", owner.insertion(), "Shift+클릭 = 귓속말 입력");
                 assertNotNull(hoverOwner(c, "Solar"), "상대 이름 마우스 정보");
@@ -3696,8 +3696,21 @@ public class WaveTest {
         assertTrue(v.performCommand("정보 Payer"));
         assertTrue(title(v).contains("플레이어 정보"));
         String info = allText(v.getOpenInventory().getTopInventory());
-        assertTrue(info.contains("레벨 : 12") && info.contains("Supreme") && info.contains("4일") && !info.contains("12,345"), info);
+        assertTrue(info.contains("레벨 : 12") && info.contains("Supreme") && info.contains("컬렉션") && info.contains("Arbiter of Heaven 0/1")
+                && !info.contains("12,345") && !info.contains("연속 출석") && !info.contains("칭호"), info);
         GuiSnapshot.save(v, "profile.json");
+        d.collected.add(Msg.name(Items.claymoreSd()));
+        assertTrue(v.performCommand("정보 Payer"));
+        assertTrue(allText(v.getOpenInventory().getTopInventory()).contains("완성 : 1"));
+        click(v, 23, ClickType.LEFT);   // 컬렉션 자세히 (보기 전용)
+        server.getScheduler().performTicks(2);
+        assertTrue(title(v).contains("Payer 의 컬렉션"), title(v));
+        String cols = allText(v.getOpenInventory().getTopInventory());
+        assertTrue(cols.contains("✔") && cols.contains("✘") && cols.contains("1 / 1"), cols);
+        GuiSnapshot.save(v, "profile_collection.json");
+        click(v, 39, ClickType.LEFT);   // 뒤로 가기 -> 정보 창
+        server.getScheduler().performTicks(2);
+        assertTrue(title(v).contains("플레이어 정보"));
         drain(v);
         click(v, 31, ClickType.LEFT);   // 귓속말 버튼
         server.getScheduler().performTicks(2);

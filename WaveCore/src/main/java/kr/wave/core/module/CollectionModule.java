@@ -160,6 +160,40 @@ public class CollectionModule extends Module {
         g.nav(p, () -> plugin.module(MenuModule.class).menu(p)).fill().open(p);
     }
 
+    /** 컬렉션별 진행 (한 줄씩) */
+    public java.util.List<String> summary(PlayerData d) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        int done = 0;
+        for (Col c : COLS) {
+            int have = progress(d, c), total = c.items().size();
+            if (have >= total) done++;
+            out.add((have >= total ? "&a✔ " : have > 0 ? "&e◐ " : "&8✘ ") + "&f" + Msg.plainOf(c.name()) + " &7" + have + "/" + total);
+        }
+        out.add(0, "&7완성 : &d" + done + " &7/ " + COLS.size());
+        out.add(1, "");
+        return out;
+    }
+
+    /** 다른 플레이어의 컬렉션 진행 현황 (보기 전용, 보상 수령 없음) */
+    public void view(Player viewer, PlayerData d, String name, Runnable back) {
+        Gui g = new Gui(5, "&8&l" + name + " 의 컬렉션");
+        g.set(4, It.of(Material.PLAYER_HEAD).skull(org.bukkit.Bukkit.getOfflinePlayer(d.uuid)).name("&e" + name)
+                .lore("&7컬렉션 진행 현황", "&8보기 전용").build());
+        for (int i = 0; i < COLS.size(); i++) {
+            Col c = COLS.get(i);
+            int have = progress(d, c), total = c.items().size();
+            It b = It.of(c.icon()).name(c.name()).lore("&7" + c.period(), "", "&f수집 : " + (have >= total ? "&a" : "&e") + have + " &7/ " + total, "");
+            for (var sup : c.items()) {
+                ItemStack it = sup.get();
+                b.lore((d.collected.contains(itemKey(it)) ? "&a✔ " : "&8✘ ") + "&f" + Items.describeShort(it));
+            }
+            if (d.collectionClaimed.contains(c.key())) b.lore("", "&a보상 수령 완료");
+            if (have >= total) b.ench(Enchantment.UNBREAKING, 1);
+            g.set(COL_SLOTS[i], b.hide().build());
+        }
+        g.nav(viewer, back).fill().open(viewer);
+    }
+
     private static String titleName(String key) {
         for (String[] t : Items.COLLECTION_TITLES) if (t[0].equals(key)) return t[1];
         return key;

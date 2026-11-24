@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * 플레이어 정보
- * - /정보 [플레이어]  누구나: 레벨 · 랭크 · 칭호 · 팀 · 출석 · 접속 상태 (채팅에서 이름을 클릭하면 열림)
+ * - /정보 [플레이어]  누구나: 레벨 · 랭크 · 팀 · 컬렉션 진행 · 접속 상태 (채팅에서 이름을 클릭하면 열림)
  * - /조회 <플레이어>  관리자: 위 정보 + 캐시 · 유료 캐시 · 제재 기록 · 최근 유료 캐시 기록 · 우편함 · 배낭
  * - /환불 <플레이어> <금액> <사유>  유료 캐시를 돌려줌 (누적 충전액은 그대로)
  */
@@ -90,13 +90,13 @@ public class ProfileModule extends Module {
         Gui g = new Gui(4, "&8플레이어 정보 : " + name);
         g.set(4, It.of(Material.PLAYER_HEAD).skull(t).name(nickName(d.nickColor, name, "&e"))
                 .lore(seenLine(t, d), "&7랭크 : " + rankLabel(d)).build());
-        g.set(19, It.of(Material.EXPERIENCE_BOTTLE).name("&a&l레벨").lore("&7레벨 : &e" + d.level, "&7경험치 : &f" + Msg.num(d.exp)).build());
-        g.set(20, It.of(Material.DIAMOND).name("&b&l랭크").lore("&7현재 랭크 : " + rankLabel(d)).build());
-        g.set(21, It.of(Material.NAME_TAG).name("&e&l칭호").lore("&7사용 중 : " + titleLine(t, d), "&7모은 칭호 : &f" + d.titles.size() + "개").build());
+        g.set(20, It.of(Material.EXPERIENCE_BOTTLE).name("&a&l레벨").lore("&7레벨 : &e" + d.level, "&7경험치 : &f" + Msg.num(d.exp)).build());
+        g.set(21, It.of(Material.DIAMOND).name("&b&l랭크").lore("&7현재 랭크 : " + rankLabel(d)).build());
         g.set(22, It.of(Material.WHITE_BANNER).name("&c&l팀").lore("&7소속 : " + teamLine(t)).build());
-        g.set(23, It.of(Material.CLOCK).name("&6&l출석").lore("&7연속 출석 : &f" + d.attendStreak + "일", "&7누적 출석 : &f" + d.attendTotal + "일").build());
-        g.set(24, It.of(Material.BOOK).name("&d&l컬렉션").lore("&7모은 아이템 : &f" + d.collected.size() + "개").build());
-        g.set(25, It.of(Material.DIAMOND_CHESTPLATE).hide().name("&f&l장비 보기").lore("&7착용 중인 장비를 봅니다.", "", "&e클릭하여 보기").build(), e -> {
+        CollectionModule cm = plugin.module(CollectionModule.class);
+        It col = It.of(Material.NETHER_STAR).name("&d&l컬렉션").lore(cm.summary(d).toArray(String[]::new));
+        g.set(23, col.lore("", "&e클릭하여 자세히 보기").build(), e -> cm.view(viewer, d, name, () -> open(viewer, t)));
+        g.set(24, It.of(Material.DIAMOND_CHESTPLATE).hide().name("&f&l장비 보기").lore("&7착용 중인 장비를 봅니다.", "", "&e클릭하여 보기").build(), e -> {
             viewer.closeInventory();
             if (t.isOnline()) viewer.performCommand("stats " + name);
             else Msg.send(viewer, "&c접속 중인 플레이어만 장비를 볼 수 있습니다.");
