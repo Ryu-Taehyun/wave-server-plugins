@@ -275,10 +275,10 @@ public class RankingModule extends Module {
     /** 실제 입장 메시지 한 줄 (%name% 자리에 이름) */
     public static String joinLine(Cat c, int r) {
         String tag = joinTag(c, r);
-        // 태그와 문구는 굵게 (닉네임은 그대로)
-        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b> <color:" + c.to + "><obf>D</obf></color>";
-        if (r <= 3) return tag + " %name% <b>" + c.grad("님이 입장했습니다!") + "</b>";
-        return tag + " %name% <b><gray>님이 입장했습니다.</gray></b>";
+        // 태그만 굵게 (닉네임 · "님이 입장했습니다" 는 원래 굵기)
+        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad("님이 입장했습니다!") + " <color:" + c.to + "><obf>D</obf></color>";
+        if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다!");
+        return tag + " %name% <gray>님이 입장했습니다.</gray>";
     }
 
     /**

@@ -4075,7 +4075,20 @@ public class WaveTest {
         assertTrue(join.contains("[👑 부의 제왕 1위]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
         // 4~10위는 Ranking #순위
         var jl = Msg.c(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1).replace("%name%", "X"));
-        assertTrue(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "입장 메시지는 굵게");
+        assertTrue(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "태그는 굵게");
+        // 닉네임과 "님이 입장했습니다" 는 굵지 않음
+        var full = Msg.fill(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1), "%name%", Msg.c("&fNAMEX"));
+        java.util.List<String> boldTexts = new java.util.ArrayList<>();
+        java.util.function.BiConsumer<net.kyori.adventure.text.Component, Boolean>[] walk = new java.util.function.BiConsumer[1];
+        walk[0] = (comp, parentBold) -> {
+            var st = comp.decoration(net.kyori.adventure.text.format.TextDecoration.BOLD);
+            boolean b = st == net.kyori.adventure.text.format.TextDecoration.State.TRUE || (st == net.kyori.adventure.text.format.TextDecoration.State.NOT_SET && parentBold);
+            if (b && comp instanceof net.kyori.adventure.text.TextComponent tc && !tc.content().isBlank()) boldTexts.add(tc.content());
+            for (var ch : comp.children()) walk[0].accept(ch, b);
+        };
+        walk[0].accept(full, false);
+        String bt = String.join("", boldTexts);
+        assertTrue(bt.contains("부의") && !bt.contains("NAMEX") && !bt.contains("입장"), "굵은 글자: " + bt);
         String join7 = joinLine(ps.get(5));
         assertTrue(join7.contains("[★ 부의 제왕 7위]") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인
