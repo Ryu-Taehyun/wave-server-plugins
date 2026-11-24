@@ -3303,8 +3303,8 @@ public class WaveTest {
         // 돈은 지운 뒤, 지우기 전 순위로 TOP 10 보상 (돈 1위 = 1,000,000) + 트로피
         assertEquals(1_000_000, d.money, "초기화 뒤 순위 보상만 남음");
         assertEquals(1_000_000, d.moneyTotal);
-        assertEquals(1, d.mailbox.stream().filter(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")).count());
-        assertTrue(d.titles.contains(kr.wave.core.module.RankingModule.titleKey("시즌 1", kr.wave.core.module.RankingModule.Cat.MONEY, 1)), "끝난 시즌(1) 칭호");
+        assertEquals(1, d.mailbox.stream().filter(it -> Msg.name(it).contains("부의 제왕 트로피 · 1위")).count());
+        assertTrue(d.titles.contains(kr.wave.core.module.RankingModule.titleKey("S1", kr.wave.core.module.RankingModule.Cat.MONEY, 1)), "끝난 시즌(1) 칭호");
         assertEquals(2, plugin.getConfig().getInt("season-reset.number"), "다음 시즌으로");
         assertEquals(30_000, d.exMoney, "유료 캐시는 기본으로 유지");
         assertEquals(30_000, d.exMoneyTotal);
@@ -3917,7 +3917,7 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         assertEquals("입장 메시지", title(lord));
         String all = allText(lord.getOpenInventory().getTopInventory());
-        assertTrue(all.contains("OVER LORD") && all.contains("님이 강림하셨습니다") && all.contains("돈 TOP 1") && all.contains("사용 중"), all);
+        assertTrue(all.contains("OVER LORD") && all.contains("님이 강림하셨습니다") && all.contains("부의 제왕 1위") && all.contains("사용 중"), all);
         var linv = lord.getOpenInventory().getTopInventory();
         assertEquals(Material.PAPER, linv.getItem(10).getType());
         assertEquals(Material.GOLDEN_HELMET, linv.getItem(11).getType());
@@ -3930,15 +3930,15 @@ public class WaveTest {
         assertEquals("basic", d.joinStyle, "처음은 기본");
         assertFalse(all.contains("자동"), "자동 없음");
         String basic = join.apply("basic");
-        assertTrue(!basic.contains("OVER LORD") && !basic.contains("TOP 1") && basic.contains("접속했습니다"), basic);
+        assertTrue(!basic.contains("OVER LORD") && !basic.contains("제왕") && basic.contains("접속했습니다"), basic);
         String rk = join.apply("ranking");
-        assertTrue(rk.contains("돈 TOP 1") && !rk.contains("OVER LORD"), rk);
+        assertTrue(rk.contains("부의 제왕 1위") && !rk.contains("OVER LORD"), rk);
         String lo = join.apply("overlord");
-        assertTrue(lo.contains("OVER LORD") && !lo.contains("TOP 1"), lo);
+        assertTrue(lo.contains("OVER LORD") && !lo.contains("제왕"), lo);
         d.overlordClaimed.remove(7);
         // 고른 것이 없어지면 기본
         String gone = join.apply("overlord");
-        assertTrue(!gone.contains("OVER LORD") && !gone.contains("TOP 1") && gone.contains("Lord2"), gone);
+        assertTrue(!gone.contains("OVER LORD") && !gone.contains("제왕") && gone.contains("Lord2"), gone);
         // 없는 것은 못 고름
         PlayerMock plain = joinFrom("Plain", "10.2.0.3");
         server.getScheduler().performTicks(5);
@@ -4072,12 +4072,12 @@ public class WaveTest {
         plugin.store().get(ps.get(11)).joinStyle = "ranking";
         plugin.store().get(ps.get(5)).joinStyle = "ranking";
         String join = joinLine(ps.get(11));
-        assertTrue(join.contains("[👑 돈 TOP 1]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
+        assertTrue(join.contains("[👑 부의 제왕 1위]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
         // 4~10위는 Ranking #순위
         var jl = Msg.c(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1).replace("%name%", "X"));
         assertFalse(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "입장 메시지는 굵게 하지 않음");
         String join7 = joinLine(ps.get(5));
-        assertTrue(join7.contains("돈 Ranking #7") && join7.contains("R6"), join7);
+        assertTrue(join7.contains("[🏆 부의 제왕 7위]") && join7.contains("R6"), join7);
         // 보상: 미리보기 -> 확인
         drain(admin);
         assertTrue(admin.performCommand("순위 보상"));
@@ -4086,28 +4086,28 @@ public class WaveTest {
         assertTrue(admin.performCommand("순위 보상 확인"));
         PlayerData top = plugin.store().get(ps.get(11));
         assertEquals(before + 1000, top.money, "1위 보상");
-        assertTrue(top.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피 · 1위")), "순위가 새겨진 트로피");
+        assertTrue(top.mailbox.stream().anyMatch(it -> Msg.name(it).contains("부의 제왕 트로피 · 1위")), "순위가 새겨진 트로피");
         ItemStack trophy = top.mailbox.stream().filter(it -> Msg.name(it).contains("트로피")).findFirst().orElseThrow();
         assertFalse(Items.seasonKeepIn(new ItemStack[]{trophy}).isEmpty(), "트로피는 시즌이 지나도 유지");
         String tl = String.join("\n", trophy.getItemMeta().lore().stream().map(Msg::plain).toList());
         assertTrue(tl.contains("등급 : TOP 1"), tl);
-        assertTrue(String.join("\n", Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 7, "x", "1원", "S").getItemMeta().lore().stream().map(Msg::plain).toList()).contains("등급 : Ranking"));
+        assertTrue(String.join("\n", Items.rankTrophy("부의 제왕", kr.wave.core.module.RankingModule.titleColors(kr.wave.core.module.RankingModule.Cat.MONEY, 7), 7, "x", "1원", "S").getItemMeta().lore().stream().map(Msg::plain).toList()).contains("등급 : Ranking"));
         PlayerData r1 = plugin.store().get(ps.get(0));   // 돈 12위지만 처치 1위
-        assertTrue(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("처치 순위 트로피 · 1위")));
-        assertFalse(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("돈 순위 트로피")), "돈 12위는 돈 보상 없음");
+        assertTrue(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("킬의 제왕 트로피 · 1위")));
+        assertFalse(r1.mailbox.stream().anyMatch(it -> Msg.name(it).contains("부의 제왕 트로피")), "돈 12위는 돈 보상 없음");
         assertEquals(30_000 + 100, plugin.store().get(ps.get(2)).money, "10위(R3) 100");
         // 순위 칭호 (영구): 칭호 창에 나오고 적용 가능
         String season = rm.defaultSeason();
-        assertEquals("시즌 1", season);
+        assertEquals("S1", season);
         String tkey = kr.wave.core.module.RankingModule.titleKey(season, kr.wave.core.module.RankingModule.Cat.MONEY, 1);
         assertTrue(top.titles.contains(tkey), top.titles.toString());
-        assertEquals("[👑 시즌 1 부의 제왕 1위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(tkey)));
-        assertEquals("[🏆 시즌 1 킬의 제왕 4위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(kr.wave.core.module.RankingModule.titleKey("시즌 1", kr.wave.core.module.RankingModule.Cat.KILLS, 4))));
+        assertEquals("[👑 S1 부의 제왕 1위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(tkey)));
+        assertEquals("[🏆 S1 킬의 제왕 4위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(kr.wave.core.module.RankingModule.titleKey("S1", kr.wave.core.module.RankingModule.Cat.KILLS, 4))));
         assertTrue(plugin.store().get(ps.get(5)).titles.stream().anyMatch(tk -> Msg.plainOf(String.valueOf(kr.wave.core.module.RankingModule.titleText(tk))).contains("부의 제왕 7위")));
         PlayerMock champ = ps.get(11);
         top.titles.add("ace");
-        top.titles.add(kr.wave.core.module.RankingModule.titleKey("시즌 9", kr.wave.core.module.RankingModule.Cat.KILLS, 3));
-        top.titles.add(kr.wave.core.module.RankingModule.titleKey("시즌 10", kr.wave.core.module.RankingModule.Cat.MONEY, 5));
+        top.titles.add(kr.wave.core.module.RankingModule.titleKey("S9", kr.wave.core.module.RankingModule.Cat.KILLS, 3));
+        top.titles.add(kr.wave.core.module.RankingModule.titleKey("S10", kr.wave.core.module.RankingModule.Cat.MONEY, 5));
         champ.closeInventory();
         assertTrue(champ.performCommand("메뉴"));
         click(champ, 19, ClickType.LEFT);
@@ -4116,9 +4116,9 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         var tinv = champ.getOpenInventory().getTopInventory();
         assertTrue(Msg.name(tinv.getItem(10)).contains("Ace"), "일반 칭호 먼저");
-        assertTrue(Msg.name(tinv.getItem(11)).contains("시즌 10 부의 제왕 5위"), "최근 시즌(10) 먼저: " + Msg.name(tinv.getItem(11)));
-        assertTrue(Msg.name(tinv.getItem(12)).contains("시즌 9 킬의 제왕 3위"), Msg.name(tinv.getItem(12)));
-        assertTrue(Msg.name(tinv.getItem(13)).contains("시즌 1 부의 제왕 1위"), Msg.name(tinv.getItem(13)));
+        assertTrue(Msg.name(tinv.getItem(11)).contains("S10 부의 제왕 5위"), "최근 시즌(10) 먼저: " + Msg.name(tinv.getItem(11)));
+        assertTrue(Msg.name(tinv.getItem(12)).contains("S9 킬의 제왕 3위"), Msg.name(tinv.getItem(12)));
+        assertTrue(Msg.name(tinv.getItem(13)).contains("S1 부의 제왕 1위"), Msg.name(tinv.getItem(13)));
         GuiSnapshot.save(champ, "titles_rank.json");
         click(champ, 13, ClickType.LEFT);
         assertEquals(tkey, top.activeTitle, "순위 칭호 적용");
@@ -4127,9 +4127,9 @@ public class WaveTest {
         assertTrue(allText(admin.getOpenInventory().getTopInventory()).contains("부의 제왕 1위"), "조회에도 칭호 글자로 표시");
         admin.closeInventory();
         Gui g = new Gui(1, "&8트로피");
-        g.set(2, Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 1, "R12", "120,000원", "S1"));
-        g.set(4, Items.rankTrophy("처치", "#FF5A5A", "#FFC2C2", 2, "R5", "87킬", "S1"));
-        g.set(6, Items.rankTrophy("돈", "#FFD84D", "#FF9F1C", 7, "R6", "60,000원", "S1"));
+        g.set(2, Items.rankTrophy("부의 제왕", kr.wave.core.module.RankingModule.titleColors(kr.wave.core.module.RankingModule.Cat.MONEY, 1), 1, "R12", "120,000원", "S1"));
+        g.set(4, Items.rankTrophy("킬의 제왕", kr.wave.core.module.RankingModule.titleColors(kr.wave.core.module.RankingModule.Cat.KILLS, 2), 2, "R5", "87킬", "S1"));
+        g.set(6, Items.rankTrophy("부의 제왕", kr.wave.core.module.RankingModule.titleColors(kr.wave.core.module.RankingModule.Cat.MONEY, 7), 7, "R6", "60,000원", "S1"));
         g.open(admin);
         GuiSnapshot.save(admin, "trophies.json");
         // 보상 확인 없이 다시 확인하면 거부

@@ -314,19 +314,22 @@ public final class Items {
                         "&8교환하면 교환권 1장이 사라집니다.").build();
     }
 
-    public static final String N_RANK_TROPHY = "순위 트로피";
+    public static final String N_RANK_TROPHY = "제왕 트로피";
 
-    /** 시즌 순위 TOP 10 트로피 (순위 · 분야 · 시즌 · 주인이 새겨짐, 시즌이 지나도 유지) */
-    public static ItemStack rankTrophy(String category, String from, String to, int rank, String owner, String record, String season) {
+    /**
+     * 시즌 순위 TOP 10 트로피 (순위 · 분야 · 시즌 · 주인이 새겨짐, 시즌이 지나도 유지)
+     * title: "부의 제왕" · "킬의 제왕", colors: 그라데이션 색 ("#A:#B" 또는 "#A:#B:#C")
+     */
+    public static ItemStack rankTrophy(String title, String colors, int rank, String owner, String record, String season) {
         Material m = rank == 1 ? Material.GOLD_INGOT : rank == 2 ? Material.IRON_INGOT : rank == 3 ? Material.COPPER_INGOT : Material.AMETHYST_SHARD;
         String medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : "🏆";
         String tier = rank == 1 ? "<b><gradient:#FFF176:#FFB732>TOP 1</gradient></b>" : rank == 2 ? "<b><gradient:#FFFFFF:#9E9E9E>TOP 2</gradient></b>"
                 : rank == 3 ? "<b><gradient:#F0A37B:#B8653F>TOP 3</gradient></b>" : "<b><gradient:#C77DFF:#F5DAF8>Ranking</gradient></b>";
         return It.of(m).ench(Enchantment.INFINITY, 1).hide()
-                .name("<b><gradient:" + from + ":" + to + "><italic:false>[" + medal + "] " + category + " " + N_RANK_TROPHY + " · " + rank + "위</gradient></b>")
+                .name("<b><gradient:" + colors + "><italic:false>[" + medal + "] " + title + " 트로피 · " + rank + "위</gradient></b>")
                 .lore("&7등급 : " + tier,
                         "&8──────────────────",
-                        "&7" + season + " " + category + " 순위 &f" + rank + "위&7의 증표.",
+                        "&7" + season + " " + title + " &f" + rank + "위&7의 증표.",
                         "",
                         "&7주인 : &f" + owner,
                         "&7기록 : &f" + record,

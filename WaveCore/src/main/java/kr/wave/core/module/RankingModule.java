@@ -266,10 +266,10 @@ public class RankingModule extends Module {
         return best == null ? null : Map.entry(best, bestRank);
     }
 
-    /** 입장 태그 미리보기 (예: [👑 돈 TOP 1]) */
+    /** 입장 태그 (예: [👑 부의 제왕 1위]) */
     public static String joinTag(Cat c, int r) {
         String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
-        return c.grad("[" + medal + " " + c.label + " " + tier(r) + (r > 3 ? " #" + r : "") + "]");
+        return "<gradient:" + titleColors(c, r) + ">[" + medal + " " + c.titleName + " " + r + "위]</gradient>";
     }
 
     /** 실제 입장 메시지 한 줄 (%name% 자리에 이름) */
@@ -394,9 +394,9 @@ public class RankingModule extends Module {
         return Math.max(1, plugin.getConfig().getInt("season-reset.number", 1));
     }
 
-    /** 시즌 이름을 정하지 않았을 때: "시즌 N" */
+    /** 시즌 이름을 정하지 않았을 때: "SN" (예: S7) */
     public String defaultSeason() {
-        return "시즌 " + seasonNumber();
+        return "S" + seasonNumber();
     }
 
     /* ---------------- 순위 칭호 (시즌 보상, 영구) ---------------- */
@@ -408,7 +408,7 @@ public class RankingModule extends Module {
         return TITLE_PREFIX + season.replace("|", "/") + "|" + c.key + "|" + rank;
     }
 
-    /** 순위 칭호 키면 보이는 글자 (예: [👑 시즌 7 부의 제왕 1위]), 아니면 null */
+    /** 순위 칭호 키면 보이는 글자 (예: [👑 S7 부의 제왕 1위]), 아니면 null */
     public static String titleText(String key) {
         if (key == null || !key.startsWith(TITLE_PREFIX)) return null;
         String[] p = key.split("\\|");
@@ -422,10 +422,10 @@ public class RankingModule extends Module {
         }
         if (c == null) return null;
         String medal = r == 1 ? "👑" : r == 2 ? "🥈" : r == 3 ? "🥉" : "🏆";
-        return "<gradient:" + titleColors(c, r) + ">[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient>";   // 예: [👑 시즌 7 부의 제왕 1위]
+        return "<b><gradient:" + titleColors(c, r) + ">[" + medal + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient></b>";   // 예: [👑 S7 부의 제왕 1위]
     }
 
-    /** "시즌 12" -> 12 (숫자가 없으면 0) */
+    /** "S12" -> 12 (숫자가 없으면 0) */
     private static long seasonNo(String season) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)\\D*$").matcher(season);
         return m.find() ? Long.parseLong(m.group(1)) : 0;
@@ -435,7 +435,7 @@ public class RankingModule extends Module {
      * 순위 칭호 그라데이션: 분야는 색 계열(부 = 금빛, 킬 = 붉은빛), 순위는 화려함으로 구분
      * 1위 = 세 가지 색으로 가장 진하게, 2위 = 밝게, 3위 = 따뜻하게, 4~10위 = 차분하게
      */
-    static String titleColors(Cat c, int r) {
+    public static String titleColors(Cat c, int r) {
         if (c == Cat.MONEY) return switch (r) {
             case 1 -> "#FFF59D:#FFC400:#FF6D00";
             case 2 -> "#FFFDE7:#FFD54F";
@@ -450,7 +450,7 @@ public class RankingModule extends Module {
         };
     }
 
-    /** 순위 칭호 정렬: 최근 시즌 먼저 (시즌 10 > 시즌 9), 같은 시즌이면 돈 → 처치, 순위 순 */
+    /** 순위 칭호 정렬: 최근 시즌 먼저 (S10 > S9), 같은 시즌이면 돈 → 처치, 순위 순 */
     public static java.util.Comparator<String> titleOrder() {
         return java.util.Comparator.comparingLong((String k) -> -seasonNo(k.split("\\|")[1]))
                 .thenComparing((String k) -> k.split("\\|")[1], java.util.Comparator.reverseOrder())
@@ -521,7 +521,7 @@ public class RankingModule extends Module {
                 int rank = i + 1;
                 OfflinePlayer op = Bukkit.getOfflinePlayer(e.id());
                 PlayerData d = plugin.store().get(op);
-                d.mailbox.add(Items.rankTrophy(c.label, c.from, c.to, rank, e.name(), e.shown(c), season));
+                d.mailbox.add(Items.rankTrophy(c.titleName, titleColors(c, rank), rank, e.name(), e.shown(c), season));
                 d.titles.add(titleKey(season, c, rank));   // 순위 칭호 (영구, 프로필 → 칭호에서 사용)
                 ConfigurationSection r = rewardFor(rank);
                 if (r != null) {
@@ -543,7 +543,7 @@ public class RankingModule extends Module {
                 plugin.store().saveAuto(d);
                 Player online = op.getPlayer();
                 if (online != null) {
-                    Msg.send(online, c.grad("[🏆 " + c.label + " " + tier(rank) + (rank > 3 ? " #" + rank : "") + "]") + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
+                    Msg.send(online, joinTag(c, rank) + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
                     Msg.send(online, "&7순위 칭호 " + titleText(titleKey(season, c, rank)) + " &7획득! &8(프로필 → 칭호)");
                     Msg.sound(online, "ui.toast.challenge_complete", 0.8f, 1.2f);
                 }
