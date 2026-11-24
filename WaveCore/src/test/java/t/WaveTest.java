@@ -1595,8 +1595,11 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         assertEquals("킬 특수 효과 설정", title(p));
         var inv = p.getOpenInventory().getTopInventory();
-        assertTrue(Msg.name(inv.getItem(16)).contains("크라운 처치 알림 표식"));
-        assertTrue(allText(inv).contains("미보유"));
+        assertEquals(45, inv.getSize());
+        assertTrue(Msg.name(inv.getItem(10)).contains("Lightning"), "가진 것(Supreme)만 10번 칸부터");
+        assertNull(inv.getItem(11), "없는 것은 안 보이고 안쪽은 비워 둠");
+        assertFalse(allText(inv).contains("[👑] 크라운") || allText(inv).contains("미보유"), "없는 크라운 표식은 안 보임");
+        assertEquals(Gui.FILLER, inv.getItem(9).getType(), "테두리만 판유리");
 
         // 킬 효과: 적용 -> 다시 클릭하면 해제
         click(p, 10, ClickType.LEFT);
@@ -1606,12 +1609,10 @@ public class WaveTest {
         click(p, 10, ClickType.LEFT);
         assertEquals(0, d.killEffect, "해제");
         server.getScheduler().performTicks(2);
-        click(p, 12, ClickType.LEFT);   // Exceed 미보유
+        click(p, 11, ClickType.LEFT);   // 빈칸
         assertEquals(0, d.killEffect);
 
-        // 크라운: 미보유 -> 아이템 사용 -> 해제/적용
-        click(p, 16, ClickType.LEFT);
-        assertFalse(d.crownKill);
+        // 크라운: 아이템 사용 -> 목록에 나타남 -> 해제/적용
         p.closeInventory();
         p.getInventory().setItemInMainHand(Items.crownMark());
         server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerInteractEvent(p, org.bukkit.event.block.Action.RIGHT_CLICK_AIR, p.getInventory().getItemInMainHand(), null, org.bukkit.block.BlockFace.UP, org.bukkit.inventory.EquipmentSlot.HAND));
@@ -1621,10 +1622,12 @@ public class WaveTest {
         server.getScheduler().performTicks(2);
         click(p, 14, ClickType.LEFT);
         server.getScheduler().performTicks(2);
-        click(p, 16, ClickType.LEFT);
+        assertTrue(Msg.name(p.getOpenInventory().getTopInventory().getItem(11)).contains("크라운 처치 알림 표식"), "Lightning 다음 칸");
+        GuiSnapshot.save(p, "kill_owned.json");
+        click(p, 11, ClickType.LEFT);
         assertFalse(d.crownKill, "해제");
         server.getScheduler().performTicks(2);
-        click(p, 16, ClickType.LEFT);
+        click(p, 11, ClickType.LEFT);
         assertTrue(d.crownKill, "다시 적용");
     }
 
@@ -1688,7 +1691,7 @@ public class WaveTest {
         assertEquals("닉네임 색상", title(k));
         var inv = k.getOpenInventory().getTopInventory();
         assertTrue(allText(inv).contains("해제됨"));
-        assertTrue(allText(inv).contains("미보유"));
+        assertFalse(allText(inv).contains("미보유") || allText(inv).contains("Gold"), "가진 것(Red)만");
         click(k, 10, ClickType.LEFT);
         assertEquals(1, kd.nickColor);
         server.getScheduler().performTicks(2);
@@ -1696,7 +1699,7 @@ public class WaveTest {
         click(k, 10, ClickType.LEFT);
         assertEquals(0, kd.nickColor, "해제");
         server.getScheduler().performTicks(2);
-        click(k, 12, ClickType.LEFT);   // Gold 미보유
+        click(k, 11, ClickType.LEFT);   // 빈칸
         assertEquals(0, kd.nickColor);
     }
 
@@ -1714,7 +1717,7 @@ public class WaveTest {
         assertEquals("칭호 설정", title(p));
         var inv = p.getOpenInventory().getTopInventory();
         assertTrue(allText(inv).contains("해제됨"));
-        assertTrue(allText(inv).contains("미보유"));
+        assertFalse(allText(inv).contains("미보유") || allText(inv).contains("Supreme") || allText(inv).contains("엔드 디멘셔널"), "가진 칭호(Ace)만");
         assertFalse(allText(inv).contains("칭호 제거하기"), "제거 버튼 없음 (다시 클릭하면 해제)");
         click(p, 10, ClickType.LEFT);
         assertEquals("ace", d.activeTitle);
@@ -1723,8 +1726,21 @@ public class WaveTest {
         click(p, 10, ClickType.LEFT);
         assertNull(d.activeTitle, "해제");
         server.getScheduler().performTicks(2);
-        click(p, 11, ClickType.LEFT);   // supreme 미보유
+        click(p, 11, ClickType.LEFT);   // 빈칸
         assertNull(d.activeTitle);
+        // 여러 개면 예전 화면 순서대로 10, 11, 12 ...
+        d.titles.add("7days");
+        d.titles.add("peerless");
+        p.closeInventory();
+        p.performCommand("메뉴");
+        click(p, 19, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        click(p, 10, ClickType.LEFT);
+        server.getScheduler().performTicks(2);
+        var ti = p.getOpenInventory().getTopInventory();
+        assertTrue(Msg.name(ti.getItem(10)).contains("Ace") && Msg.name(ti.getItem(11)).contains("Peerless") && Msg.name(ti.getItem(12)).contains("파수꾼"),
+                Msg.name(ti.getItem(10)) + " / " + Msg.name(ti.getItem(11)) + " / " + Msg.name(ti.getItem(12)));
+        GuiSnapshot.save(p, "titles_owned.json");
     }
 
     @Test
@@ -1749,10 +1765,11 @@ public class WaveTest {
         click(k, 12, ClickType.LEFT);
         server.getScheduler().performTicks(2);
         var inv = k.getOpenInventory().getTopInventory();
-        assertTrue(Msg.name(inv.getItem(20)).contains("Gradient Gold"));
-        assertTrue(Msg.name(inv.getItem(24)).contains("Glacier"));
+        assertTrue(Msg.name(inv.getItem(10)).contains("Gradient Gold"));
+        assertTrue(Msg.name(inv.getItem(11)).contains("Glacier"));
         assertTrue(allText(inv).contains("적용 중"));
-        click(k, 20, ClickType.LEFT);
+        GuiSnapshot.save(k, "nick_owned.json");
+        click(k, 10, ClickType.LEFT);
         assertEquals(5, kd.nickColor, "Gradient Gold 적용");
         // 채팅 이름이 그라데이션으로 (색이 섞여 있어야 함)
         drain(w);

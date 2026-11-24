@@ -358,7 +358,7 @@ public class RankingModule extends Module {
         int[] tabs = {2, 6};
         for (int i = 0; i < Cat.values().length; i++) {
             Cat t = Cat.values()[i];
-            It tab = It.of(t.icon).hide().name("<b>" + t.grad(t.label + " 순위") + "</b>").lore(t == c ? "&a보는 중" : "&e클릭하여 보기");
+            It tab = It.of(t.icon).hide().name(t.grad(t.label + " 순위")).lore(t == c ? "&a보는 중" : "&e클릭하여 보기");
             if (t == c) tab.ench(Enchantment.UNBREAKING, 1);
             g.set(tabs[i], tab.build(), e -> later(1, () -> open(p, t, 1)));
         }
@@ -374,7 +374,7 @@ public class RankingModule extends Module {
             boolean self = e.id().equals(p.getUniqueId());
             Material m = rank == 1 ? Material.GOLD_BLOCK : rank == 2 ? Material.IRON_BLOCK : rank == 3 ? Material.COPPER_BLOCK
                     : rank <= 10 ? Material.AMETHYST_SHARD : self ? Material.LIME_DYE : Material.PAPER;
-            String color = rank == 1 ? "&6&l" : rank == 2 ? "&f&l" : rank == 3 ? "<color:#E07A4F><b>" : rank <= 10 ? "&d" : "&7";
+            String color = rank == 1 ? "&6" : rank == 2 ? "&f" : rank == 3 ? "<color:#E07A4F>" : rank <= 10 ? "&d" : "&7";
             It it = It.of(m).name(color + "#" + rank + " &f" + e.name() + (self ? " &a(나)" : ""))
                     .lore("&7" + c.label + " : &f" + e.shown(c));
             if (rank <= 10) it.lore("", "&6🏆 TOP 10 &7· 시즌 종료 보상 대상");
@@ -466,7 +466,7 @@ public class RankingModule extends Module {
                 plugin.store().saveAuto(d);
                 Player online = op.getPlayer();
                 if (online != null) {
-                    Msg.send(online, "<b>" + c.grad("[🏆 " + c.label + " " + tier(rank) + (rank > 3 ? " #" + rank : "") + "]") + "</b> &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
+                    Msg.send(online, c.grad("[🏆 " + c.label + " " + tier(rank) + (rank > 3 ? " #" + rank : "") + "]") + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
                     Msg.sound(online, "ui.toast.challenge_complete", 0.8f, 1.2f);
                 }
                 log.append(c.label).append(' ').append(rank).append(". ").append(e.name()).append('\n');

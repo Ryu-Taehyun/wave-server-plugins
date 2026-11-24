@@ -325,7 +325,10 @@ public class MenuModule extends Module {
 
     private void killEffects(Player p) {
         PlayerData d = data(p);
-        Gui g = new Gui(3, "&8&l킬 특수 효과 설정");
+        Gui g = new Gui(5, "&8&l킬 특수 효과 설정");
+        g.set(4, It.of(Material.IRON_SWORD).hide().name("&6&l킬 특수 효과").lore("&7처치 연출과 크라운 처치 알림 표식을 고릅니다.", "&8가지고 있는 것만 보입니다.").build());
+        int[] slots = g.inner();
+        int n = 0;
         Object[][] fx = {
                 {10, "&6킬 특수 효과 &7- &7Lightning", "supreme", 1, "Lightning", "Supreme", "&7처치 시 번개가 내리칩니다."},
                 {12, "&6킬 특수 효과 &7- &eFirework (Red, White)", "exceed", 2, "Firework", "Exceed", "&7처치 시 빨강·하양 폭죽이 터집니다."},
@@ -333,8 +336,9 @@ public class MenuModule extends Module {
         };
         for (Object[] f : fx) {
             boolean has = d.ranks.contains((String) f[2]);
+            if (!has) continue;   // 가진 것만, 10번 칸부터
             boolean active = d.killEffect == (int) f[3];
-            g.set((int) f[0], toggleIcon(Material.ENCHANTED_BOOK, Material.BOOK, (String) f[1], has, active, (String) f[6], f[5] + " 랭크 달성 보상입니다."), e -> {
+            g.set(slots[n++], toggleIcon(Material.ENCHANTED_BOOK, Material.BOOK, (String) f[1], has, active, (String) f[6], f[5] + " 랭크 달성 보상입니다."), e -> {
                 if (!d.ranks.contains((String) f[2])) {
                     Msg.send(p, "&c[!] " + f[5] + " 랭크를 달성하지 않았습니다.");
                     Msg.sound(p, "entity.villager.no", 0.8f, 1f);
@@ -349,7 +353,7 @@ public class MenuModule extends Module {
             });
         }
         // 크라운 처치 알림 표식
-        g.set(16, toggleIcon(Material.GOLDEN_HELMET, Material.CHAINMAIL_HELMET, "<gradient:#FFF176:#FFB732><italic:false><b>[👑] 크라운 처치 알림 표식</b></gradient>",
+        if (d.crownOwned) g.set(slots[n++], toggleIcon(Material.GOLDEN_HELMET, Material.CHAINMAIL_HELMET, "<gradient:#FFF176:#FFB732><italic:false><b>[👑] 크라운 처치 알림 표식</b></gradient>",
                 d.crownOwned, d.crownKill, "&7처치 알림 앞에 &6&l👑 &7가 붙습니다.", "오버 로드 ⭐8 달성 보상입니다."), e -> {
             if (!d.crownOwned) {
                 Msg.send(p, "&c[!] 크라운 처치 알림 표식을 보유하고 있지 않습니다.");
@@ -362,7 +366,13 @@ public class MenuModule extends Module {
             Msg.sound(p, d.crownKill ? "entity.player.levelup" : "block.note_block.bass", 0.6f, d.crownKill ? 1.8f : 1f);
             later(1, () -> killEffects(p));
         });
-        g.nav(p, () -> profile(p)).fill().open(p);
+        if (n == 0) g.set(22, none("킬 특수 효과", "Supreme · Exceed · Peerless 랭크, 오버 로드 ⭐8 에서 얻을 수 있습니다."));
+        g.nav(p, () -> profile(p)).border().open(p);
+    }
+
+    /** 가진 것이 하나도 없을 때 가운데 안내 */
+    private static ItemStack none(String what, String how) {
+        return It.of(Material.GRAY_DYE).name("&7보유한 " + what + "이(가) 없습니다.").lore("&8" + how).build();
     }
 
     private static ItemStack glow(ItemStack it) {
@@ -374,7 +384,10 @@ public class MenuModule extends Module {
 
     private void nickColors(Player p) {
         PlayerData d = data(p);
-        Gui g = new Gui(4, "&8&l닉네임 색상");
+        Gui g = new Gui(5, "&8&l닉네임 색상");
+        g.set(4, It.of(Material.NAME_TAG).name("&6&l닉네임 색상").lore("&7채팅 · 킬 알림 · 탭 목록 · 입장 메시지의 이름 색을 고릅니다.", "&8가지고 있는 것만 보입니다.").build());
+        int[] slots = g.inner();
+        int n = 0;
         Object[][] colors = {
                 {10, "red", 1, "&6닉네임 색상 &7- &c&lRed", "Peerless 랭크 달성 보상입니다.", "&c"},
                 {12, "gold", 2, "&6닉네임 색상 &7- &6&lGold", "The Astral Fate 올 수집 보상입니다.", "&6"},
@@ -386,8 +399,9 @@ public class MenuModule extends Module {
         for (Object[] c : colors) {
             String key = (String) c[1];
             boolean has = d.nickPapers.contains(key);
+            if (!has) continue;   // 가진 것만, 10번 칸부터
             boolean active = d.nickColor == (int) c[2];
-            g.set((int) c[0], toggleIcon(Material.NAME_TAG, Material.PAPER, (String) c[3], has, active,
+            g.set(slots[n++], toggleIcon(Material.NAME_TAG, Material.PAPER, (String) c[3], has, active,
                     "&7미리보기 : " + nickName((int) c[2], p.getName(), "&f") + "%nl%&8채팅, 킬 알림, 탭리스트, 입장 메시지에 적용", (String) c[4]), e -> {
                 if (!d.nickPapers.contains(key)) {
                     Msg.send(p, "&c[!] 보유 중이 아닌 닉네임 색상입니다.");
@@ -401,7 +415,8 @@ public class MenuModule extends Module {
                 later(1, () -> nickColors(p));
             });
         }
-        g.nav(p, () -> profile(p)).fill().open(p);
+        if (n == 0) g.set(22, none("닉네임 색상", "닉네임 색상 변경권을 우클릭하면 여기에 추가됩니다."));
+        g.nav(p, () -> profile(p)).border().open(p);
     }
 
     private void ranks(Player p) {
@@ -434,7 +449,10 @@ public class MenuModule extends Module {
 
     private void titles(Player p) {
         PlayerData d = data(p);
-        Gui g = new Gui(4, "&8&l칭호 설정");
+        Gui g = new Gui(5, "&8&l칭호 설정");
+        g.set(4, It.of(Material.ENCHANTED_BOOK).name("&6&l칭호").lore("&7모은 칭호 중 하나를 달 수 있습니다.", "&8가지고 있는 것만 보입니다.").build());
+        int[] slots = g.inner();
+        int n = 0;
         Object[][] t = {
                 {10, "ace", "&e[Ace]", "&7획득 방법 : 랭크 &e[Ace] &7를 달성하기", "&e[Ace]"},
                 {11, "supreme", "&a[💎] &bSupreme", "&7획득 방법 : 랭크 &a[💎] &bSupreme &7을 달성하기", "\"&a[💎] &bSupreme\""},
@@ -450,11 +468,13 @@ public class MenuModule extends Module {
                 {24, "arbiter", "<b><gradient:#FFF200:#FFFCD4><italic:false>[⚡] 천공의 심판자</gradient></b>", "&7획득 방법 :%nl%&7Arbiter of Heaven 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#FFF200:#FFFCD4>[⚡] 천공의 심판자</gradient></b>\""},
                 {25, "glacier", "<b><gradient:#39C7FF:#C2FFF5><italic:false>[❆] 빙하의 군주</gradient></b>", "&7획득 방법 :%nl%&7Glacier Storm 컬렉션의 모든 아이템을 수집하세요.", "\"<b><gradient:#39C7FF:#C2FFF5>[❆] 빙하의 군주</gradient></b>\""},
         };
+        java.util.Arrays.sort(t, java.util.Comparator.comparingInt(r -> (int) r[0]));   // 예전 화면 순서 그대로
         for (Object[] row : t) {
             String key = (String) row[1];
             boolean has = d.titles.contains(key);
+            if (!has || n >= slots.length) continue;   // 가진 것만, 10번 칸부터
             boolean active = key.equals(d.activeTitle);
-            g.set((int) row[0], toggleIcon(Material.ENCHANTED_BOOK, Material.BOOK, (String) row[2], has, active,
+            g.set(slots[n++], toggleIcon(Material.ENCHANTED_BOOK, Material.BOOK, (String) row[2], has, active,
                     "&7미리보기 : " + row[2] + " &7- &f" + p.getName(), Msg.plainOf(((String) row[3]).replace("%nl%", " "))), e -> {
                 if (!d.titles.contains(key)) {
                     Msg.send(p, "&c[!] 보유 중이 아닌 칭호입니다.");
@@ -475,10 +495,8 @@ public class MenuModule extends Module {
                 later(1, () -> titles(p));
             });
         }
-        g.set(14, toggleIcon(Material.ENCHANTED_BOOK, Material.BOOK, "<b><gradient:#4B0082:#800080><italic:false>[✧] 엔드 디멘셔널</gradient></b>",
-                false, false, "&7미리보기 : <b><gradient:#4B0082:#800080>[✧] 엔드 디멘셔널</gradient></b>", "획득 방법 : ???"));
-        g.nav(p, () -> profile(p));
-        g.fill().open(p);
+        if (n == 0) g.set(22, none("칭호", "랭크 달성 · 컬렉션 완성 · 출석 등으로 얻을 수 있습니다."));
+        g.nav(p, () -> profile(p)).border().open(p);
     }
 
     /* ======================= Shift + F ======================= */
