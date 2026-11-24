@@ -37,6 +37,15 @@ public class GlobalData {
     public static class Ban {
         public String reason;
         public String code;
+        /** 풀리는 시각 (밀리초). 0 이면 영구 */
+        public long until;
+        /** 처리한 관리자 */
+        public String by = "";
+        public long at;
+
+        public boolean permanent() {
+            return until <= 0;
+        }
     }
 
     public boolean maintenance;
@@ -115,6 +124,9 @@ public class GlobalData {
             Ban b = new Ban();
             b.reason = s.getString(u + ".reason", "사유 미작성");
             b.code = s.getString(u + ".code");
+            b.until = s.getLong(u + ".until");
+            b.by = s.getString(u + ".by", "");
+            b.at = s.getLong(u + ".at");
             try {
                 bans.put(UUID.fromString(u), b);
             } catch (IllegalArgumentException e) {
@@ -150,6 +162,9 @@ public class GlobalData {
         bans.forEach((u, b) -> {
             y.set("bans." + u + ".reason", b.reason);
             y.set("bans." + u + ".code", b.code);
+            if (b.until > 0) y.set("bans." + u + ".until", b.until);
+            if (!b.by.isEmpty()) y.set("bans." + u + ".by", b.by);
+            if (b.at > 0) y.set("bans." + u + ".at", b.at);
         });
         return y.saveToString();
     }

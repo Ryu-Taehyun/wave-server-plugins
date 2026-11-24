@@ -126,6 +126,13 @@ links:
   mineboard: ""
   discord: ""
 
+# 디스코드 관리자 채널 알림 (웹훅). 주소는 비밀값이라 반드시 private.yml 에 넣으세요. 비어 있으면 보내지 않습니다.
+# events: 보낼 종류 (빼면 그 종류는 안 보냄) report 신고, sanction 제재, refund 환불, paid-cash 유료 캐시 지급, season 시즌 초기화, backup 백업 실패
+discord-webhook:
+  url: ""
+  name: "Wave 서버 알림"
+  events: [report, sanction, refund, paid-cash, season, backup]
+
 # 스페셜 상점 (유료 캐시). price-1: 1개, price-10: 10개 묶음
 special-shop:
   altar-ticket:
@@ -262,6 +269,40 @@ announcements:
   # 직접 추가하는 공지 (order 다음에 나옴)
   # - {tag: "&b&l[ 이벤트 ]", title: "&f주말 이벤트 진행 중!", lines: ["&7토~일 경험치 2배"], button: "[자세히]", command: "/도움말"}
   custom: []
+  # /공지 예약 · /공지 매일 로 만든 예약 공지 (명령어로 관리, 직접 고치지 않아도 됨)
+  scheduled: []
+
+# 제재 (/경고 /임시밴 /뮤트). 누적 경고 수가 count 에 닿으면 자동 처벌
+# action: mute(채팅 금지) · tempban(임시 차단) · ban(영구 차단), duration: 30m 1h 1d 7d 1w
+sanctions:
+  warn-actions:
+    - {count: 3, action: mute, duration: 1h}
+    - {count: 5, action: tempban, duration: 1d}
+    - {count: 7, action: tempban, duration: 7d}
+    - {count: 10, action: ban, duration: 영구}
+
+# 채팅 필터 (관리자는 적용 안 됨). 귓속말에도 금지어 · 광고 · 채팅 금지가 적용됩니다.
+chat-filter:
+  enabled: true
+  # 금지어: 가운데 띄어쓰기 · 기호를 넣어도 * 로 가립니다
+  bad-words: []
+  # IP · 다른 서버 주소(.kr .com .gg 등) 막기. links 의 우리 서버 주소와 allowed-domains 는 허용
+  block-ads: true
+  allowed-domains: []
+  # 채팅 간격(밀리초)과 같은 말 반복 허용 횟수 (15초 안)
+  min-interval-ms: 700
+  same-message-limit: 2
+
+# 매일 자동 백업 (playerdata + global.yml + config.yml -> backups/daily-날짜.zip). /백업 으로 바로 백업
+backup:
+  enabled: true
+  time: "05:00"
+  keep-days: 14
+
+# 출석 보상: 하루 첫 접속 때 자동 출석. 1~7일차 보상(원), 7일마다 반복. 7일 연속이면 칭호 "파수꾼"
+attendance:
+  enabled: true
+  rewards: [1000, 2000, 3000, 4000, 5000, 6000, 10000]
 
 # 스폰 경험치 구역 (20초 머물면 경험치 10~50)
 xp-zone:

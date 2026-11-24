@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * 시즌 초기화 (/시즌)
@@ -250,6 +248,8 @@ public class SeasonModule extends Module {
         plugin.getLogger().info("[시즌 초기화] " + s.getName() + " -> " + summary + " (백업 " + backup.getName() + ")");
         Msg.broadcast(" ");
         Msg.broadcast(TAG + "&e새 시즌이 시작되었습니다! &7(" + now + ")");
+        kr.wave.core.util.Discord.send("season", "🌱 시즌 초기화", "새 시즌이 시작되었습니다.", kr.wave.core.util.Discord.GREEN,
+                "실행자", s.getName(), "플레이어", players + "명", "내용", summary, "백업", backup.getName());
         Msg.broadcast(" ");
         for (Player p : Bukkit.getOnlinePlayers()) {
             Msg.title(p, "<gradient:#FFD84D:#FF9F1C><b>새 시즌 시작!</b></gradient>", "&7모두 같은 출발선에서 다시 시작합니다", 10, 60, 20);
@@ -354,25 +354,8 @@ public class SeasonModule extends Module {
         for (Player p : Bukkit.getOnlinePlayers()) snapshot(p);
     }
 
-    /** playerdata 폴더 + global.yml + config.yml 을 zip 으로 */
     private File backup() throws IOException {
-        File dir = new File(plugin.getDataFolder(), "backups");
-        if (!dir.exists() && !dir.mkdirs()) throw new IOException("backups 폴더를 만들 수 없습니다");
-        File out = new File(dir, "season-" + LocalDateTime.now().format(FILE_TIME) + ".zip");
-        try (ZipOutputStream z = new ZipOutputStream(new FileOutputStream(out))) {
-            File[] files = plugin.store().folder().listFiles((d, n) -> n.endsWith(".yml"));
-            if (files != null) for (File f : files) put(z, f, "playerdata/" + f.getName());
-            if (plugin.store().globalFile().exists()) put(z, plugin.store().globalFile(), "global.yml");
-            File cfg = new File(plugin.getDataFolder(), "config.yml");
-            if (cfg.exists()) put(z, cfg, "config.yml");
-        }
-        return out;
-    }
-
-    private static void put(ZipOutputStream z, File f, String name) throws IOException {
-        z.putNextEntry(new ZipEntry(name));
-        Files.copy(f.toPath(), z);
-        z.closeEntry();
+        return kr.wave.core.util.Backup.zip(plugin, "season-" + LocalDateTime.now().format(FILE_TIME));
     }
 
     private void log(String line) {

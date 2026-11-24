@@ -143,14 +143,21 @@ public class CoreModule extends Module {
             }
         }
         GlobalData.Ban ban = global().bans.get(e.getUniqueId());
+        if (ban != null && !ban.permanent() && System.currentTimeMillis() >= ban.until) {   // 기간이 끝난 임시 차단은 풀어 줌
+            global().bans.remove(e.getUniqueId());
+            plugin.store().saveGlobal();
+            ban = null;
+        }
         if (ban != null) {
             if (ban.code == null) ban.code = banCode();
             e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, Msg.c(banMessage(ban)));
         }
     }
 
-    private String banMessage(GlobalData.Ban ban) {
-        return "§c§l[🚫 Wave Online 🚫]%nl%%nl%§c§l당신은 서버에서 영구적으로 차단되었습니다.%nl%%nl%§e사유 : §f" + Msg.esc(ban.reason)
+    public String banMessage(GlobalData.Ban ban) {
+        String head = ban.permanent() ? "§c§l당신은 서버에서 영구적으로 차단되었습니다."
+                : "§c§l당신은 서버에서 일시적으로 차단되었습니다.%nl%§7해제 : §f" + kr.wave.core.util.Dur.when(ban.until) + " §7(" + kr.wave.core.util.Dur.left(ban.until) + " 남음)";
+        return "§c§l[🚫 Wave Online 🚫]%nl%%nl%" + head + "%nl%%nl%§e사유 : §f" + Msg.esc(ban.reason)
                 + "%nl%§6이의 제기용 코드 : §f#" + ban.code + "%nl%§7문의 : §f" + plugin.getConfig().getString("ban-contact", "관리자에게 문의하세요");
     }
 
@@ -616,7 +623,10 @@ public class CoreModule extends Module {
         for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "block.bell.use", 0.5f, 0.7f);
     }
 
-    /** 플레이어 이름: 마우스를 올리면 레벨 · 칭호 · 팀, 좌클릭하면 귓속말 입력 */
+    /**
+     * 플레이어 이름: 마우스를 올리면 레벨 · 랭크 · 칭호 · 팀, 클릭하면 /정보 창, Shift+클릭하면 귓속말 입력.
+     * (마인크래프트 채팅은 우클릭을 받을 수 없어서 귓속말은 Shift+클릭으로 넣습니다)
+     */
     public Component nameTag(Player p, String styled) {
         PlayerData d = data(p);
         GlobalData.Team team = global().teamOf(p.getUniqueId());
@@ -625,9 +635,13 @@ public class CoreModule extends Module {
                 + "%nl%&7레벨 : &e" + d.level
                 + "%nl%&7칭호 : " + (prefix == null || prefix.isBlank() ? "&8없음" : prefix)
                 + "%nl%&7소속 팀 : " + (team == null ? "&8없음" : "&f" + Msg.esc(team.display) + " &8(" + Msg.plainOf(TeamModule.roleTag(team.members.get(p.getUniqueId()))) + ")")
-                + "%nl%%nl%&e좌클릭하여 귓속말 보내기");
+                + "%nl%&7랭크 : " + ProfileModule.rankLabel(d)
+                + "%nl%&7출석 : &f" + d.attendStreak + "일 연속"
+                + "%nl%%nl%&e클릭 &7: 플레이어 정보 보기"
+                + "%nl%&eShift+클릭 &7: 귓속말 보내기");
         return Msg.c(styled).hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(info))
-                .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/귓 " + p.getName() + " "));
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/정보 " + p.getName()))
+                .insertion("/귓 " + p.getName() + " ");
     }
 
     /** 크라운 처치 연출: 쓰러진 자리 위에 거대한 황금 왕관 + 빛기둥 */
@@ -860,14 +874,9 @@ public class CoreModule extends Module {
             return;
         }
         String reason = a.length >= 2 ? Cmd.rest(a, 1) : "사유 미작성";
-        GlobalData.Ban ban = new GlobalData.Ban();
-        ban.reason = reason;
-        ban.code = banCode();
-        global().bans.put(t.getUniqueId(), ban);
-        plugin.store().saveGlobal();
-        if (t.getPlayer() != null) t.getPlayer().kick(Msg.c(banMessage(ban)));
-        Msg.broadcast("&c-----------------------------------------------------%nl%%nl%§c&l[&f&l Security Notice &c&l] &c&l이용약관 위반 유저 차단 알림%nl%&7%nl%&7&l플레이어 이름 : &e" + a[0] + "%nl%&7&l사유 : &c" + Msg.esc(reason) + "%nl%%nl%&c-----------------------------------------------------");
-        Msg.send(s, "&c[&fSecurity&c] §a" + a[0] + "님을 차단했습니다. 코드: ##" + ban.code);
+        plugin.module(SanctionModule.class).ban(t, 0, reason, s.getName());
+        GlobalData.Ban ban = global().bans.get(t.getUniqueId());
+        Msg.send(s, "&c[&fSecurity&c] §a" + t.getName() + "님을 차단했습니다. 코드: ##" + (ban == null ? "-" : ban.code));
     }
 
     private void unbanCmd(CommandSender s, String l, String[] a) {
@@ -876,9 +885,13 @@ public class CoreModule extends Module {
             Msg.send(s, "&c플레이어를 찾을 수 없습니다.");
             return;
         }
-        global().bans.remove(t.getUniqueId());
+        if (global().bans.remove(t.getUniqueId()) == null) {
+            Msg.send(s, "&c[&fSecurity&c] §7" + t.getName() + "님은 차단된 상태가 아닙니다.");
+            return;
+        }
         plugin.store().saveGlobal();
-        Msg.send(s, "&c[&fSecurity&c] §a" + a[0] + "님의 차단을 해제했습니다.");
+        plugin.module(SanctionModule.class).record(t, "차단 해제", "-", s.getName());
+        Msg.send(s, "&c[&fSecurity&c] §a" + t.getName() + "님의 차단을 해제했습니다.");
     }
 
     /* ======================= 점검 모드 / MOTD ======================= */
@@ -1043,6 +1056,8 @@ public class CoreModule extends Module {
 
     /** 귓속말 전송. 받은 사람은 보낸 사람 이름을 누르면 답장 */
     private void whisper(Player p, Player t, String msg) {
+        msg = plugin.module(SanctionModule.class).check(p, msg, true);
+        if (msg == null) return;
         Component text = Component.text(msg);
         Component toName = nameTag(t, "&e" + t.getName());
         Component fromName = Msg.c("&e" + p.getName())

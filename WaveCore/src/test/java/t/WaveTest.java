@@ -40,6 +40,9 @@ public class WaveTest {
         server.addSimpleWorld("spawn-world");
         server.addSimpleWorld("world");
         plugin = MockBukkit.load(WaveCore.class);
+        // 출석 보상(돈)이 다른 테스트의 잔액 계산에 끼지 않게. 출석 테스트에서만 켬
+        plugin.getConfig().set("attendance.enabled", false);
+        plugin.getConfig().set("backup.enabled", false);
     }
 
     @AfterEach
@@ -1823,8 +1826,9 @@ public class WaveTest {
                 var owner = hoverOwner(c, "Mint");
                 assertNotNull(owner, "처치자 이름 마우스 정보");
                 String info = Msg.plain((net.kyori.adventure.text.Component) owner.hoverEvent().value());
-                assertTrue(info.contains("레벨 : 7") && info.contains("칭호") && info.contains("소속 팀") && info.contains("좌클릭하여 귓속말"), info);
-                assertEquals("/귓 Mint ", owner.clickEvent().value());
+                assertTrue(info.contains("레벨 : 7") && info.contains("칭호") && info.contains("소속 팀") && info.contains("랭크") && info.contains("Shift+클릭"), info);
+                assertEquals("/정보 Mint", owner.clickEvent().value(), "클릭 = 플레이어 정보");
+                assertEquals("/귓 Mint ", owner.insertion(), "Shift+클릭 = 귓속말 입력");
                 assertNotNull(hoverOwner(c, "Solar"), "상대 이름 마우스 정보");
                 checked = true;
             }
@@ -1844,9 +1848,9 @@ public class WaveTest {
         boolean ok = false;
         while ((c = w.nextComponentMessage()) != null) {
             var owner = hoverOwner(c, "Mint");
-            if (owner != null && owner.clickEvent() != null && owner.clickEvent().value().equals("/귓 Mint ")) ok = true;
+            if (owner != null && owner.clickEvent() != null && owner.clickEvent().value().equals("/정보 Mint") && "/귓 Mint ".equals(owner.insertion())) ok = true;
         }
-        assertTrue(ok, "채팅 이름 마우스 정보 + 좌클릭 귓속말");
+        assertTrue(ok, "채팅 이름: 클릭 = 정보, Shift+클릭 = 귓속말");
     }
 
     @Test
@@ -3557,6 +3561,252 @@ public class WaveTest {
         assertEquals(WeaponModuleAccess.max(p) / 2, p.getHealth(), 1e-9);
         p.getInventory().setLeggings(null);
         wm.secondTick();
+    }
+
+    @Test
+    void sanctionsWarnMuteTempBan() {
+        PlayerMock admin = server.addPlayer("Op1");
+        admin.setOp(true);
+        PlayerMock t = server.addPlayer("Bad");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(t);
+        var sm = plugin.module(kr.wave.core.module.SanctionModule.class);
+        // 경고 3회 -> 자동 채팅 금지 1시간
+        for (int i = 0; i < 3; i++) assertTrue(admin.performCommand("경고 Bad 욕설"));
+        assertEquals(3, d.warnings);
+        assertTrue(d.muteUntil > System.currentTimeMillis() + 50 * 60_000L, "3회 = 자동 뮤트");
+        assertTrue(d.sanctions.stream().anyMatch(x -> x.contains("채팅 금지") && x.contains("경고 3회 누적")), d.sanctions.toString());
+        // 채팅 · 귓속말 막힘
+        drain(t);
+        assertNull(sm.check(t, "안녕", false));
+        assertTrue(drain(t).contains("채팅이 금지된 상태"));
+        drain(admin);
+        t.performCommand("귓 Op1 몰래");
+        assertFalse(drain(admin).contains("몰래"), "뮤트 중 귓속말 불가");
+        assertTrue(admin.performCommand("뮤트해제 Bad"));
+        assertNotNull(sm.check(t, "다시 안녕", false));
+        // /경고목록, /경고삭제
+        drain(t);
+        assertTrue(t.performCommand("경고목록"));
+        assertTrue(drain(t).contains("3회"));
+        assertTrue(admin.performCommand("경고삭제 Bad 2"));
+        assertEquals(1, d.warnings);
+        // 임시 차단: 바로 내보내고, 기간이 지나면 저절로 풀림
+        assertTrue(admin.performCommand("임시밴 Bad 2h 핵 사용"));
+        GlobalData.Ban ban = plugin.store().global().bans.get(t.getUniqueId());
+        assertNotNull(ban);
+        assertFalse(ban.permanent());
+        assertEquals("Op1", ban.by);
+        assertTrue(Math.abs(ban.until - System.currentTimeMillis() - 2 * 3_600_000L) < 60_000);
+        assertFalse(t.isOnline(), "접속 중이면 내보냄");
+        var ev = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Bad", java.net.InetAddress.getLoopbackAddress(), t.getUniqueId());
+        preLogin(ev);
+        assertEquals(org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.KICK_BANNED, ev.getLoginResult());
+        assertTrue(Msg.plain(ev.kickMessage()).contains("일시적으로 차단"), Msg.plain(ev.kickMessage()));
+        ban.until = System.currentTimeMillis() - 1;
+        var ev2 = new org.bukkit.event.player.AsyncPlayerPreLoginEvent("Bad", java.net.InetAddress.getLoopbackAddress(), t.getUniqueId());
+        preLogin(ev2);
+        assertEquals(org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED, ev2.getLoginResult(), "기간이 지나면 풀림");
+        assertNull(plugin.store().global().bans.get(t.getUniqueId()));
+        // 잘못된 기간
+        drain(admin);
+        admin.performCommand("임시밴 Bad 이틀 x");
+        assertTrue(drain(admin).contains("기간 형식"));
+        // 영구 차단도 기록됨
+        admin.performCommand("serverban Bad 테스트");
+        assertTrue(plugin.store().global().bans.get(t.getUniqueId()).permanent());
+        assertTrue(d.sanctions.stream().anyMatch(x -> x.contains("영구 차단")));
+        admin.performCommand("unserverban Bad");
+        assertTrue(d.sanctions.get(d.sanctions.size() - 1).contains("차단 해제"));
+        assertTrue(new java.io.File(plugin.getDataFolder(), "logs/sanctions.log").isFile());
+        assertEquals(-1, kr.wave.core.util.Dur.parse("abc"));
+        assertEquals(0, kr.wave.core.util.Dur.parse("영구"));
+        assertEquals(36 * 3_600_000L, kr.wave.core.util.Dur.parse("1d12h"));
+        assertEquals("1일 12시간", kr.wave.core.util.Dur.text(36 * 3_600_000L));
+    }
+
+    @Test
+    void chatFilter() {
+        plugin.getConfig().set("chat-filter.bad-words", java.util.List.of("바보"));
+        plugin.getConfig().set("links.discord", "https://discord.gg/ourserver");
+        plugin.getConfig().set("chat-filter.min-interval-ms", 0);
+        PlayerMock p = server.addPlayer("Chatty");
+        server.getScheduler().performTicks(5);
+        var sm = plugin.module(kr.wave.core.module.SanctionModule.class);
+        assertEquals("너 ** 야", sm.check(p, "너 바보 야", false));
+        String masked = sm.check(p, "너 바 . 보 야", false);
+        assertFalse(masked.contains("바") || masked.contains("보"), "띄어쓰기 · 기호를 넣어도 가림: " + masked);
+        drain(p);
+        assertNull(sm.check(p, "123.45.67.89 로 와", false), "IP 광고");
+        assertNull(sm.check(p, "놀러와 abcserver.kr", false), "다른 서버 주소");
+        assertNull(sm.check(p, "놀러와 abcserver 점 kr", false), "한글로 쓴 주소");
+        assertTrue(drain(p).contains("서버 주소"));
+        assertNotNull(sm.check(p, "디코 discord.gg 들어와", false), "우리 서버 링크는 허용");
+        assertNotNull(sm.check(p, "가격은 1.5 배", false), "숫자는 광고 아님");
+        // 같은 말 반복
+        assertNotNull(sm.check(p, "ㅎㅇ", false));
+        assertNotNull(sm.check(p, "ㅎ ㅇ", false));
+        assertNull(sm.check(p, "ㅎㅇ", false), "같은 말 3번째");
+        // 너무 빠름
+        plugin.getConfig().set("chat-filter.min-interval-ms", 60_000);
+        drain(p);
+        assertNull(sm.check(p, "둘째 말", false));
+        assertTrue(drain(p).contains("너무 빠르게"));
+        // 관리자는 필터 없음
+        p.setOp(true);
+        assertEquals("바보", sm.check(p, "바보", false));
+    }
+
+    @Test
+    void lookupRefundAndProfile() {
+        PlayerMock admin = server.addPlayer("Op2");
+        admin.setOp(true);
+        PlayerMock t = server.addPlayer("Payer");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(t);
+        d.money = 12_345;
+        d.exMoney = 1_000;
+        d.exMoneyTotal = 50_000;
+        d.level = 12;
+        d.ranks.add("supreme");
+        d.attendStreak = 4;
+        d.attendTotal = 20;
+        admin.performCommand("경고 Payer 도배");
+        // 환불: 잔액만 늘고 누적 충전액은 그대로
+        assertTrue(admin.performCommand("환불 Payer 3000 결제 오류"));
+        assertEquals(4_000, d.exMoney);
+        assertEquals(50_000, d.exMoneyTotal);
+        assertTrue(drain(t).contains("환불"));
+        kr.wave.core.util.TxLog.shutdown();
+        // 조회 GUI
+        assertTrue(admin.performCommand("조회 Payer"));
+        assertTrue(title(admin).contains("관리자 조회"));
+        String all = allText(admin.getOpenInventory().getTopInventory());
+        assertTrue(all.contains("12,345") && all.contains("4,000") && all.contains("50,000") && all.contains("도배") && all.contains("Supreme"), all);
+        assertTrue(all.contains("환불"), "최근 유료 캐시 기록에 환불: " + all);
+        GuiSnapshot.save(admin, "lookup.json");
+        click(admin, 37, ClickType.LEFT);   // 경고 버튼 -> 명령어 입력 안내
+        server.getScheduler().performTicks(2);
+        // 일반 유저는 /조회 불가, /정보 가능
+        assertFalse(guiOpen(t) && title(t).contains("관리자"));
+        t.performCommand("조회 Op2");
+        assertFalse(guiOpen(t) && title(t).contains("관리자"));
+        PlayerMock v = server.addPlayer("Viewer");
+        server.getScheduler().performTicks(2);
+        assertTrue(v.performCommand("정보 Payer"));
+        assertTrue(title(v).contains("플레이어 정보"));
+        String info = allText(v.getOpenInventory().getTopInventory());
+        assertTrue(info.contains("레벨 : 12") && info.contains("Supreme") && info.contains("4일") && !info.contains("12,345"), info);
+        GuiSnapshot.save(v, "profile.json");
+        drain(v);
+        click(v, 31, ClickType.LEFT);   // 귓속말 버튼
+        server.getScheduler().performTicks(2);
+        net.kyori.adventure.text.Component c;
+        boolean suggest = false;
+        while ((c = v.nextComponentMessage()) != null) {
+            var ev = clickOwner(c);
+            if (ev != null && ev.value().equals("/귓 Payer ")) suggest = true;
+        }
+        assertTrue(suggest, "귓속말 입력 버튼");
+    }
+
+    private void waitBackup(kr.wave.core.module.OpsModule ops) throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            server.getScheduler().waitAsyncTasksFinished();
+            server.getScheduler().performTicks(1);
+            if (!ops.backupRunning()) break;
+            Thread.sleep(50);
+        }
+        Thread.sleep(50);
+        server.getScheduler().performTicks(2);
+    }
+
+    private static net.kyori.adventure.text.event.ClickEvent clickOwner(net.kyori.adventure.text.Component c) {
+        if (c.clickEvent() != null) return c.clickEvent();
+        for (var ch : c.children()) {
+            var f = clickOwner(ch);
+            if (f != null) return f;
+        }
+        return null;
+    }
+
+    @Test
+    void attendance() {
+        plugin.getConfig().set("attendance.enabled", true);
+        PlayerMock p = server.addPlayer("Daily");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(p);
+        var am = plugin.module(kr.wave.core.module.AttendanceModule.class);
+        long m0 = d.money;
+        server.getScheduler().performTicks(60);
+        assertEquals(1, d.attendStreak, "접속하면 자동 출석");
+        assertEquals(m0 + 1000, d.money);
+        java.time.LocalDate day = java.time.LocalDate.now();
+        assertFalse(am.check(p, day), "하루 한 번");
+        for (int i = 1; i <= 6; i++) assertTrue(am.check(p, day.plusDays(i)));
+        assertEquals(7, d.attendStreak);
+        assertEquals(m0 + 1000 + 2000 + 3000 + 4000 + 5000 + 6000 + 10000, d.money);
+        assertTrue(d.titles.contains("7days"), "7일 연속 = 파수꾼");
+        // 하루 빠지면 1일차부터
+        assertTrue(am.check(p, day.plusDays(9)));
+        assertEquals(1, d.attendStreak);
+        assertEquals(8, d.attendTotal);
+        d.attendStreak = 3;
+        d.attendDay = java.time.LocalDate.now().toString();
+        assertTrue(p.performCommand("출석"));
+        String all = allText(p.getOpenInventory().getTopInventory());
+        assertTrue(all.contains("연속 출석 : 3일") && all.contains("7일차") && all.contains("파수꾼") && all.contains("내일 받을 수 있음"), all);
+        GuiSnapshot.save(p, "attendance.json");
+    }
+
+    @Test
+    void noticeScheduleAndBackup() throws Exception {
+        PlayerMock admin = server.addPlayer("Op3");
+        admin.setOp(true);
+        server.getScheduler().performTicks(5);
+        var ops = plugin.module(kr.wave.core.module.OpsModule.class);
+        drain(admin);
+        assertTrue(admin.performCommand("공지 오늘 저녁 9시 보스 레이드!"));
+        assertTrue(drain(admin).contains("오늘 저녁 9시 보스 레이드!"));
+        assertTrue(admin.performCommand("공지 예약 10m 예약된 공지"));
+        assertTrue(admin.performCommand("공지 매일 21:00 매일 공지"));
+        assertEquals(2, plugin.getConfig().getMapList("announcements.scheduled").size());
+        drain(admin);
+        assertTrue(admin.performCommand("공지 목록"));
+        String list = drain(admin);
+        assertTrue(list.contains("예약된 공지") && list.contains("매일 21:00"), list);
+        // 시간이 된 것처럼: 한 번짜리는 사라지고 매일 공지는 다음 날로
+        var l = new java.util.ArrayList<java.util.Map<?, ?>>(plugin.getConfig().getMapList("announcements.scheduled"));
+        for (int i = 0; i < l.size(); i++) {
+            var m = new java.util.LinkedHashMap<String, Object>();
+            l.get(i).forEach((k, v) -> m.put(String.valueOf(k), v));
+            m.put("at", 1L);
+            l.set(i, m);
+        }
+        plugin.getConfig().set("announcements.scheduled", l);
+        drain(admin);
+        ops.secondTick();
+        String got = drain(admin);
+        assertTrue(got.contains("예약된 공지") && got.contains("매일 공지"), got);
+        var left = plugin.getConfig().getMapList("announcements.scheduled");
+        assertEquals(1, left.size());
+        assertTrue(((Number) left.get(0).get("at")).longValue() > System.currentTimeMillis());
+        assertTrue(admin.performCommand("공지 취소 1"));
+        assertTrue(plugin.getConfig().getMapList("announcements.scheduled").isEmpty());
+        // 백업
+        plugin.store().get(admin).money = 777;
+        ops.runBackup(admin, "daily-20000101");   // 아주 오래된 이름 -> 다음 백업 때 정리됨
+        waitBackup(ops);
+        java.io.File dir = new java.io.File(plugin.getDataFolder(), "backups");
+        assertTrue(new java.io.File(dir, "daily-20000101.zip").isFile());
+        String today = "daily-" + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        ops.runBackup(admin, today);
+        waitBackup(ops);
+        assertFalse(new java.io.File(dir, "daily-20000101.zip").exists(), "keep-days 지난 백업 삭제");
+        try (var z = new java.util.zip.ZipFile(new java.io.File(dir, today + ".zip"))) {
+            assertNotNull(z.getEntry("playerdata/" + admin.getUniqueId() + ".yml"));
+        }
+        assertTrue(drain(admin).contains("완료"));
     }
 
     static final class WeaponModuleAccess {

@@ -494,6 +494,9 @@ public class MenuModule extends Module {
             if (r.hasPermission("wave.report.receive") && !plugin.getConfig().getStringList("report-receivers").contains(r.getName())) Msg.send(r, report);
         }
         plugin.getLogger().info("[신고] " + p.getName() + " -> " + target + " : " + Cmd.rest(a, 1));
+        kr.wave.core.util.Discord.send("report", "🚨 신고 접수", "**" + p.getName() + "** → **" + (target.isEmpty() ? "-" : target) + "**",
+                kr.wave.core.util.Discord.ORANGE, "사유", Cmd.rest(a, 1) == null ? "-" : Cmd.rest(a, 1),
+                "위치", p.getWorld().getName() + " " + p.getLocation().getBlockX() + ", " + p.getLocation().getBlockY() + ", " + p.getLocation().getBlockZ());
         reportCooldown.put(p.getUniqueId(), now);
     }
 }

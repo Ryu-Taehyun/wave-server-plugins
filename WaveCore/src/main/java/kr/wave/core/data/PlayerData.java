@@ -80,6 +80,16 @@ public class PlayerData {
     /* 뉴비 */
     public long newbiePassUntil;
     public long newbieStart;
+    /** 제재 기록 (최신이 뒤): "yyyy-MM-dd HH:mm | 종류 | 내용 | 처리자" */
+    public final List<String> sanctions = new ArrayList<>();
+    /** 누적 경고 수 */
+    public int warnings;
+    /** 채팅 금지가 풀리는 시각 (밀리초, 0 이면 없음) */
+    public long muteUntil;
+    public String muteReason = "";
+    /** 출석: 마지막 출석 날짜 · 연속 일수 · 총 일수 */
+    public String attendDay = "";
+    public int attendStreak, attendTotal;
     /** 마지막 퇴장 시각 (환영 메시지용) */
     public long lastSeen;
 
@@ -147,6 +157,13 @@ public class PlayerData {
         readItems(y.getList("respawn-items"), respawnItems);
         newbiePassUntil = y.getLong("newbie-pass-until");
         newbieStart = y.getLong("newbie-start");
+        sanctions.addAll(y.getStringList("sanctions"));
+        warnings = y.getInt("warnings");
+        muteUntil = y.getLong("mute-until");
+        muteReason = y.getString("mute-reason", "");
+        attendDay = y.getString("attend-day", "");
+        attendStreak = y.getInt("attend-streak");
+        attendTotal = y.getInt("attend-total");
         lastSeen = y.getLong("last-seen");
         List<Boolean> ann = y.getBooleanList("collection-announced");
         for (int i = 0; i < Math.min(ann.size(), collectionAnnounced.length); i++) collectionAnnounced[i] = ann.get(i);
@@ -192,6 +209,13 @@ public class PlayerData {
         y.set("respawn-items", new ArrayList<>(respawnItems));
         y.set("newbie-pass-until", newbiePassUntil);
         y.set("newbie-start", newbieStart);
+        y.set("sanctions", new ArrayList<>(sanctions));
+        y.set("warnings", warnings);
+        y.set("mute-until", muteUntil);
+        y.set("mute-reason", muteReason);
+        y.set("attend-day", attendDay);
+        y.set("attend-streak", attendStreak);
+        y.set("attend-total", attendTotal);
         y.set("last-seen", lastSeen);
         List<Boolean> ann = new ArrayList<>();
         for (boolean b : collectionAnnounced) ann.add(b);

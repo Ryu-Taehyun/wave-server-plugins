@@ -386,7 +386,7 @@ public class EventModule extends Module {
         return s == null ? "" : s.trim().replace(" ", "").toLowerCase();
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onQuizChat(AsyncChatEvent e) {
         Quiz q = quiz;
         if (q == null) return;

@@ -82,6 +82,8 @@ public class EconomyModule extends Module {
             d.exMoney += amount;
             d.exMoneyTotal += amount;
             kr.wave.core.util.TxLog.paid("관리자 지급", String.valueOf(t.getName()), t.getUniqueId(), amount, d.exMoney, "지급자 " + s.getName());
+            kr.wave.core.util.Discord.send("paid-cash", "💰 유료 캐시 지급", "**" + t.getName() + "**", kr.wave.core.util.Discord.GREEN,
+                    "금액", Msg.num(amount) + "원", "잔액", Msg.num(d.exMoney) + "원", "누적", Msg.num(d.exMoneyTotal) + "원", "지급자", s.getName());
             Msg.send(s, "§a[💰] &6" + a[0] + "님에게 " + amount + " 유료 캐시를 지급했습니다.");
             if (t.getPlayer() != null) Msg.send(t.getPlayer(), "§a[💰] &6서버로부터 " + amount + " 유료 캐시가 지급되었습니다. (잔액: " + d.exMoney + "원)");
         } else {

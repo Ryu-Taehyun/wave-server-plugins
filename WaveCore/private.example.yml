@@ -17,3 +17,7 @@ links:
   minelist: "https://minelist.kr/servers/..."
   mineboard: "https://www.mineboard.kr/ko/explore/servers/..."
   discord: "https://discord.gg/..."
+
+# 디스코드 관리자 채널 웹훅 주소 (채널 설정 → 연동 → 웹후크 → URL 복사). 이 주소가 새면 누구나 채널에 글을 쓸 수 있으니 공유하지 마세요.
+discord-webhook:
+  url: "https://discord.com/api/webhooks/..."
