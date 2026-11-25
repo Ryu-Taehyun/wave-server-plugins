@@ -275,8 +275,6 @@ public class CollectionModule extends Module {
                     "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를");
             announce(p, d, 1, Material.DIAMOND_SWORD, Items.C_REAPER_SOUL, "&8", "&7",
                     "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼", "을");
-            announce(p, d, 2, Material.NETHERITE_HELMET, Items.C_JUDGE_HELMET, "&a", "&6",
-                    "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧", "를");
             announce(p, d, 3, Material.NETHERITE_BOOTS, Items.C_REAPER_HEART, "&8", "&7",
                     "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장", "을");
         }

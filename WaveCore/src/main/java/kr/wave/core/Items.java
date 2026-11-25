@@ -130,7 +130,7 @@ public final class Items {
                 Items::claymoreSd, Items::frostGrave, Items::newCharacteristic, Items::sealedSword, Items::sealedWings,
                 Items::ruinerScythe, Items::ruinerPants, Items::chaosApocalypse, Items::darknessWave, Items::chaosHelmet,
                 Items::voidBow, Items::voidChest, Items::russellHelmet, Items::aristotlePickaxe, Items::quantumSword,
-                Items::auroraBoots, Items::chronosBoots, Items::natureBoots, Items::thunderAxe, Items::judgeHelmet,
+                Items::auroraBoots, Items::natureBoots, Items::thunderAxe,
                 Items::claymoreJs, Items::emberBrand, Items::umbralChain, Items::echoBell, Items::timePiecerWind,
                 () -> melon(1), Items::newbiePass, Items::legendVoucher, Items::mythicVoucher, Items::altarTicket,
                 Items::timeShard, Items::quantumMatter, Items::vibranium, Items::ruinerEssence));
@@ -166,7 +166,6 @@ public final class Items {
     /* 컬렉션 아이템 (이름 정확히 일치) */
     public static final String C_CLAYMORE = Msg.plainOf("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어");
     public static final String C_REAPER_SOUL = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼");
-    public static final String C_JUDGE_HELMET = Msg.plainOf("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧");
     public static final String C_REAPER_HEART = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장");
 
     private static final java.util.Map<Material, String> KOREAN = java.util.Map.ofEntries(
@@ -560,12 +559,6 @@ public final class Items {
                 .lore("%nl%&7등급 : &dEpic%nl%%nl%<gradient:#D4AF37:#FDFBF0><italic:false><bold:true>[Lv.Absolute 특성]%nl%&8&l>> &7일정 확률로 공격받을 시 &e데미지의 일부를 흡수&7합니다").build();
     }
 
-    public static ItemStack chronosBoots() {
-        return It.of(Material.DIAMOND_BOOTS).ench(Enchantment.PROTECTION, 4)
-                .name("<gradient:#BFA66E:#FFE2E2:#B2D6B6><italic:false><b>[Time] [L</b><b>v.↗</b><b>] 크로노스의 신발</b></gradient> &7(+0)")
-                .lore("%nl%&7등급 : &6Upgrade%nl%&7업그레이드 시 특수한 능력이 추가됩니다.%nl%%nl%&7성장 진도 (0/5)%nl%&8&l>> &e보호 5%nl%&8&l>> &e네더라이트화%nl%&8&l>> &c내구도 무한%nl%&8&l>> &4보호 6%nl%&8&l>> <gradient:#BFA66E:#B2D6B6><italic:false><b>모래 폭풍</b></gradient>" + SEASON_KEEP).build();
-    }
-
     public static ItemStack natureBoots() {
         return It.of(Material.DIAMOND_BOOTS).unbreakable().ench(Enchantment.PROTECTION, 5).ench(Enchantment.FEATHER_FALLING, 5).ench(Enchantment.DEPTH_STRIDER, 5)
                 .name("<gradient:#F5E400:#95FFBE><italic:false><b>[Natural]</b><b> [Lv.✦</b><b>] 대자연의 황혼</b></gradient>")
@@ -694,12 +687,6 @@ public final class Items {
 
     /* ---------------- 프리오더 ---------------- */
 
-    public static ItemStack judgeHelmet() {
-        return It.of(Material.NETHERITE_HELMET).unbreakable().ench(Enchantment.PROTECTION, 5)
-                .name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧")
-                .lore("%nl%&c&l-심판의 빛이 머리 위를 스친다.%nl%%nl%&7&lS2 시즌에서만 휙득할수 있으며, 시즌이 지나도 아이템이 사라지지 않습니다.%nl%&a&l%nl%&6&l[심판자의 권한]%nl%&a&l- &7헬멧 장착 시 &e받는 데미지 감소%nl%&a&l- &7데미지를 받을 시 일정 확률로 &a체력을 회복&7합니다%nl%&a&l- &7헬멧이 &f부서지지 않습니다%nl%%nl%&c&l드롭 방지가 적용되며, 사망해도 아이템이 드롭되지 않습니다.").build();
-    }
-
     public static ItemStack claymoreJs() {
         return It.of(Material.GOLDEN_SWORD).unbreakable().ench(Enchantment.CHANNELING, 10)
                 .name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어")
@@ -708,7 +695,7 @@ public final class Items {
 
     public static ItemStack preorderTicket() {
         return It.of(Material.AMETHYST_SHARD).ench(Enchantment.FORTUNE, 10).name("&d&l[Pre-Order] &b&l행운 티켓")
-                .lore("%nl%&a&l운에 맡겨보세요!%nl%%nl%&7등장하는 아이템 목록:%nl%&7- &6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 헬멧%nl%&7- &6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어%nl%&7- &d&l[Pre-Order] &bStarter Pickaxe%nl%&7- &f네더라이트 주괴 x 8%nl%&7- &f다이아몬드 x 40%nl%&7- &f엔더의 눈 x 20%nl%&7- &a[Newbie] &7&l뉴비 지원 패키지").build();
+                .lore("%nl%&a&l운에 맡겨보세요!%nl%%nl%&7등장하는 아이템 목록:%nl%&7- &6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어%nl%&7- &d&l[Pre-Order] &bStarter Pickaxe%nl%&7- &f네더라이트 주괴 x 8%nl%&7- &f다이아몬드 x 40%nl%&7- &f엔더의 눈 x 20%nl%&7- &a[Newbie] &7&l뉴비 지원 패키지").build();
     }
 
     /* ---------------- 칭호 책 ---------------- */

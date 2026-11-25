@@ -139,7 +139,7 @@ public class WeaponModule extends Module {
         }, "모두지급", "giveall");
         cmd("랜덤박스지급", ADMIN, (s, l, a) -> give(s, Items.ruinerScythe(), Items.sealedWings(), Items.ruinerPants(), Items.sealedSword(), Items.thunderAxe(), Items.chaosApocalypse(), Items.darknessWave(), Items.chaosHelmet()));
         cmd("epicitems", ADMIN, (s, l, a) -> give(s, Items.vibranium(), Items.quantumMatter(), Items.quantumSword(), Items.auroraBoots(), Items.voidChest(), Items.voidBow(),
-                Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronosBoots(), Items.chronos(0), Items.natureBoots()));
+                Items.russellHelmet(), Items.aristotlePickaxe(), Items.chronos(0), Items.natureBoots()));
         cmd("chronoss", ADMIN, (s, l, a) -> give(s, Items.chronos(0), Items.chronos(1), Items.chronos(2), Items.chronos(3), Items.chronos(4), Items.chronos(5), Items.chronos(6),
                 Items.timeShard(), Items.ruinerEssence(), Items.frostGrave()));
         cmd("test209292", ADMIN, (s, l, a) -> give(s, Items.newCharacteristic()));

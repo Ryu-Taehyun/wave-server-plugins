@@ -2604,7 +2604,7 @@ public class WaveTest {
         PlayerMock p = server.addPlayer("LoreView");
         server.getScheduler().performTicks(5);
         ItemStack[] all = {Items.claymoreSd(), Items.frostGrave(), Items.newCharacteristic(), Items.sealedSword(), Items.ruinerScythe(), Items.chaosApocalypse(),
-                Items.voidBow(), Items.quantumSword(), Items.thunderAxe(), Items.voidChest(), Items.russellHelmet(), Items.chaosHelmet(), Items.natureBoots(), Items.ruinerPants(), Items.auroraBoots(), Items.judgeHelmet(), Items.chronos(5),
+                Items.voidBow(), Items.quantumSword(), Items.thunderAxe(), Items.voidChest(), Items.russellHelmet(), Items.chaosHelmet(), Items.natureBoots(), Items.ruinerPants(), Items.auroraBoots(), Items.chronos(5),
                 Items.timePiecerWind(), Items.umbralChain(), Items.echoBell(), Items.emberBrand(), Items.soulSplitterDisplay()};
         kr.wave.core.util.Gui g = new kr.wave.core.util.Gui(3, "&8&l무기 · 방어구");
         for (int i = 0; i < all.length; i++) g.set(i, all[i]);
@@ -3977,7 +3977,6 @@ public class WaveTest {
         java.util.Map<String, ItemStack> expect = new java.util.LinkedHashMap<>();
         expect.put("claymore_sd", Items.claymoreSd());
         expect.put("claymore_js", Items.claymoreJs());
-        expect.put("judge_helmet", Items.judgeHelmet());
         expect.put("frost_grave", Items.frostGrave());
         expect.put("sealed_sword", Items.sealedSword());
         expect.put("sealed_wings", Items.sealedWings());
@@ -3986,7 +3985,6 @@ public class WaveTest {
         expect.put("ember_brand", Items.emberBrand());
         expect.put("soul_splitter", Items.soulSplitter(plugin, 0));
         expect.put("chronos", Items.chronos(0));
-        expect.put("chronos_boots", Items.chronosBoots());
         expect.put("thunder_axe", Items.thunderAxe());
         expect.put("ruiner_scythe", Items.ruinerScythe());
         expect.put("ruiner_pants", Items.ruinerPants());

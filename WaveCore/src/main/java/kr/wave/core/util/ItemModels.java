@@ -22,7 +22,6 @@ public final class ItemModels {
         // 무기
         BY_NAME.put("[Lv.sd] 천공의 심판자 클레이모어", "claymore_sd");
         BY_NAME.put("천공의 심판자 클레이모어", "claymore_js");
-        BY_NAME.put("천공의 심판자 헬멧", "judge_helmet");
         BY_NAME.put("프로스트 그레이브", "frost_grave");
         BY_NAME.put("얼어붙은 제왕의 검", "sealed_sword");
         BY_NAME.put("얼어붙은 제왕의 날개", "sealed_wings");
@@ -31,7 +30,6 @@ public final class ItemModels {
         BY_NAME.put("잿불 낙인검", "ember_brand");
         BY_NAME.put("망령 수확자", "soul_splitter");
         BY_NAME.put("Soul Splitter", "soul_splitter");
-        BY_NAME.put("크로노스의 신발", "chronos_boots");
         BY_NAME.put("크로노스의 칼날", "chronos");
         BY_NAME.put("이터널 크로노스", "chronos");
         BY_NAME.put("천둥의 심판", "thunder_axe");

@@ -218,7 +218,6 @@ public class PackageModule extends Module {
     /* ======================= Pre-Order 룰렛 ======================= */
 
     private void buildRewards() {
-        add(Items::judgeHelmet);
         add(Items::claymoreJs);
         add(() -> Items.nickPaper("magenta", "Pre-Order 시작의 룰렛 보상입니다."));
         add(() -> Items.nickPaper("gradient", "Pre-Order 시작의 룰렛 보상입니다."));
