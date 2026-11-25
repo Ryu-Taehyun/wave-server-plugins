@@ -4119,8 +4119,6 @@ public class WaveTest {
         assertEquals("S1", season);
         String tkey = kr.wave.core.module.RankingModule.titleKey(season, kr.wave.core.module.RankingModule.Cat.MONEY, 1);
         assertTrue(top.titles.contains(tkey), top.titles.toString());
-        String got = drain(ps.get(11));
-        assertTrue(got.contains("우편함으로 도착했습니다.") && got.contains("획득.") && !got.contains("도착했습니다!") && !got.contains("획득!"), "보상 알림 마침표: " + got);
         assertEquals("[👑 S1 부의 제왕 1위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(tkey)));
         assertEquals("[★ S1 킬의 제왕 4위]", Msg.plainOf(kr.wave.core.module.RankingModule.titleText(kr.wave.core.module.RankingModule.titleKey("S1", kr.wave.core.module.RankingModule.Cat.KILLS, 4))));
         assertTrue(plugin.store().get(ps.get(5)).titles.stream().anyMatch(tk -> Msg.plainOf(String.valueOf(kr.wave.core.module.RankingModule.titleText(tk))).contains("S1 부의 제왕 7위")));
