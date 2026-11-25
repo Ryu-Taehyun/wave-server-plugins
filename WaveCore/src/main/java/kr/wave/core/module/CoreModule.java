@@ -80,6 +80,13 @@ public class CoreModule extends Module {
 
     @Override
     public void enable() {
+        // 서버가 다 켜진 뒤 주요 월드가 있는지 확인 (config worlds 이름이 틀리면 /spawn · /보호구역 · /랜덤스폰 이 안 됨)
+        later(40, () -> {
+            for (String k : new String[]{"spawn", "wild"}) {
+                if (Bukkit.getWorld(world(k)) == null)
+                    plugin.getLogger().warning("[월드] config.yml 의 worlds." + k + " = '" + world(k) + "' 월드를 찾을 수 없습니다. 실제 월드 이름과 같은지 확인하세요. (worlds: 가 두 번 들어가 있지 않은지도 확인)");
+            }
+        });
         cmd("serveritem", ADMIN, (s, l, a) -> {
             if (Cmd.isPlayer(s)) It.give((Player) s, Items.claymoreSd());
         });

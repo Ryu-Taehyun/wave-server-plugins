@@ -53,7 +53,9 @@ public abstract class Module implements Listener {
     protected static final String ADMIN = "wave.admin";
 
     protected String world(String key) {
-        return plugin.getConfig().getString("worlds." + key, key);
+        // 값이 없으면 플러그인 기본값(spawn-world, world ...)을 씀 (config 에 worlds: 가 두 번 들어가 앞의 값이 지워진 경우 등)
+        String w = plugin.getConfig().getString("worlds." + key);
+        return w == null || w.isBlank() ? key : w;
     }
 
     protected boolean inWorld(Player p, String key) {

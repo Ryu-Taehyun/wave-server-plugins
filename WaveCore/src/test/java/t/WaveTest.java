@@ -4444,6 +4444,19 @@ public class WaveTest {
         assertTrue(drain(p).contains("초 후에 다시"));
     }
 
+    @Test
+    void worldNamesFallBackToDefaults() {
+        // config 에 worlds: 가 두 번 들어가 앞의 값이 지워진 경우 (worlds 아래에 다른 키만 남음)
+        plugin.getConfig().set("worlds", null);
+        plugin.getConfig().set("worlds.tutorial", "tutorial");
+        PlayerMock p = server.addPlayer("WorldFallback");
+        server.getScheduler().performTicks(5);
+        p.teleport(new org.bukkit.Location(server.getWorld("world"), 5, 64, 5));
+        assertTrue(p.performCommand("spawn"));
+        server.getScheduler().performTicks(61);
+        assertEquals(server.getWorld("spawn-world"), p.getWorld(), "기본값 spawn-world 로 이동");
+    }
+
     /** 이 IP 로 접속한 플레이어 */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);
