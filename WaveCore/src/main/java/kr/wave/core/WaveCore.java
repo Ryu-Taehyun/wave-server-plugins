@@ -137,7 +137,7 @@ public class WaveCore extends JavaPlugin {
             case "boss" -> module(BossModule.class).admin(s, a);
             case "setwarp" -> {
                 if (!(s instanceof Player p) || a.length < 2) {
-                    Msg.send(s, "&c/wave setwarp <spawn|protect> &7(게임 안에서, 서 있는 위치로 설정)");
+                    Msg.send(s, "&c/wave setwarp <spawn|protect|tutorial> &7(게임 안에서, 서 있는 위치로 설정)");
                     return;
                 }
                 store.global().warps.put(a[1].toLowerCase(), p.getLocation());
@@ -162,7 +162,7 @@ public class WaveCore extends JavaPlugin {
             default -> {
                 Msg.send(s, "&6WaveCore 관리 명령어");
                 Msg.send(s, "&e/wave migrate &7- Skript 변수(돈, 레벨, 우편함 등)를 가져옵니다");
-                Msg.send(s, "&e/wave setwarp <spawn|protect> &7- /spawn, /보호구역 도착 위치 지정");
+                Msg.send(s, "&e/wave setwarp <spawn|protect|tutorial> &7- /spawn, /보호구역, 튜토리얼 맵 시작 위치 지정");
                 Msg.send(s, "&e/wave delwarp <spawn|protect> &7- 지정 해제 (월드 스폰 사용)");
                 Msg.send(s, "&e/wave boss &7- 보스 '천공의 심판자' 관리");
                 Msg.send(s, "&e/wave reload &7- config.yml 다시 불러오기");

@@ -1409,6 +1409,11 @@ public class WeaponModule extends Module {
             // 이름이 바뀐 칭호를 쓰고 있으면 새 이름으로 다시 적용
             String newPrefix = Items.renamedTitle(d.activeTitle);
             if (newPrefix != null) plugin.module(CoreModule.class).applyTitle(p, newPrefix);
+            // 순위 · 업적 칭호: 표시 형식이 바뀌었으면 새 형식으로 다시 적용 (예: [👑 S1 ...] -> [👑] S1 ...)
+            String text = RankingModule.titleText(d.activeTitle);
+            if (text == null) text = AchievementModule.titleText(d.activeTitle);
+            if (text != null && !Msg.plainOf(text).equals(Msg.plainOf(String.valueOf(plugin.hooks().prefix(p)))))
+                plugin.module(CoreModule.class).applyTitle(p, "\"" + text + "\"");
             int n = a + b + c + t;
             if (n > 0) Msg.actionBar(p, "&7보유 중인 특수 아이템 &f" + n + "개&7의 이름과 설명이 최신으로 바뀌었습니다.");
         });

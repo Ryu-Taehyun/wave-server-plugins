@@ -260,7 +260,8 @@ public class CoreModule extends Module {
             Msg.broadcast(" ");
             for (Player o : Bukkit.getOnlinePlayers()) if (o != p) Msg.sound(o, "entity.firework_rocket.twinkle", 0.6f, 1.2f);
             if (!p.isOnline()) return;
-            tpWorld(p, "spawn");
+            TutorialModule tut = plugin.module(TutorialModule.class);
+            if (tut == null || !tut.sendToMap(p)) tpWorld(p, "spawn");   // 튜토리얼 맵이 있으면 그곳에서 시작
             console("lp user " + p.getName() + " parent set default");
             console("nick " + p.getName() + " off");
             console("minecraft:team join default " + p.getName());
@@ -811,7 +812,7 @@ public class CoreModule extends Module {
             if (!p.isOnline()) return;
             Location dest = global().warps.get(warp);
             if (dest == null) dest = spawnOf(warp.equals("spawn") ? "spawn" : "wild");
-            if (dest != null) p.teleport(dest);
+            if (dest != null && !p.teleport(dest)) return;   // 다른 기능이 막음 (튜토리얼 맵 등)
             Msg.send(p, "&a[🌍] &a" + label + "으로 이동되었습니다!");
             Msg.sound(p, "entity.enderman.teleport", 0.5f, 1);
         }, 60L);
