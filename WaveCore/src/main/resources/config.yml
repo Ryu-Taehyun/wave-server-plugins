@@ -101,6 +101,17 @@ weapons:
     slowness-seconds: 3.0
     slowness-level: 3
 
+# /랜덤스폰: 야생(worlds.wild)의 안전한 랜덤 위치로 이동 (물 · 용암 · 선인장 · 나뭇잎 위 제외, 월드 경계 안)
+# center-x/z 를 중심으로 min-radius ~ max-radius 거리. use-betterrtp: true 면 예전처럼 BetterRTP 에 맡김
+random-spawn:
+  center-x: 0
+  center-z: 0
+  min-radius: 200
+  max-radius: 3000
+  attempts: 40
+  cooldown-seconds: 20
+  use-betterrtp: false
+
 # 전투 태그 시간 (초)
 combat-time: 12
 # 전투 중 진입할 수 없는 WorldGuard 구역 이름

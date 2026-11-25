@@ -17,6 +17,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.OfflinePlayer;
@@ -291,7 +292,7 @@ public class CoreModule extends Module {
         e.quitMessage(Msg.c("&8[&c-&8] " + teamPart + nickName(d.nickColor, p.getName(), "&f") + "&f 님이 서버에서 &c퇴장&f했습니다."));
         BukkitTask t = teleporting.remove(p.getUniqueId());
         if (t != null) t.cancel();
-        randomSpawnCooldown.entrySet().removeIf(en -> System.currentTimeMillis() - en.getValue() > 20_000);
+        randomSpawnCooldown.entrySet().removeIf(en -> System.currentTimeMillis() - en.getValue() > 600_000);
         d.lastSeen = System.currentTimeMillis();
     }
 
@@ -856,17 +857,118 @@ public class CoreModule extends Module {
         }
         long now = System.currentTimeMillis();
         long last = randomSpawnCooldown.getOrDefault(p.getUniqueId(), 0L);
-        long left = 20_000 - (now - last);
+        long cd = plugin.getConfig().getLong("random-spawn.cooldown-seconds", 20) * 1000;
+        long left = cd - (now - last);
         if (left > 0) {
             Msg.send(p, "&a[🌍] &c아직 랜덤스폰을 사용할 수 없습니다. " + Math.max(1, left / 1000) + "초 후에 다시 시도해주세요.");
             Msg.sound(p, "block.note_block.bass", 1, 1);
             return;
         }
+        if (searching.contains(p.getUniqueId())) {
+            Msg.send(p, "&a[🌍] &7이미 안전한 위치를 찾는 중입니다...");
+            return;
+        }
+        World w = Bukkit.getWorld(world("wild"));
+        if (w == null) {
+            Msg.send(p, "&c[🌍] 야생 월드를 찾을 수 없습니다. 관리자에게 알려 주세요.");
+            plugin.getLogger().warning("[랜덤스폰] 야생 월드 '" + world("wild") + "' 를 찾을 수 없습니다. (config.yml 의 worlds.wild)");
+            return;
+        }
         randomSpawnCooldown.put(p.getUniqueId(), now);
-        tpWorld(p, "wild");
-        later(20, () -> {
-            if (p.isOnline()) console("rtp player " + p.getName());
+        if (plugin.getConfig().getBoolean("random-spawn.use-betterrtp", false)) {
+            console("rtp player " + p.getName() + " " + w.getName());   // 야생 월드를 직접 지정
+            return;
+        }
+        searching.add(p.getUniqueId());
+        Msg.send(p, "&a[🌍] &7야생에서 안전한 위치를 찾는 중입니다...");
+        Msg.actionBar(p, "&7안전한 위치를 찾는 중...");
+        findSafe(w, plugin.getConfig().getInt("random-spawn.attempts", 40), loc -> {
+            searching.remove(p.getUniqueId());
+            if (!p.isOnline()) return;
+            if (loc == null) {
+                randomSpawnCooldown.remove(p.getUniqueId());   // 실패하면 바로 다시 시도할 수 있게
+                Msg.send(p, "&c[🌍] 안전한 위치를 찾지 못했습니다. 잠시 후 다시 시도해 주세요.");
+                Msg.sound(p, "block.note_block.bass", 1, 1);
+                plugin.getLogger().warning("[랜덤스폰] " + p.getName() + ": 안전한 위치를 찾지 못함 (config random-spawn 의 범위를 확인하세요)");
+                return;
+            }
+            java.util.concurrent.CompletableFuture<Boolean> tp;
+            try {
+                tp = p.teleportAsync(loc);
+            } catch (RuntimeException ex) {   // 비동기 이동을 지원하지 않는 환경
+                tp = java.util.concurrent.CompletableFuture.completedFuture(p.teleport(loc));
+            }
+            tp.thenAccept(ok -> {
+                if (!ok) {
+                    Msg.send(p, "&c[🌍] 지금은 이동할 수 없습니다.");
+                    return;
+                }
+                Msg.send(p, "&a[🌍] &a야생의 랜덤 위치로 이동했습니다! &7(" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")");
+                Msg.sound(p, "entity.enderman.teleport", 0.6f, 1);
+            });
         });
+    }
+
+    /** 랜덤스폰 위치를 찾는 중인 플레이어 */
+    private final java.util.Set<UUID> searching = new java.util.HashSet<>();
+
+    /** 사람이 서 있을 수 있는 빈 칸 (공기 · 풀 · 꽃 등, 물 · 용암 · 가루눈 · 불 제외) */
+    private static boolean roomFor(Material m) {
+        if (m.isAir()) return true;
+        if (m.isSolid()) return false;
+        return switch (m) {
+            case WATER, LAVA, BUBBLE_COLUMN, POWDER_SNOW, FIRE, SOUL_FIRE, SWEET_BERRY_BUSH, COBWEB, NETHER_PORTAL, END_PORTAL -> false;
+            default -> true;
+        };
+    }
+
+    /** 밟고 서면 안 되는 블록 */
+    private static boolean unsafeGround(Material m) {
+        if (!m.isSolid()) return true;   // 물 · 용암 · 공기 · 풀 등
+        return switch (m) {
+            case MAGMA_BLOCK, CACTUS, CAMPFIRE, SOUL_CAMPFIRE, POWDER_SNOW, SWEET_BERRY_BUSH, POINTED_DRIPSTONE, BEDROCK,
+                 FIRE, SOUL_FIRE, LAVA, WATER, ICE -> true;
+            default -> m.name().endsWith("_LEAVES");   // 나무 위
+        };
+    }
+
+    /**
+     * 야생에서 안전한 위치 찾기 (청크는 비동기로 불러옴, 서버 멈춤 없음)
+     * config random-spawn: center-x/z, min-radius, max-radius (월드 경계 안으로 제한)
+     */
+    void findSafe(World w, int attempts, java.util.function.Consumer<Location> done) {
+        if (attempts <= 0) {
+            done.accept(null);
+            return;
+        }
+        var c = plugin.getConfig();
+        double cx = c.getDouble("random-spawn.center-x", 0), cz = c.getDouble("random-spawn.center-z", 0);
+        double min = Math.max(0, c.getDouble("random-spawn.min-radius", 200));
+        double max = Math.max(min + 16, c.getDouble("random-spawn.max-radius", 3000));
+        var border = w.getWorldBorder();
+        max = Math.min(max, Math.max(16, border.getSize() / 2 - 16));
+        min = Math.min(min, max - 16);
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        double ang = r.nextDouble(Math.PI * 2), dist = Math.sqrt(r.nextDouble(min * min, max * max));
+        int x = (int) Math.floor(cx + Math.cos(ang) * dist), z = (int) Math.floor(cz + Math.sin(ang) * dist);
+        java.util.concurrent.CompletableFuture<org.bukkit.Chunk> load;
+        try {
+            load = w.getChunkAtAsync(x >> 4, z >> 4);
+        } catch (RuntimeException ex) {   // 비동기 불러오기를 지원하지 않는 환경
+            load = java.util.concurrent.CompletableFuture.completedFuture(w.getChunkAt(x >> 4, z >> 4));
+        }
+        load.whenComplete((chunk, err) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            Location loc = null;
+            if (err == null) {
+                Block top = w.getHighestBlockAt(x, z, org.bukkit.HeightMap.MOTION_BLOCKING);
+                Block feet = top.getRelative(0, 1, 0), head = top.getRelative(0, 2, 0);
+                boolean ok = !unsafeGround(top.getType()) && roomFor(feet.getType()) && roomFor(head.getType())
+                        && top.getY() > w.getMinHeight() + 1 && top.getY() < w.getMaxHeight() - 3 && border.isInside(top.getLocation());
+                if (ok) loc = new Location(w, x + 0.5, top.getY() + 1, z + 0.5, r.nextFloat() * 360f, 0);
+            }
+            if (loc != null) done.accept(loc);
+            else findSafe(w, attempts - 1, done);
+        }));
     }
 
     /* ======================= 밴 ======================= */

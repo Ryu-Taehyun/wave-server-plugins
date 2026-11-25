@@ -4419,6 +4419,31 @@ public class WaveTest {
         assertEquals(10.5, fresh.getLocation().getX(), 0.01, "처음 접속하면 지정한 스폰 위치로");
     }
 
+    @Test
+    void randomSpawnFindsSafeSpot() {
+        World wild = server.getWorld("world");
+        plugin.getConfig().set("random-spawn.min-radius", 50);
+        plugin.getConfig().set("random-spawn.max-radius", 400);
+        PlayerMock p = server.addPlayer("Rtp");
+        server.getScheduler().performTicks(5);
+        p.teleport(server.getWorld("spawn-world").getSpawnLocation());
+        drain(p);
+        assertTrue(p.performCommand("랜덤스폰"));
+        for (int i = 0; i < 100 && p.getWorld() != wild; i++) server.getScheduler().performTicks(1);
+        String msg = drain(p);
+        assertEquals(wild, p.getWorld(), msg);
+        double d = Math.hypot(p.getLocation().getX(), p.getLocation().getZ());
+        assertTrue(d >= 49 && d <= 401, "범위 안: " + d);
+        assertTrue(p.getLocation().clone().add(0, -1, 0).getBlock().getType().isSolid(), "발밑이 단단한 블록");
+        assertTrue(msg.contains("랜덤 위치로 이동했습니다"), msg);
+        // 야생에서는 쓸 수 없음 · 쿨타임
+        assertTrue(p.performCommand("랜덤스폰"));
+        assertTrue(drain(p).contains("스폰에서만"));
+        p.teleport(server.getWorld("spawn-world").getSpawnLocation());
+        assertTrue(p.performCommand("랜덤스폰"));
+        assertTrue(drain(p).contains("초 후에 다시"));
+    }
+
     /** 이 IP 로 접속한 플레이어 */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);
