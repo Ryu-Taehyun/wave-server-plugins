@@ -337,17 +337,6 @@ ranking:
       keys: {}
       commands: []
 
-# 리소스팩 (특별 아이템 텍스쳐, WaveItems.zip)
-# item-models: 특별 아이템에 텍스쳐 연결 (리소스팩이 없는 사람에게는 바닐라 모양 그대로)
-# url / sha1: 여기에 넣으면 접속 때 플러그인이 리소스팩을 보냄. 비우면 server.properties 의 resource-pack 을 쓰세요
-# required: true 면 거절 시 접속 불가
-resource-pack:
-  item-models: true
-  url: ""
-  sha1: ""
-  required: false
-  prompt: "&f특별 아이템 텍스쳐 리소스팩을 받으시겠습니까?"
-
 # 출석 보상: 하루 첫 접속 때 자동 출석. 1~7일차 보상(원), 7일마다 반복. 7일 연속이면 칭호 "파수꾼"
 attendance:
   enabled: true

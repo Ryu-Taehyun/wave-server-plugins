@@ -3974,74 +3974,6 @@ public class WaveTest {
     }
 
     @Test
-    void resourcePackItemModels() {
-        java.util.Map<String, ItemStack> expect = new java.util.LinkedHashMap<>();
-        expect.put("claymore_sd", Items.claymoreSd());
-        expect.put("claymore_js", Items.claymoreJs());
-        expect.put("frost_grave", Items.frostGrave());
-        expect.put("sealed_sword", Items.sealedSword());
-        expect.put("sealed_wings", Items.sealedWings());
-        expect.put("quantum_sword", Items.quantumSword());
-        expect.put("aurora_boots", Items.auroraBoots());
-        expect.put("ember_brand", Items.emberBrand());
-        expect.put("soul_splitter", Items.soulSplitter(plugin, 0));
-        expect.put("chronos", Items.chronos(0));
-        expect.put("thunder_axe", Items.thunderAxe());
-        expect.put("ruiner_scythe", Items.ruinerScythe());
-        expect.put("ruiner_pants", Items.ruinerPants());
-        expect.put("chaos_apocalypse", Items.chaosApocalypse());
-        expect.put("chaos_helmet", Items.chaosHelmet());
-        expect.put("darkness_wave", Items.darknessWave());
-        expect.put("aristotle_pickaxe", Items.aristotlePickaxe());
-        expect.put("russell_helmet", Items.russellHelmet());
-        expect.put("void_bow", Items.voidBow());
-        expect.put("void_chest", Items.voidChest());
-        expect.put("time_piecer_wind", Items.timePiecerWind());
-        expect.put("echo_bell", Items.echoBell());
-        expect.put("umbral_chain", Items.umbralChain());
-        expect.put("new_characteristic", Items.newCharacteristic());
-        expect.put("nature_boots", Items.natureBoots());
-        expect.put("legend_voucher", Items.legendVoucher());
-        expect.put("mythic_voucher", Items.mythicVoucher());
-        expect.put("altar_ticket", Items.altarTicket());
-        expect.put("time_shard", Items.timeShard());
-        expect.put("quantum_matter", Items.quantumMatter());
-        expect.put("vibranium", Items.vibranium());
-        expect.put("weapon_key", Items.weaponKey(1, null));
-        expect.put("heaven_key", Items.heavenKey(1, null));
-        expect.put("sealed_key", Items.sealedKey(1));
-        expect.put("ruiner_key", Items.ruinerKey(1));
-        expect.put("crown_mark", Items.crownMark());
-        // (MockBukkit 의 테스트용 ItemMeta 는 item_model 을 저장하지 않아서, 이름 → 모델 연결을 확인)
-        java.util.List<String> bad = new java.util.ArrayList<>();
-        for (var en : expect.entrySet()) {
-            String got = kr.wave.core.util.ItemModels.keyFor(Msg.name(en.getValue()));
-            if (!en.getKey().equals(got)) bad.add(en.getKey() + "=" + got + " (" + Msg.name(en.getValue()) + ")");
-        }
-        assertTrue(bad.isEmpty(), "모델이 다른 아이템: " + bad);
-        assertEquals(new java.util.HashSet<>(expect.keySet()), new java.util.HashSet<>(kr.wave.core.util.ItemModels.keys()), "모든 키가 아이템에 쓰임");
-        // 크로노스 단계 · 옛 이름도
-        for (int st = 0; st <= 6; st++) assertEquals("chronos", kr.wave.core.util.ItemModels.keyFor(Msg.name(Items.chronos(st))));
-        // 일반 아이템 · 다른 서버 아이템은 연결하지 않음
-        for (ItemStack plain : new ItemStack[]{Items.melon(1), Items.newbiePass(), Items.mineralPack(), Items.check(1000, "x"), new ItemStack(Material.DIAMOND_SWORD)})
-            assertNull(kr.wave.core.util.ItemModels.keyFor(Msg.name(plain)), Msg.name(plain));
-        // 접속 · 줍기 처리에서 오류 없이 지나감
-        PlayerMock p = server.addPlayer("Packer");
-        p.getInventory().setItem(3, Items.frostGrave());
-        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerJoinEvent(p, net.kyori.adventure.text.Component.text("x")));
-        server.getScheduler().performTicks(25);
-        assertEquals(Material.DIAMOND_SWORD, p.getInventory().getItem(3).getType());
-    }
-
-    /** 접속 주소를 정해서 접속 (MockBukkit 기본은 모두 127.0.0.1) */
-    private PlayerMock joinFrom(String name, String ip) {
-        PlayerMock pm = new PlayerMock(server, name);
-        pm.setAddress(new java.net.InetSocketAddress(ip, 25565));
-        server.addPlayer(pm);
-        return pm;
-    }
-
-    @Test
     void altGuard() throws Exception {
         PlayerMock admin = joinFrom("Guard", "10.0.0.9");
         admin.setOp(true);
@@ -4437,6 +4369,14 @@ public class WaveTest {
         java.time.LocalDateTime fri = java.time.LocalDate.of(2026, 11, 27).atTime(21, 30);
         plugin.getConfig().set("hot-time.schedule", java.util.List.of("주말 14:00 60"));
         assertEquals(java.time.LocalDate.of(2026, 11, 28).atTime(14, 0), hot.next(fri));
+    }
+
+    /** 이 IP 로 접속한 플레이어 */
+    private PlayerMock joinFrom(String name, String ip) {
+        PlayerMock pm = new PlayerMock(server, name);
+        pm.setAddress(new java.net.InetSocketAddress(ip, 25565));
+        server.addPlayer(pm);
+        return pm;
     }
 
     static final class WeaponModuleAccess {

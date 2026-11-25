@@ -82,7 +82,6 @@ public final class It {
     public ItemStack build() {
         if (!lore.isEmpty()) meta.lore(Msg.lore(lore.toArray(new String[0])));
         item.setItemMeta(meta);
-        ItemModels.apply(item);   // 특별 아이템이면 리소스팩 텍스쳐
         return item;
     }
 
