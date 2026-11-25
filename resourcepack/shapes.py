@@ -1,12 +1,36 @@
 """
-Wave 특별 아이템 텍스쳐 (형태를 새로 그림, 32x32)
+Wave 특별 아이템 텍스쳐 (형태를 새로 그림, 32 칸 좌표로 설계해 128x128 고해상도로 그림)
 python3 shapes.py <출력 폴더>   -> 리소스팩 폴더 (pack.mcmeta + assets/wave/...)
 바닐라 텍스쳐를 쓰지 않고 도형으로 직접 그립니다.
 """
 import json, math, os, sys
-from PIL import Image, ImageDraw
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
 
-N = 32
+N = 32          # 설계 좌표 (32 칸)
+OUT = 128       # 실제 텍스쳐 크기 (픽셀이 보이지 않게 고해상도)
+SS = 4          # 4 배로 크게 그린 뒤 줄여서 가장자리를 부드럽게 (안티에일리어싱)
+RES = OUT * SS
+K = RES / N
+
+
+class SD:
+    """32 칸 좌표로 그리면 128 픽셀로 늘려 그림"""
+    def __init__(self, d): self.d = d
+    @staticmethod
+    def p(pt): return (pt[0] * K + K / 2, pt[1] * K + K / 2)
+    def _pts(self, pts): return [self.p(q) for q in pts]
+    def _box(self, b): return [b[0] * K + K / 2, b[1] * K + K / 2, b[2] * K + K / 2, b[3] * K + K / 2]
+    def line(self, pts, fill=255, width=1, joint=None):
+        self.d.line(self._pts(pts), fill=fill, width=max(1, round(width * K)), joint='curve')
+        for q in (pts[0], pts[-1]):   # 끝을 둥글게
+            c = self.p(q); r = width * K / 2; self.d.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=fill)
+    def polygon(self, pts, fill=255): self.d.polygon(self._pts(pts), fill=fill)
+    def ellipse(self, b, fill=None, outline=None, width=1): self.d.ellipse(self._box(b), fill=fill, outline=outline, width=max(1, round(width * K)))
+    def rectangle(self, b, fill=255): self.d.rectangle(self._box(b), fill=fill)
+    def rounded_rectangle(self, b, radius=1, fill=255): self.d.rounded_rectangle(self._box(b), radius=radius * K, fill=fill)
+    def arc(self, b, start, end, fill=255, width=1): self.d.arc(self._box(b), start, end, fill=fill, width=max(1, round(width * K)))
+    def chord(self, b, start, end, fill=255): self.d.chord(self._box(b), start, end, fill=fill)
 
 def hx(h):
     h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
@@ -19,41 +43,73 @@ def ramp(stops, t):
     t = max(0.0, min(1.0, t)); n = len(stops) - 1; i = min(int(t * n), n - 1)
     return mix(hx(stops[i]), hx(stops[i + 1]), t * n - i)
 
+def ramp_np(stops, t):
+    """t 배열(0~1)을 색 띠로 바꿈"""
+    cs = np.array([hx(c) for c in stops], dtype=np.float32); n = len(cs) - 1
+    t = np.clip(t, 0, 1) * n; i = np.minimum(t.astype(int), n - 1); f = (t - i)[..., None]
+    return cs[i] * (1 - f) + cs[i + 1] * f
+
+
+def shift(m, dx, dy):
+    """m 을 (dx, dy) 만큼 밀었을 때 그 자리가 m 안인지 (밖은 False)"""
+    out = np.zeros_like(m); h, w = m.shape
+    ys = slice(max(0, -dy), min(h, h - dy)); xs = slice(max(0, -dx), min(w, w - dx))
+    yd = slice(max(0, dy), min(h, h + dy)); xd = slice(max(0, dx), min(w, w + dx))
+    out[ys, xs] = m[yd, xd]; return out
+
+
 class Sprite:
     def __init__(self, outline):
-        self.img = Image.new('RGBA', (N, N), (0, 0, 0, 0)); self.outline = hx(outline); self.union = set()
+        self.rgb = np.zeros((RES, RES, 3), np.float32); self.a = np.zeros((RES, RES), bool)
+        self.outline = hx(outline)
 
     def layer(self, draw, stops, g=(1, -1), bevel=True, flat=None):
-        m = Image.new('L', (N, N), 0); draw(ImageDraw.Draw(m))
-        mp = m.load(); pts = [(x, y) for y in range(N) for x in range(N) if mp[x, y] > 127]
-        if not pts: return
-        s = set(pts); gl = math.hypot(*g) or 1; gx, gy = g[0] / gl, g[1] / gl
-        pr = [x * gx + y * gy for x, y in pts]; lo, hi = min(pr), max(pr)
-        px = self.img.load()
-        for (x, y), p in zip(pts, pr):
-            if flat: c = hx(flat)
-            else:
-                t = (p - lo) / (hi - lo) if hi > lo else 0.5
-                c = ramp(stops[1:-1] if len(stops) > 3 else stops, t)
-                if bevel:
-                    if (x - 1, y) not in s or (x, y - 1) not in s: c = mix(c, hx(stops[-1]), 0.75)
-                    elif (x + 1, y) not in s or (x, y + 1) not in s: c = mix(c, hx(stops[0]), 0.7)
-            px[x, y] = (*c, 255)
-        self.union |= s
+        im = Image.new('L', (RES, RES), 0); draw(SD(ImageDraw.Draw(im)))
+        m = np.asarray(im) > 127
+        if not m.any(): return
+        if flat:
+            c = np.broadcast_to(np.array(hx(flat), np.float32), (RES, RES, 3)).copy()
+        else:
+            ys, xs = np.nonzero(m)
+            gl = math.hypot(*g) or 1; gx, gy = g[0] / gl, g[1] / gl
+            yy, xx = np.mgrid[0:RES, 0:RES].astype(np.float32)
+            pr = xx * gx + yy * gy; sel = pr[m]; lo, hi = sel.min(), sel.max()
+            t = (pr - lo) / (hi - lo) if hi > lo else np.full_like(pr, 0.5)
+            c = ramp_np(stops[1:-1] if len(stops) > 3 else stops, t)
+            if bevel:
+                # 가장자리로 갈수록 부드럽게 밝아지거나(왼쪽 위) 어두워짐(오른쪽 아래)
+                B = max(2, round(K * 0.7)); lit = np.zeros((RES, RES), np.float32); dark = np.zeros_like(lit)
+                for k in range(1, B + 1):
+                    w = 1 - (k - 1) / B
+                    lit = np.maximum(lit, w * (~(shift(m, -k, 0) & shift(m, 0, -k))))
+                    dark = np.maximum(dark, w * (~(shift(m, k, 0) & shift(m, 0, k))))
+                dark = np.where(lit > 0, 0, dark)
+                c = c + (np.array(hx(stops[-1]), np.float32) - c) * (lit * 0.75)[..., None]
+                c = c + (np.array(hx(stops[0]), np.float32) - c) * (dark * 0.65)[..., None]
+        self.rgb[m] = c[m]; self.a |= m
 
-    def dots(self, pts, color):
-        px = self.img.load(); c = hx(color)
+    def dots(self, pts, color, r=0.6):
+        c = np.array(hx(color), np.float32); hi = np.array(mix(hx(color), (255, 255, 255), 0.7), np.float32)
+        lo = np.array(shade(hx(color), 0.6), np.float32)
         for x, y in pts:
-            if 0 <= x < N and 0 <= y < N: px[x, y] = (*c, 255); self.union.add((x, y))
+            cx, cy = SD.p((x, y)); rr = r * K
+            yy, xx = np.ogrid[0:RES, 0:RES]
+            d = np.hypot(xx - cx, yy - cy); m = d <= rr
+            # 보석: 아래는 어둡게, 가운데는 원래 색, 왼쪽 위에 반짝임
+            f = np.clip((yy - cy) / rr, 0, 1)[..., None] * 0.6
+            col = c * (1 - f) + lo * f
+            sh = np.hypot(xx - (cx - rr * 0.35), yy - (cy - rr * 0.35)) <= rr * 0.38
+            col = np.where(sh[..., None], hi, col)
+            self.rgb[m] = np.broadcast_to(col, (RES, RES, 3))[m]; self.a |= m
 
     def done(self):
-        px = self.img.load(); out = set()
-        for x, y in self.union:
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                q = (x + dx, y + dy)
-                if 0 <= q[0] < N and 0 <= q[1] < N and q not in self.union: out.add(q)
-        for x, y in out: px[x, y] = (*self.outline, 255)
-        return self.img
+        u = Image.fromarray((self.a * 255).astype(np.uint8))
+        grown = np.asarray(u.filter(ImageFilter.GaussianBlur(K * 0.45))) > 24   # 둥근 외곽선
+        rgb = np.where(self.a[..., None], self.rgb, np.array(self.outline, np.float32))
+        alpha = (grown | self.a).astype(np.float32)
+        big = np.dstack([rgb, alpha * 255])
+        # Pillow 는 RGBA 를 줄일 때 알파를 곱해서 계산하므로 테두리 색이 번지지 않음
+        return Image.fromarray(np.clip(big, 0, 255).astype(np.uint8), 'RGBA').resize((OUT, OUT), Image.BOX)
 
 # ---------------- 도형 도우미 ----------------
 def bez(p0, p1, p2, n=24):
@@ -226,10 +282,7 @@ def helmet(pal, gem, rune, horns=False, crest=False):
         sp.layer(lambda d: d.polygon([(14, 2), (18, 2), (19, 9), (13, 9)], fill=255), GOLDTRIM)
     sp.layer(lambda d: d.chord([6, 6, 26, 30], 180, 360, fill=255), pal, g=(1, 1))
     sp.layer(lambda d: d.rectangle([6, 17, 26, 27], fill=255), pal, g=(1, 1))
-    sp.layer(lambda d: d.rectangle([9, 20, 23, 22], fill=0), pal)
-    m = Image.new('L', (N, N)); px = sp.img.load()
-    for x in range(10, 23):
-        for y in (20, 21, 22): px[x, y] = (0, 0, 0, 0); sp.union.discard((x, y))
+    sp.layer(lambda d: d.rounded_rectangle([9, 20, 23, 22.5], radius=1, fill=255), pal, bevel=False, flat='#%02x%02x%02x' % shade(hx(pal[0]), 0.6))
     sp.layer(lambda d: d.rectangle([15, 19, 17, 27], fill=255), pal, g=(1, 1))
     sp.dots([(15, 11), (16, 11), (17, 11)], gem); sp.dots([(11, 15), (21, 15)], rune)
     return sp.done()
@@ -330,8 +383,7 @@ def key(pal, gem, rune, bow_kind="ring"):
     elif bow_kind == "skull":
         sp.layer(lambda d: d.ellipse([1, 1, 16, 15], fill=255), pal, g=(1, 1))
         sp.layer(lambda d: d.rectangle([4, 12, 13, 17], fill=255), pal)
-        px = sp.img.load()
-        for x, y in ((5, 7), (6, 7), (5, 8), (6, 8), (10, 7), (11, 7), (10, 8), (11, 8)): px[x, y] = (*hx(gem), 255)
+        sp.dots([(5.5, 7.5), (10.5, 7.5)], gem, r=1.1)
         return sp.done()
     else:
         sp.layer(lambda d: d.ellipse([1, 1, 16, 16], outline=255, width=3), pal, g=(1, 1))
