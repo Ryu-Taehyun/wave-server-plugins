@@ -553,8 +553,8 @@ public class RankingModule extends Module {
                 plugin.store().saveAuto(d);
                 Player online = op.getPlayer();
                 if (online != null) {
-                    Msg.send(online, joinTag(c, rank) + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다!");
-                    Msg.send(online, "&7순위 칭호 " + titleText(titleKey(season, c, rank)) + " &7획득! &8(프로필 → 칭호)");
+                    Msg.send(online, joinTag(c, rank) + " &f시즌 순위 보상이 &e우편함&f으로 도착했습니다.");
+                    Msg.send(online, "&7순위 칭호 " + titleText(titleKey(season, c, rank)) + " &7획득. &8(프로필 → 칭호)");
                     Msg.sound(online, "ui.toast.challenge_complete", 0.8f, 1.2f);
                 }
                 log.append(c.label).append(' ').append(rank).append(". ").append(e.name()).append('\n');
