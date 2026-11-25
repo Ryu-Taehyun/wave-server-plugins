@@ -30,8 +30,6 @@ import java.util.UUID;
 /**
  * 튜토리얼: 처음 들어온 플레이어에게 서버 기능을 하나씩 해보게 하고, 모두 마치면 보상
  * 진행은 화면 위 보스바로 안내, /튜토리얼 로 목록 확인
- * 튜토리얼 맵(worlds.tutorial 월드, 시작 위치는 '/wave setwarp tutorial')이 있으면 처음 접속한 사람을 그 맵으로 보내고,
- * 마치거나 건너뛰기 전까지 맵 밖으로 나갈 수 없음 (맵 안에서는 피해 · 배고픔 없음). 마치면 스폰으로 이동
  */
 public class TutorialModule extends Module {
 
@@ -49,105 +47,7 @@ public class TutorialModule extends Module {
             new Step("collection", "&f컬렉션 &7확인하기 &8(/컬렉션)", Material.NETHER_STAR),
             new Step("wild", "&f야생 &7으로 이동하기 &8(이동 메뉴 → 야생)", Material.GRASS_BLOCK));
 
-    /** 튜토리얼 맵에서 할 때: 마지막 단계는 야생 이동 대신 업적 확인 (마치면 스폰으로 보내 줌) */
-    private static final List<Step> MAP_STEPS;
-
-    static {
-        List<Step> l = new java.util.ArrayList<>(STEPS.subList(0, STEPS.size() - 1));
-        l.add(new Step("ach", "&f업적 &7확인하기 &8(/업적)", Material.KNOWLEDGE_BOOK));
-        MAP_STEPS = List.copyOf(l);
-    }
-
     private final Map<UUID, BossBar> bars = new HashMap<>();
-    /** 튜토리얼 맵에서 나가도 되는 순간 (완료 · 건너뛰기로 내보낼 때) */
-    private final java.util.Set<UUID> leaving = new java.util.HashSet<>();
-
-    /** 지금 쓰는 단계 목록 (튜토리얼 맵이 있으면 맵용) */
-    private List<Step> steps() {
-        return mapSpawn() != null ? MAP_STEPS : STEPS;
-    }
-
-    /* ======================= 튜토리얼 맵 ======================= */
-
-    /** 튜토리얼 맵 시작 위치 (맵을 쓰지 않거나 없으면 null) */
-    public org.bukkit.Location mapSpawn() {
-        if (!plugin.getConfig().getBoolean("tutorial.use-map", true)) return null;
-        org.bukkit.Location l = global().warps.get("tutorial");
-        if (l != null && l.getWorld() != null) return l;
-        return spawnOf("tutorial");
-    }
-
-    public boolean inMap(Player p) {
-        org.bukkit.Location m = mapSpawn();
-        return m != null && p.getWorld().equals(m.getWorld());
-    }
-
-    /** 처음 접속: 튜토리얼 맵으로 보냄. 맵이 없으면 false (스폰에서 진행) */
-    public boolean sendToMap(Player p) {
-        if (!plugin.getConfig().getBoolean("tutorial.enabled", true)) return false;
-        org.bukkit.Location m = mapSpawn();
-        if (m == null) return false;
-        PlayerData d = data(p);
-        if (d.tutorialFinished) return false;
-        d.tutorialStarted = true;
-        plugin.store().save(d);
-        p.teleport(m);
-        updateBar(p);
-        later(120, () -> {
-            if (!p.isOnline() || !inMap(p)) return;
-            Msg.title(p, "<gradient:#A1FF52:#45FFF6><b>튜토리얼</b></gradient>", "&f화면 위 안내를 따라 해 보세요", 10, 60, 15);
-            Msg.send(p, " ");
-            Msg.send(p, "<gradient:#A1FF52:#45FFF6><b>[ 튜토리얼 ]</b></gradient> &f튜토리얼 맵에 오신 것을 환영합니다!");
-            Msg.send(p, "&7화면 위 안내를 하나씩 따라 하면 &e보상&7을 받고 &f스폰&7으로 이동합니다. &8(/튜토리얼 로 목록 보기)");
-            Msg.send(p, " ");
-            Msg.sound(p, "block.note_block.chime", 0.8f, 1.4f);
-        });
-        return true;
-    }
-
-    /** 튜토리얼 맵에서 스폰으로 내보냄 */
-    private void leaveMap(Player p) {
-        if (!inMap(p)) return;
-        org.bukkit.Location dest = global().warps.get("spawn");
-        if (dest == null || dest.getWorld() == null) dest = spawnOf("spawn");
-        if (dest == null) return;
-        leaving.add(p.getUniqueId());
-        try {
-            p.teleport(dest);
-        } finally {
-            leaving.remove(p.getUniqueId());
-        }
-        Msg.sound(p, "entity.enderman.teleport", 0.6f, 1);
-    }
-
-    /** 튜토리얼 중에는 맵 밖으로 못 나감 (관리자 제외) */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onTeleport(org.bukkit.event.player.PlayerTeleportEvent e) {
-        Player p = e.getPlayer();
-        if (leaving.contains(p.getUniqueId()) || e.getTo() == null || p.hasPermission(ADMIN)) return;
-        org.bukkit.Location m = mapSpawn();
-        if (m == null || !e.getFrom().getWorld().equals(m.getWorld()) || e.getTo().getWorld().equals(m.getWorld())) return;
-        if (!active(data(p))) return;
-        e.setCancelled(true);
-        Msg.send(p, "<gradient:#A1FF52:#45FFF6><b>[ 튜토리얼 ]</b></gradient> &f튜토리얼을 모두 마치면 스폰으로 이동합니다. &7(/튜토리얼 에서 건너뛸 수도 있어요)");
-        Gui.denySound(p);
-    }
-
-    /** 튜토리얼 맵 안에서는 다치지 않음 */
-    @EventHandler(ignoreCancelled = true)
-    public void onDamage(org.bukkit.event.entity.EntityDamageEvent e) {
-        if (!(e.getEntity() instanceof Player p) || !inMap(p)) return;
-        e.setCancelled(true);
-        if (e.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.VOID) {   // 맵 밖으로 떨어지면 시작 위치로
-            org.bukkit.Location m = mapSpawn();
-            if (m != null) p.teleport(m);
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onHunger(org.bukkit.event.entity.FoodLevelChangeEvent e) {
-        if (e.getEntity() instanceof Player p && inMap(p) && e.getFoodLevel() < p.getFoodLevel()) e.setCancelled(true);
-    }
 
     public TutorialModule(WaveCore plugin) {
         super(plugin);
@@ -176,12 +76,12 @@ public class TutorialModule extends Module {
 
     private int done(PlayerData d) {
         int n = 0;
-        for (Step s : steps()) if (d.tutorialSteps.contains(s.id())) n++;
+        for (Step s : STEPS) if (d.tutorialSteps.contains(s.id())) n++;
         return n;
     }
 
     private Step next(PlayerData d) {
-        for (Step s : steps()) if (!d.tutorialSteps.contains(s.id())) return s;
+        for (Step s : STEPS) if (!d.tutorialSteps.contains(s.id())) return s;
         return null;
     }
 
@@ -190,10 +90,10 @@ public class TutorialModule extends Module {
         PlayerData d = data(p);
         if (!active(d) || !d.tutorialSteps.add(id)) return;
         plugin.store().save(d);
-        Step st = steps().stream().filter(s -> s.id().equals(id)).findFirst().orElse(null);
+        Step st = STEPS.stream().filter(s -> s.id().equals(id)).findFirst().orElse(null);
         Msg.sound(p, "entity.experience_orb.pickup", 0.7f, 1.4f);
-        Msg.actionBar(p, "&a✔ 튜토리얼 &f" + (st == null ? id : st.text()) + " &a완료! &7(" + done(d) + "/" + steps().size() + ")");
-        if (done(d) >= steps().size()) finish(p, d);
+        Msg.actionBar(p, "&a✔ 튜토리얼 &f" + (st == null ? id : st.text()) + " &a완료! &7(" + done(d) + "/" + STEPS.size() + ")");
+        if (done(d) >= STEPS.size()) finish(p, d);
         updateBar(p);
     }
 
@@ -213,12 +113,6 @@ public class TutorialModule extends Module {
         Msg.title(p, "<gradient:#A1FF52:#45FFF6><b>튜토리얼 완료!</b></gradient>", "&7보상이 지급되었습니다", 10, 50, 15);
         Msg.sound(p, "ui.toast.challenge_complete", 1, 1.2f);
         Fx.burst(p.getLocation().add(0, 1.2, 0), Particle.TOTEM_OF_UNDYING, 60, 0.4);
-        if (inMap(p)) {
-            Msg.send(p, "&73초 뒤 &f스폰&7으로 이동합니다. 즐거운 모험 되세요!");
-            later(60, () -> {
-                if (p.isOnline()) leaveMap(p);
-            });
-        }
     }
 
     /* ======================= 보스바 안내 ======================= */
@@ -234,9 +128,9 @@ public class TutorialModule extends Module {
             return;
         }
         Step nx = next(d);
-        String text = "<gradient:#A1FF52:#45FFF6><b>튜토리얼</b></gradient> &7(" + done(d) + "/" + steps().size() + ") &8· "
+        String text = "<gradient:#A1FF52:#45FFF6><b>튜토리얼</b></gradient> &7(" + done(d) + "/" + STEPS.size() + ") &8· "
                 + (nx == null ? "&a완료!" : nx.text()) + " &8· &7/튜토리얼";
-        float prog = (float) done(d) / steps().size();
+        float prog = (float) done(d) / STEPS.size();
         if (bar == null) {
             bar = BossBar.bossBar(Msg.c(text), prog, BossBar.Color.GREEN, BossBar.Overlay.NOTCHED_10);
             bars.put(p.getUniqueId(), bar);
@@ -260,12 +154,12 @@ public class TutorialModule extends Module {
         long money = plugin.getConfig().getLong("tutorial.reward-cash", 30_000);
         g.set(4, It.of(Material.WRITABLE_BOOK).name("<gradient:#A1FF52:#45FFF6><b>튜토리얼</b></gradient>")
                 .lore("", "&7서버의 주요 기능을 하나씩 해 보세요.", "&7순서는 상관없습니다.", "",
-                        "&f진행 : &e" + done(d) + " &7/ " + steps().size(),
+                        "&f진행 : &e" + done(d) + " &7/ " + STEPS.size(),
                         "&f완료 보상 : &e" + Msg.num(money) + " 캐시" + (plugin.getConfig().getBoolean("tutorial.reward-newbie-package", true) ? " &7+ &a뉴비 지원 패키지" : ""),
                         "", d.tutorialFinished ? "&a&l튜토리얼을 완료했습니다!" : "").build());
         int[] slots = {10, 11, 12, 13, 14, 15, 16, 22};
-        for (int i = 0; i < steps().size(); i++) {
-            Step s = steps().get(i);
+        for (int i = 0; i < STEPS.size(); i++) {
+            Step s = STEPS.get(i);
             boolean ok = d.tutorialSteps.contains(s.id()) || d.tutorialFinished;
             It b = It.of(ok ? Material.LIME_DYE : s.icon()).name((ok ? "&a✔ " : "&e" + (i + 1) + ". ") + s.text())
                     .lore("", ok ? "&a완료" : "&7아직 하지 않았습니다.");
@@ -283,7 +177,6 @@ public class TutorialModule extends Module {
                 updateBar(p);
                 p.closeInventory();
                 Msg.send(p, "&7튜토리얼을 건너뛰었습니다. &8(/튜토리얼 로 다시 볼 수 있습니다)");
-                leaveMap(p);
             });
             g.quiet(g.last() + 8);
         }
@@ -296,7 +189,7 @@ public class TutorialModule extends Module {
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         PlayerData d = data(p);
-        if (!p.hasPlayedBefore() && !d.tutorialStarted && plugin.getConfig().getBoolean("tutorial.enabled", true) && mapSpawn() == null) {
+        if (!p.hasPlayedBefore() && !d.tutorialStarted && plugin.getConfig().getBoolean("tutorial.enabled", true)) {
             d.tutorialStarted = true;
             plugin.store().save(d);
             later(100, () -> {

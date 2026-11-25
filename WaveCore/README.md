@@ -432,22 +432,5 @@ mvn package
    `min: [X-41, Y, Z-14]`, `max: [X-32, Y+6, Z-4]` 로 바꿉니다. (월드는 `xp-zone.world`)
 4. 필요하면 WorldGuard 로 섬 전체를 보호 구역으로 지정하세요.
 
-## 튜토리얼 맵
-
-**맵 설치 (튜토리얼 섬, `maps/tutorial_island.schem`, 63×46×63, 미리보기 `tutorial_island_preview.png`)**
-- 하늘에 뜬 섬: 남쪽 시작 광장 → 둥근 길을 따라 1~8단계 정거장(지붕 색 · 소품 · 표지판에 할 일) → 가운데 Wave 기념탑(완료 지점)
-- 생성기 `WaveCore/tools/gen_tutorial_map.py <출력.schem> [미리보기.png]` (렌더러 `iso_render.py`)
-1. 빈 월드 `tutorial` 을 만듭니다. 예: Multiverse `/mv create tutorial normal -t FLAT` (허공 월드 생성기 플러그인이 있으면 그것을 써도 됨)
-2. 그 월드에서 몹 · 날씨 · 시간 끄기: `/gamerule doMobSpawning false`, `/gamerule doWeatherCycle false`, `/gamerule doDaylightCycle false`, `/time set 6000`
-3. `tutorial_island.schem` 을 `plugins/WorldEdit/schematics/` (FAWE 는 `plugins/FastAsyncWorldEdit/schematics/`) 에 넣고,
-   섬을 놓을 위치(예: y 100)에 서서 `//schem load tutorial_island` → `//paste` 합니다. **시작 광장 가운데가 서 있던 위치**에 옵니다.
-4. 붙여넣은 시작 광장 가운데(북쪽 표지판을 바라보게)에 서서 `/wave setwarp tutorial` 을 입력합니다.
-
-**동작**
-- 처음 접속하면 튜토리얼 맵(`worlds.tutorial`, 기본 `tutorial` 월드)으로 이동해 튜토리얼 진행. 시작 위치는 맵에서 `/wave setwarp tutorial` (없으면 월드 스폰)
-- 마치거나 `/튜토리얼` 에서 건너뛰기 전까지 맵 밖으로 이동 불가 (관리자 제외), 맵 안에서는 피해 · 배고픔 없음, 떨어지면 시작 위치로
-- 맵에서는 마지막 단계가 야생 이동 대신 `업적 확인`, 완료 3초 뒤 스폰으로 이동 (건너뛰면 바로)
-- 맵(월드)이 없거나 `tutorial.use-map: false` 면 예전처럼 스폰에서 진행
-
 ## 순위 칭호 표시
 - `[👑] S1 부의 제왕 1위` 형식 (이모지만 괄호). 이미 달고 있던 칭호는 접속할 때 새 형식으로 다시 적용

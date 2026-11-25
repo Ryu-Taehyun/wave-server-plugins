@@ -368,7 +368,6 @@ public class AchievementModule extends Module {
 
     /** back: 뒤로 가기 (null 이면 서버 메뉴) */
     public void open(Player p, Runnable back) {
-        tutorial(p, "ach");
         PlayerData d = data(p);
         Gui g = new Gui(5, "&8&l업적");
         int total = 0, done = 0;

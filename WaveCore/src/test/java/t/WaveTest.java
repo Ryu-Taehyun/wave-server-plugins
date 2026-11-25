@@ -2185,51 +2185,6 @@ public class WaveTest {
     }
 
     @Test
-    void tutorialMap() {
-        World map = server.addSimpleWorld("tutorial");
-        PlayerMock p = server.addPlayer("MapNewbie");
-        server.getScheduler().performTicks(30);
-        PlayerData d = plugin.store().get(p);
-        assertTrue(d.tutorialStarted);
-        assertEquals(map, p.getWorld(), "처음 접속하면 튜토리얼 맵으로");
-        // 맵 밖으로 못 나감, 피해 없음
-        assertFalse(p.teleport(server.getWorld("spawn-world").getSpawnLocation()));
-        assertEquals(map, p.getWorld());
-        var dmg = new org.bukkit.event.entity.EntityDamageEvent(p, org.bukkit.event.entity.EntityDamageEvent.DamageCause.FALL,
-                org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.FALL).build(), 5);
-        server.getPluginManager().callEvent(dmg);
-        assertTrue(dmg.isCancelled());
-        // 마지막 단계는 야생 대신 업적
-        p.setSneaking(true);
-        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerSwapHandItemsEvent(p, new ItemStack(Material.AIR), new ItemStack(Material.AIR)));
-        click(p, 11, ClickType.LEFT);
-        server.getScheduler().performTicks(2);
-        p.performCommand("상점");
-        p.performCommand("배낭");
-        p.closeInventory();
-        p.performCommand("상자");
-        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerCommandPreprocessEvent(p, "/pass"));
-        p.performCommand("컬렉션");
-        assertFalse(d.tutorialFinished);
-        p.performCommand("업적");
-        assertTrue(d.tutorialFinished, "업적 확인까지 하면 완료");
-        assertEquals(map, p.getWorld(), "바로 이동하지 않고 3초 뒤");
-        server.getScheduler().performTicks(61);
-        assertEquals(server.getWorld("spawn-world"), p.getWorld(), "완료하면 스폰으로");
-        // 다 마친 뒤에는 맵을 자유롭게 오감
-        assertTrue(p.teleport(map.getSpawnLocation()));
-        assertTrue(p.teleport(server.getWorld("spawn-world").getSpawnLocation()));
-        // 건너뛰기: 바로 스폰으로
-        PlayerMock q = server.addPlayer("MapSkipper");
-        server.getScheduler().performTicks(30);
-        assertEquals(map, q.getWorld());
-        assertTrue(q.performCommand("튜토리얼"));
-        click(q, q.getOpenInventory().getTopInventory().getSize() - 1, ClickType.SHIFT_RIGHT);
-        assertTrue(plugin.store().get(q).tutorialFinished);
-        assertEquals(server.getWorld("spawn-world"), q.getWorld());
-    }
-
-    @Test
     void tutorialFlowAndReward() {
         PlayerMock p = server.addPlayer("Newbie1");
         server.getScheduler().performTicks(30);
