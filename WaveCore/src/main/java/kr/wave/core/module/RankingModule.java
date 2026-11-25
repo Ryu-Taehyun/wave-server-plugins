@@ -445,18 +445,18 @@ public class RankingModule extends Module {
      * 1위 = 세 가지 색으로 가장 진하게, 2위 = 밝게, 3위 = 따뜻하게, 4~10위 = 차분하게
      */
     public static String titleColors(Cat c, int r) {
-        // 부 = 금빛 쪽, 킬 = 붉은 ~ 보랏빛 쪽. 순위마다 다른 색이지만 채도를 낮춰 튀지 않게
+        // 부의 제왕 = 금색 계열, 킬의 제왕 = 빨간색 계열. 순위가 높을수록 진하고 깊게
         if (c == Cat.MONEY) return switch (r) {
-            case 1 -> "#FFE082:#FFB74D:#F48FB1";   // 연금 → 살구 → 연분홍
-            case 2 -> "#F5F5F5:#B2DFDB";           // 은백 → 연청록
-            case 3 -> "#FFCCBC:#D7A47A";           // 복숭아 → 동빛
-            default -> "#E6EE9C:#D4C27A";           // 연두 → 바랜 금
+            case 1 -> "#FFF3B0:#FFD54F:#FFB300";   // 연금 → 금 → 진금
+            case 2 -> "#FFF8E1:#FFE082";           // 크림 → 연금
+            case 3 -> "#FFE0A3:#E0A84A";           // 연호박 → 고금
+            default -> "#E8DCA8:#C9AE5D";           // 바랜 금
         };
         return switch (r) {
-            case 1 -> "#EF9A9A:#E57373:#BA68C8";   // 연빨강 → 장미 → 연보라
-            case 2 -> "#E1BEE7:#F48FB1";           // 라일락 → 분홍
-            case 3 -> "#FFCC80:#E57373";           // 연호박 → 연빨강
-            default -> "#CFD8DC:#D7A3A3";           // 회청 → 바랜 장미
+            case 1 -> "#FF8A80:#FF5252:#D32F2F";   // 연빨강 → 빨강 → 진홍
+            case 2 -> "#FFCDD2:#EF5350";           // 분홍빛 빨강 → 빨강
+            case 3 -> "#FFAB91:#E53935";           // 연주홍 → 빨강
+            default -> "#E6B0B0:#B85C5C";           // 바랜 빨강
         };
     }
 
