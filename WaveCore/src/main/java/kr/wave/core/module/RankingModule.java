@@ -276,8 +276,8 @@ public class RankingModule extends Module {
     public static String joinLine(Cat c, int r) {
         String tag = joinTag(c, r);
         // 태그만 굵게 (닉네임 · "님이 입장했습니다" 는 원래 굵기)
-        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad("님이 입장했습니다!") + " <color:" + c.to + "><obf>D</obf></color>";
-        if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다!");
+        if (r == 1) return "<color:" + c.to + "><obf>D</obf></color> " + tag + " %name% " + c.grad("님이 입장했습니다.") + " <color:" + c.to + "><obf>D</obf></color>";
+        if (r <= 3) return tag + " %name% " + c.grad("님이 입장했습니다.");
         return tag + " %name% <gray>님이 입장했습니다.</gray>";
     }
 

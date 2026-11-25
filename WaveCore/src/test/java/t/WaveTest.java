@@ -4073,6 +4073,7 @@ public class WaveTest {
         plugin.store().get(ps.get(5)).joinStyle = "ranking";
         String join = joinLine(ps.get(11));
         assertTrue(join.contains("[👑 부의 제왕 1위]") && join.contains("R12") && !join.contains("접속했습니다"), "기본 줄을 바꿔 씀: " + join);
+        assertTrue(join.contains("님이 입장했습니다.") && !join.contains("!"), "느낌표 대신 마침표: " + join);
         // 4~10위는 Ranking #순위
         var jl = Msg.c(kr.wave.core.module.RankingModule.joinLine(kr.wave.core.module.RankingModule.Cat.MONEY, 1).replace("%name%", "X"));
         assertTrue(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(jl).contains("<bold>"), "태그는 굵게");
