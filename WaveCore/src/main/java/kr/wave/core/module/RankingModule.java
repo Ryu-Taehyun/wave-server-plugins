@@ -417,7 +417,7 @@ public class RankingModule extends Module {
         return TITLE_PREFIX + season.replace("|", "/") + "|" + c.key + "|" + rank;
     }
 
-    /** 순위 칭호 키면 보이는 글자 (예: ➤ 부의 제왕 S7·1위), 아니면 null */
+    /** 순위 칭호 키면 보이는 글자 (예: [👑 S7 부의 제왕 1위]), 아니면 null */
     public static String titleText(String key) {
         if (key == null || !key.startsWith(TITLE_PREFIX)) return null;
         String[] p = key.split("\\|");
@@ -430,8 +430,8 @@ public class RankingModule extends Module {
             return null;
         }
         if (c == null) return null;
-        // 예: ➤ 부의 제왕 S7 · 1위 (게임 글꼴에서 · 가 작아서 양옆을 띄움)  (이름은 순위별 그라데이션 + 굵게, 시즌·순위는 회색)
-        return "<b><gradient:" + titleColors(c, r) + ">➤ " + c.titleName + "</gradient></b><gray> " + p[1] + " · " + r + "위</gray>";
+        // 예: [👑 S7 부의 제왕 1위] (굵게, 순위별 그라데이션)
+        return "<b><gradient:" + titleColors(c, r) + ">[" + medal(r) + " " + p[1] + " " + c.titleName + " " + r + "위]</gradient></b>";
     }
 
     /** "S12" -> 12 (숫자가 없으면 0) */
@@ -445,17 +445,18 @@ public class RankingModule extends Module {
      * 1위 = 세 가지 색으로 가장 진하게, 2위 = 밝게, 3위 = 따뜻하게, 4~10위 = 차분하게
      */
     public static String titleColors(Cat c, int r) {
+        // 부 = 따뜻한 금빛 쪽, 킬 = 붉은빛 ~ 보랏빛 쪽. 순위마다 다른 색을 섞어 다채롭게
         if (c == Cat.MONEY) return switch (r) {
-            case 1 -> "#FFF59D:#FFC400:#FF6D00";
-            case 2 -> "#FFFDE7:#FFD54F";
-            case 3 -> "#FFE0B2:#FFA040";
-            default -> "#E8D49A:#B8923A";
+            case 1 -> "#FFF9C4:#FFD600:#FF9100:#FF4081";   // 크림 → 금 → 주황 → 분홍
+            case 2 -> "#E0F7FA:#80DEEA:#FFD54F";           // 얼음 → 청록 → 금 (은빛)
+            case 3 -> "#FFE0B2:#FF8A65:#D4A373";           // 살구 → 산호 → 동빛
+            default -> "#C5E1A5:#FFD54F";                   // 연두 → 금
         };
         return switch (r) {
-            case 1 -> "#FF8A80:#FF1744:#A30000";
-            case 2 -> "#FFEBEE:#FF6E6E";
-            case 3 -> "#FFCCBC:#F4511E";
-            default -> "#E0A0A0:#A85050";
+            case 1 -> "#FF8A80:#FF1744:#D500F9:#651FFF";   // 빨강 → 진홍 → 자홍 → 보라
+            case 2 -> "#F3E5F5:#CE93D8:#FF5252";           // 라벤더 → 난초 → 빨강
+            case 3 -> "#FFAB40:#FF3D00:#B71C1C";           // 호박 → 불꽃 → 검붉은
+            default -> "#B0BEC5:#EF9A9A";                   // 강철 → 장미
         };
     }
 
