@@ -417,6 +417,21 @@ mvn package
 - 배율(`multiplier`, 기본 2) 적용: 레벨 경험치, 프리미엄 패스 퀘스트 XP, 상점 광물 판매가, 채팅 퀴즈 보상 (`boost.*` 로 항목별 끄기)
 - 관리자: `/핫타임 시작 <분> [배율]`, `/핫타임 종료` (일정 중에 끄면 그 시간대에는 다시 켜지지 않음)
 
+## 스폰 맵 (`maps/wave_spawn.schem`, 105×64×105)
+- 하늘에 뜬 섬. 미리보기 `wave_spawn_preview.png`(남동쪽에서) · `wave_spawn_preview_back.png`(북서쪽에서)
+- 가운데 Wave 분수 광장 + 둘레 물길(다리 4개), 스폰 지점은 광장 남쪽(분수를 바라봄)
+- 북쪽 포탈 광장: 야생 · 천공의 제단 · 보호구역 문 (장식, 앞 표지판에 명령어), 동쪽 시장: 상점 · 유료 캐시 상점 · 일일 상점 · 유저 장터 · 아이템 뽑기 · 프리미엄 패스 노점
+- 서쪽 경험치 구역(책장 · 자수정 지붕), 남쪽 랭킹 단상(금 · 철 · 구리) + 안내 게시판(서버 메뉴 · 튜토리얼 · 핫타임 · 업적)
+- 생성기 `WaveCore/tools/gen_spawn_map.py <출력.schem> [미리보기.png]`
+
+**설치**
+1. `wave_spawn.schem` 을 WorldEdit schematics 폴더에 넣고, 스폰 월드(`worlds.spawn`)의 하늘(예: y 100)에 서서 `//schem load wave_spawn` → `//paste`.
+   **서 있던 자리가 스폰 지점**이 됩니다.
+2. 그 자리(북쪽 분수를 바라보게)에서 `/wave setwarp spawn`, `/setworldspawn`
+3. 경험치 구역: 붙여넣은 위치(스폰 지점) 좌표가 (X, Y, Z) 면 config `xp-zone` 을
+   `min: [X-41, Y, Z-14]`, `max: [X-32, Y+6, Z-4]` 로 바꿉니다. (월드는 `xp-zone.world`)
+4. 필요하면 WorldGuard 로 섬 전체를 보호 구역으로 지정하세요.
+
 ## 튜토리얼 맵
 
 **맵 설치 (튜토리얼 섬, `maps/tutorial_island.schem`, 63×46×63, 미리보기 `tutorial_island_preview.png`)**

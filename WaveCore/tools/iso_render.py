@@ -26,7 +26,15 @@ C = {
     "crying_obsidian": (40, 12, 70), "amethyst_cluster": (200, 150, 240), "amethyst_block": (134, 98, 191), "emerald_block": (42, 203, 88),
     "barrel": (134, 100, 58), "chest": (162, 120, 50), "ender_chest": (35, 55, 55), "gold_block": (246, 208, 61), "bell": (250, 210, 80),
     "honeycomb_block": (229, 148, 29), "polished_deepslate": (72, 72, 73), "diamond_block": (98, 237, 228), "enchanting_table": (160, 40, 50),
-    "bookshelf": (117, 94, 60),
+    "bookshelf": (117, 94, 60), "chiseled_bookshelf": (120, 92, 58), "cracked_stone_bricks": (118, 117, 118), "prismarine_wall": (99, 156, 151),
+    "quartz_slab": (236, 230, 223), "blue_orchid": (40, 170, 240), "blue_stained_glass": (60, 80, 200), "conduit": (160, 140, 110),
+    "chiseled_quartz_block": (231, 226, 218), "mossy_stone_bricks": (115, 121, 105), "quartz_pillar": (236, 230, 220),
+    "red_nether_bricks": (69, 7, 9), "nether_wart_block": (115, 3, 2), "lime_stained_glass_pane": (128, 204, 31),
+    "yellow_stained_glass_pane": (229, 229, 51), "red_stained_glass_pane": (170, 40, 40), "stone_brick_slab": (122, 121, 122),
+    "white_wool": (234, 236, 237), "spruce_wall_sign": (115, 85, 49), "deepslate_tiles": (54, 54, 55), "lapis_block": (31, 67, 140),
+    "purple_stained_glass": (127, 63, 178), "deepslate_tile_slab": (54, 54, 55), "smooth_stone": (159, 159, 159),
+    "iron_block": (220, 220, 220), "copper_block": (192, 107, 79), "dark_oak_planks": (66, 43, 20), "dark_oak_log": (60, 46, 26),
+    "dark_oak_slab": (66, 43, 20), "birch_log": (216, 215, 210), "birch_leaves": (128, 167, 85),
 }
 GLOW = {"sea_lantern", "lantern", "end_rod", "beacon", "light_blue_stained_glass"}
 # 작은 모양: (가로 반폭, 높이, 아래에서 시작, 매달림)
@@ -35,17 +43,27 @@ SMALL = {
     "azure_bluet": (0.12, 0.45, 0), "oxeye_daisy": (0.12, 0.55, 0), "allium": (0.12, 0.6, 0), "lantern": (0.18, 0.45, 0),
     "spruce_fence": (0.12, 1.0, 0), "polished_andesite_wall": (0.25, 1.0, 0), "end_rod": (0.06, 1.0, 0),
     "amethyst_cluster": (0.25, 0.5, 0), "bell": (0.25, 0.6, 0), "hanging_roots": (0.15, 1.0, 0), "cave_vines_plant": (0.15, 1.0, 0),
-    "spruce_sign": (0.4, 0.75, 0.25),
+    "spruce_sign": (0.4, 0.75, 0.25), "spruce_wall_sign": (0.45, 0.5, 0.25), "prismarine_wall": (0.25, 1.0, 0), "conduit": (0.2, 0.4, 0), "blue_orchid": (0.12, 0.55, 0),
 }
-HALF = {"prismarine_slab": 0.5, "spruce_slab": 0.5, "water": 0.85, "lectern": 0.9, "enchanting_table": 0.75, "chest": 0.88, "ender_chest": 0.88}
+HALF = {"quartz_slab": 0.5, "stone_brick_slab": 0.5, "deepslate_tile_slab": 0.5, "dark_oak_slab": 0.5, "prismarine_slab": 0.5, "spruce_slab": 0.5, "water": 0.85, "lectern": 0.9, "enchanting_table": 0.75, "chest": 0.88, "ender_chest": 0.88}
 
 
 def name(b):
     return b.split(":")[1].split("[")[0]
 
 
-def render(blocks, W, H, L, labels, out, title="", s=24, scale=0.5):
+def render(blocks, W, H, L, labels, out, title="", s=24, scale=0.5, rot180=False):
+    """rot180: 반대쪽(북서쪽 위)에서 본 모습"""
     rnd = random.Random(7)
+    if rot180:
+        flip = {"north": "south", "south": "north", "east": "west", "west": "east"}
+        def fb(b):
+            for k, v in flip.items():
+                if "facing=" + k in b:
+                    return b.replace("facing=" + k, "facing=" + v)
+            return b
+        blocks = {(W - 1 - x, y, L - 1 - z): fb(b) for (x, y, z), b in blocks.items()}
+        labels = [(W - 1 - x, y, L - 1 - z, t) for (x, y, z, t) in labels]
     full = {p for p, b in blocks.items() if name(b) not in SMALL and name(b) not in HALF and "glass" not in b}
     cx, cy = s * math.cos(math.radians(30)), s * 0.5
 
@@ -78,11 +96,16 @@ def render(blocks, W, H, L, labels, out, title="", s=24, scale=0.5):
         col = C.get(n, (200, 0, 200))
         tint = 1 + rnd.uniform(-0.05, 0.05)
         glow = n in GLOW
-        if n in SMALL:
+        if n.endswith("_pane"):
+            x0, x1, z0, z1, y0, y1 = x, x + 1, z + 0.44, z + 0.56, y, y + 1
+        elif n in SMALL:
             hw, h, back = SMALL[n]
             x0, x1, z0, z1 = x + 0.5 - hw, x + 0.5 + hw, z + 0.5 - hw, z + 0.5 + hw
             if n == "spruce_sign":
                 z0, z1 = z + 0.45, z + 0.55
+            if n == "spruce_wall_sign":
+                z0, z1 = (z + 0.88, z + 1.0) if "facing=north" in b else (z, z + 0.12)
+                y0, y1 = y + 0.25, y + 0.75
             y0, y1 = y, y + h
             if n in ("hanging_roots", "cave_vines_plant"):
                 y0, y1 = y + 1 - h, y + 1
