@@ -104,6 +104,12 @@ public class PlayerData {
     /** 컬렉션 획득 공지 여부 (클레이모어, 사신의 영혼, 헬멧, 사신의 심장) */
     public final boolean[] collectionAnnounced = new boolean[4];
 
+    /** 업적용 누적 기록 (시즌 초기화와 상관없이 유지): pvp, streak, duel, boss, mob, ore, playtime(분), quiz, supply */
+    public final java.util.Map<String, Long> stats = new java.util.HashMap<>();
+    /** 달성한 업적 단계 (알림을 보낸 것) / 보상을 받은 업적 단계. 키 = 업적id:단계번호 */
+    public final Set<String> achReached = new HashSet<>();
+    public final Set<String> achClaimed = new HashSet<>();
+
     /** global, local, team */
     public String channel = "global";
 
@@ -181,6 +187,14 @@ public class PlayerData {
         List<Boolean> ann = y.getBooleanList("collection-announced");
         for (int i = 0; i < Math.min(ann.size(), collectionAnnounced.length); i++) collectionAnnounced[i] = ann.get(i);
         channel = y.getString("channel", "global");
+        ConfigurationSection st = y.getConfigurationSection("stats");
+        if (st != null) for (String k : st.getKeys(false)) stats.put(k, st.getLong(k));
+        achReached.addAll(y.getStringList("ach-reached"));
+        achClaimed.addAll(y.getStringList("ach-claimed"));
+    }
+
+    public long stat(String key) {
+        return stats.getOrDefault(key, 0L);
     }
 
     public String toYaml() {
@@ -238,6 +252,9 @@ public class PlayerData {
         for (boolean b : collectionAnnounced) ann.add(b);
         y.set("collection-announced", ann);
         y.set("channel", channel);
+        for (java.util.Map.Entry<String, Long> en : stats.entrySet()) y.set("stats." + en.getKey(), en.getValue());
+        y.set("ach-reached", new ArrayList<>(achReached));
+        y.set("ach-claimed", new ArrayList<>(achClaimed));
         return y.saveToString();
     }
 

@@ -84,7 +84,9 @@ public class WaveCore extends JavaPlugin {
         modules.add(new ShareModule(this));          // 채팅 [item] [inv] [ec]
         modules.add(new SeasonModule(this));         // 시즌 초기화
         modules.add(new EventModule(this));          // 보급 상자 낙하, 채팅 퀴즈
-        modules.add(new TutorialModule(this));      // 튜토리얼      // 오버 로드 (Peerless 이후 휘장 보상)         // 상자(뽑기): CrazyCrates 설정 파일 사용          // 보스 '천공의 심판자' + 주사위 분배
+        modules.add(new TutorialModule(this));
+        modules.add(new AchievementModule(this));    // 업적 (/업적)
+        modules.add(new HotTimeModule(this));        // 핫타임 (보상 배율)      // 튜토리얼      // 오버 로드 (Peerless 이후 휘장 보상)         // 상자(뽑기): CrazyCrates 설정 파일 사용          // 보스 '천공의 심판자' + 주사위 분배
 
         for (Module m : modules) {
             Bukkit.getPluginManager().registerEvents(m, this);

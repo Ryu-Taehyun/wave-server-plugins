@@ -935,6 +935,7 @@ public class BossModule extends Module {
         Msg.soundAt(l, "ui.toast.challenge_complete", 2, 1);
         Msg.broadcast("&6&l[!] " + NAME + " &e이(가) 쓰러졌습니다! &7(참가자 " + participants.size() + "명)");
 
+        for (UUID u : participants) AchievementModule.add(plugin, Bukkit.getPlayer(u), "boss", 1);
         returnees.clear();
         returnees.addAll(participants);
         for (Player p : l.getWorld().getPlayers()) if (inArena(p.getLocation())) returnees.add(p.getUniqueId());

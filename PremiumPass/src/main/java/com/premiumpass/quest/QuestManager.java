@@ -157,10 +157,13 @@ public class QuestManager {
         p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.6f, 1.2f);
         boolean premium = plugin.pass().isPremium(p, d);
         long xp = premium ? q.xp * (100 + plugin.pass().questXpBonus()) / 100 : q.xp;
+        double boost = plugin.pass().xpBoost();
+        if (boost > 1) xp = Math.round(xp * boost);
         long pts = premium ? q.points * (100 + plugin.pass().questPointBonus()) / 100 : q.points;
         Text.send(p, "&7[" + kind + " 퀘스트] " + q.name + " &a완료! &f보상: &b" + Text.num(xp) + " XP"
                 + (pts > 0 ? " &f+ &6" + Text.num(pts) + " 포인트" : "")
-                + (premium && (xp != q.xp || pts != q.points) ? " &6(프리미엄 보너스)" : ""));
+                + (premium && (xp != q.xp || pts != q.points) ? " &6(프리미엄 보너스)" : "")
+                + (boost > 1 ? " &6&l🔥핫타임 x" + (boost == Math.floor(boost) ? String.valueOf((long) boost) : String.valueOf(boost)) : ""));
         plugin.pass().addXp(p, d, xp);
         plugin.pass().addPoints(p, d, pts, kind + " 퀘스트 보상");
         plugin.data().save(d);

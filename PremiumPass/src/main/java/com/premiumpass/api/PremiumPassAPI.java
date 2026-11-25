@@ -55,6 +55,11 @@ public final class PremiumPassAPI {
         return plugin.pass().isPremium(p, data(p));
     }
 
+    /** 퀘스트 XP 배율 (WaveCore 핫타임). 1 = 없음 */
+    public static void setXpBoost(double boost) {
+        plugin.pass().setXpBoost(boost);
+    }
+
     public static int getLevel(Player p) {
         return data(p).level;
     }

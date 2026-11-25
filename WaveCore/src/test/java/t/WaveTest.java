@@ -4304,6 +4304,139 @@ public class WaveTest {
         assertTrue(drain(admin).contains("완료"));
     }
 
+    @Test
+    void achievements() {
+        PlayerMock p = server.addPlayer("Achiever");
+        server.getScheduler().performTicks(5);
+        PlayerData d = plugin.store().get(p);
+        var ach = plugin.module(kr.wave.core.module.AchievementModule.class);
+        drain(p);
+        // 연속 처치 3 -> 전장의 사냥꾼은 아직, 멈추지 않는 칼날 I 달성
+        for (int i = 0; i < 3; i++) kr.wave.core.module.AchievementModule.pvpKill(plugin, p);
+        assertEquals(3, d.stat("pvp"));
+        assertEquals(3, d.stat("streak"));
+        assertTrue(d.achReached.contains("streak:0"));
+        assertFalse(d.achReached.contains("pvp:0"));
+        assertTrue(drain(p).contains("멈추지 않는 칼날 I"));
+        // 죽으면 연속 처치는 0부터, 최고 기록은 유지
+        assertEquals(3, ach.streakOf(p));
+        p.setHealth(0);
+        assertEquals(0, ach.streakOf(p));
+        kr.wave.core.module.AchievementModule.pvpKill(plugin, p);
+        assertEquals(3, d.stat("streak"));
+        // 레벨처럼 다른 곳에서 바뀌는 기록: 확인할 때 한 번에 (여러 개면 한 줄 요약)
+        d.level = 30;
+        ach.check(p, false);
+        assertTrue(d.achReached.containsAll(java.util.List.of("level:0", "level:1", "level:2")));
+        assertTrue(drain(p).contains("업적 3개"));
+        assertEquals(4, ach.claimable(d));
+        // GUI: 클릭해서 받기
+        long m0 = d.money;
+        assertTrue(p.performCommand("업적"));
+        assertEquals("업적", title(p));
+        String all = allText(p.getOpenInventory().getTopInventory());
+        assertTrue(all.contains("멈추지 않는 칼날") && all.contains("클릭하여 보상 받기") && all.contains("모두 받기") && all.contains("받을 보상 : 4개"), all);
+        click(p, 12, ClickType.LEFT);   // 멈추지 않는 칼날
+        assertEquals(m0 + 3_000, d.money);
+        assertTrue(d.achClaimed.contains("streak:0"));
+        server.getScheduler().performTicks(2);
+        click(p, p.getOpenInventory().getTopInventory().getSize() - 3, ClickType.LEFT);   // 모두 받기
+        assertEquals(m0 + 3_000 + 5_000 + 10_000 + 20_000, d.money);
+        assertEquals(0, ach.claimable(d));
+        server.getScheduler().performTicks(2);
+        GuiSnapshot.save(p, "achievements.json");
+        // 마지막 단계: 칭호 + 전체 공지, 칭호 창에 나옴
+        d.stats.put("supply", 20L);
+        drain(p);
+        ach.check(p, false);
+        assertTrue(drain(p).contains("보급병"));
+        assertEquals(3, ach.claimable(d));
+        assertEquals(3, ach.claim(p, kr.wave.core.module.AchievementModule.byId("supply")));
+        assertTrue(d.titles.contains("ach|supply"));
+        assertEquals(0, ach.claim(p, kr.wave.core.module.AchievementModule.byId("supply")), "두 번 받을 수 없음");
+        assertNotNull(kr.wave.core.module.AchievementModule.titleText("ach|supply"));
+        // 보상 배율
+        plugin.getConfig().set("achievements.reward-multiplier", 0.5);
+        d.stats.put("quiz", 1L);
+        ach.check(p, false);
+        long m1 = d.money;
+        ach.claim(p, kr.wave.core.module.AchievementModule.byId("quiz"));
+        assertEquals(m1 + 500, d.money);
+        // 저장 후 다시 읽어도 유지
+        org.bukkit.configuration.file.YamlConfiguration y = new org.bukkit.configuration.file.YamlConfiguration();
+        assertDoesNotThrow(() -> y.loadFromString(d.toYaml()));
+        PlayerData back = new PlayerData(p.getUniqueId());
+        back.load(y);
+        assertEquals(d.stats, back.stats);
+        assertEquals(d.achClaimed, back.achClaimed);
+        // 서버 메뉴에 업적 버튼
+        p.closeInventory();
+        assertTrue(p.performCommand("메뉴"));
+        assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("업적"));
+        plugin.module(kr.wave.core.module.HotTimeModule.class).start(45 * 60_000L, 2);
+        assertTrue(p.performCommand("메뉴"));
+        assertTrue(allText(p.getOpenInventory().getTopInventory()).contains("진행 중"));
+        GuiSnapshot.save(p, "menu_hot.json");
+    }
+
+    @Test
+    void hotTime() {
+        PlayerMock p = server.addPlayer("Hotter");
+        PlayerMock op = server.addPlayer("HotOp");
+        op.setOp(true);
+        server.getScheduler().performTicks(5);
+        var hot = plugin.module(kr.wave.core.module.HotTimeModule.class);
+        plugin.getConfig().set("hot-time.schedule", java.util.List.of("20:00 60", "토,일 14:00 120", "이상한 줄"));
+        java.time.LocalDateTime base = java.time.LocalDate.of(2026, 11, 25).atTime(19, 55);   // 수요일
+        hot.clock = () -> base;
+        assertEquals(2, hot.schedule().size(), "잘못된 줄은 건너뜀");
+        assertEquals(base.withHour(20).withMinute(0), hot.next(base));
+        assertEquals(100, kr.wave.core.module.HotTimeModule.boost(plugin, "level-exp", 100), "핫타임 전에는 그대로");
+        // 5분 전 알림
+        drain(p);
+        hot.secondTick();
+        assertTrue(drain(p).contains("5분 뒤 핫타임"));
+        hot.secondTick();
+        assertFalse(drain(p).contains("5분 뒤"), "알림은 한 번만");
+        // 시작 시각
+        hot.clock = () -> base.withHour(20).withMinute(10);
+        hot.secondTick();
+        assertTrue(hot.active());
+        assertTrue(drain(p).contains("보상 x2"));
+        assertEquals(200, kr.wave.core.module.HotTimeModule.boost(plugin, "level-exp", 100));
+        assertEquals(200, kr.wave.core.module.HotTimeModule.boost(plugin, "sell", 100));
+        plugin.getConfig().set("hot-time.boost.sell", false);
+        assertEquals(100, kr.wave.core.module.HotTimeModule.boost(plugin, "sell", 100), "끈 항목은 그대로");
+        // 레벨 경험치 2배 (다이아몬드 채굴 50)
+        PlayerData d = plugin.store().get(p);
+        long exp0 = d.exp;
+        int lv0 = d.level;
+        World w = server.getWorld("world");
+        Block b = w.getBlockAt(0, 10, 0);
+        b.setType(Material.DIAMOND_ORE);
+        server.getPluginManager().callEvent(new BlockBreakEvent(b, p));
+        assertTrue(d.level > lv0 || d.exp == exp0 + 100, "50 x 2 = 100");
+        assertTrue(drain(p).contains("🔥x2"));
+        assertEquals(1, d.stat("ore"), "업적 기록도 같이");
+        // 메뉴에 표시
+        assertTrue(p.performCommand("핫타임"));
+        assertTrue(drain(p).contains("진행 중"));
+        // 같은 일정은 다시 시작하지 않음: 관리자가 끝내면 그 시간대 동안 그대로 꺼짐
+        assertTrue(op.performCommand("핫타임 종료"));
+        assertFalse(hot.active());
+        hot.secondTick();
+        assertFalse(hot.active());
+        // 관리자 수동 시작 (배율 지정)
+        assertTrue(op.performCommand("핫타임 시작 30 1.5"));
+        assertTrue(hot.active());
+        assertEquals(150, kr.wave.core.module.HotTimeModule.boost(plugin, "quiz", 100));
+        assertFalse(p.performCommand("핫타임 시작 30") && !hot.active());
+        // 다음 일정: 주말 14시 (토요일)
+        java.time.LocalDateTime fri = java.time.LocalDate.of(2026, 11, 27).atTime(21, 30);
+        plugin.getConfig().set("hot-time.schedule", java.util.List.of("주말 14:00 60"));
+        assertEquals(java.time.LocalDate.of(2026, 11, 28).atTime(14, 0), hot.next(fri));
+    }
+
     static final class WeaponModuleAccess {
         static double max(PlayerMock p) { return kr.wave.core.module.WeaponModule.maxHealth(p); }
     }

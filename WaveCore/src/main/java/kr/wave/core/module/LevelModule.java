@@ -50,10 +50,10 @@ public class LevelModule extends Module {
 
     private void gain(Player p, long normal, long boosted, String what) {
         PlayerData d = data(p);
-        long amount = d.newbiePassActive() ? boosted : normal;
+        long amount = HotTimeModule.boost(plugin, "level-exp", d.newbiePassActive() ? boosted : normal);
         d.exp += amount;
         checkLevelUp(p, d);
-        Msg.send(p, "<gradient:#CEFF74:#FFFFFF>[Level]</gradient> &f- " + what + " &7&o(+ " + amount + " EXP!)");
+        Msg.send(p, "<gradient:#CEFF74:#FFFFFF>[Level]</gradient> &f- " + what + " &7&o(+ " + amount + " EXP!)" + HotTimeModule.mark(plugin, "level-exp"));
         plugin.store().save(d);
     }
 
@@ -150,7 +150,10 @@ public class LevelModule extends Module {
         Player killer = e.getEntity().getKiller();
         if (killer == null) return;
         if (e.getEntity() instanceof Player) gain(killer, 120, 190, "&c플레이어 처치");
-        else if (e.getEntity() instanceof Enemy) gain(killer, 30, 45, "&e몬스터 처치");
+        else if (e.getEntity() instanceof Enemy) {
+            gain(killer, 30, 45, "&e몬스터 처치");
+            AchievementModule.add(plugin, killer, "mob", 1);
+        }
     }
 
     /** 플레이어가 설치한 광석 (설치 -> 채굴 반복으로 경험치를 얻는 것 방지). 오래된 것부터 정리 */
@@ -183,8 +186,14 @@ public class LevelModule extends Module {
         Player p = e.getPlayer();
         if (xpOre(e.getBlock().getType()) && placedOres.remove(key(e.getBlock()) ^ e.getBlock().getWorld().getName().hashCode())) return;
         switch (e.getBlock().getType()) {
-            case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> gain(p, 50, 75, "&e다이아몬드 채굴");
-            case ANCIENT_DEBRIS -> gain(p, 75, 110, "&e고대 잔해 채굴");
+            case DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE -> {
+                gain(p, 50, 75, "&e다이아몬드 채굴");
+                AchievementModule.add(plugin, p, "ore", 1);
+            }
+            case ANCIENT_DEBRIS -> {
+                gain(p, 75, 110, "&e고대 잔해 채굴");
+                AchievementModule.add(plugin, p, "ore", 1);
+            }
             case GOLD_ORE, DEEPSLATE_GOLD_ORE -> gain(p, 25, 40, "&e금 광석 채굴");
             case IRON_ORE, DEEPSLATE_IRON_ORE -> gain(p, 20, 35, "&e철 광석 채굴");
             default -> {

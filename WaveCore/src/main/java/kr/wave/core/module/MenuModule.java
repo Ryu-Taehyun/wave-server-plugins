@@ -122,6 +122,25 @@ public class MenuModule extends Module {
                     e -> later(1, () -> plugin.module(TutorialModule.class).open(p)));
         }
         g.set(25, It.of(Material.IRON_HELMET).name("<b><gradient:#C0FEC4:#79AB96><italic:false>TEAM SYSTEM</gradient></b>").lore("&8전투%nl%&7팀을 만들고 가입할 수 있습니다.").build(), e -> run(p, "팀"));
+        // 3줄: 업적 · 핫타임
+        AchievementModule ach = plugin.module(AchievementModule.class);
+        if (ach != null && plugin.getConfig().getBoolean("achievements.enabled", true)) {
+            int ready = ach.claimable(d);
+            It ai = It.of(Material.KNOWLEDGE_BOOK).name("<b><gradient:#FFE259:#FFA751><italic:false>업적</gradient></b>")
+                    .lore("&8도전 과제%nl%&7기록을 쌓아 보상과 업적 칭호를 받습니다." + (ready > 0 ? "%nl%%nl%&e&l받을 보상 " + ready + "개!" : ""));
+            if (ready > 0) ai.ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1).hide();
+            g.set(28, ai.build(), e -> later(1, () -> {
+                ach.check(p, true);
+                ach.open(p, () -> menu(p));
+            }));
+        }
+        HotTimeModule hot = plugin.module(HotTimeModule.class);
+        if (hot != null) {
+            It hi = It.of(hot.active() ? Material.BLAZE_POWDER : Material.FIRE_CHARGE).name("<b><gradient:#FF9A3C:#FF3D3D><italic:false>핫타임</gradient></b>")
+                    .lore("&8이벤트%nl%&7정해진 시간에 경험치 · 판매가 등 보상이 늘어납니다.%nl%%nl%" + hot.statusLine());
+            if (hot.active()) hi.ench(org.bukkit.enchantments.Enchantment.UNBREAKING, 1).hide();
+            g.set(34, hi.build(), e -> run(p, "핫타임"));
+        }
         g.nav(p, null).fill().open(p);
     }
 
@@ -519,7 +538,29 @@ public class MenuModule extends Module {
                 later(1, () -> titles(p));
             });
         }
-        if (n == 0) g.set(22, none("칭호", "랭크 달성 · 컬렉션 완성 · 출석 · 시즌 순위 TOP 10 등으로 얻을 수 있습니다."));
+        // 업적 칭호
+        for (AchievementModule.Ach a : AchievementModule.ALL) {
+            String key = a.titleKey();
+            if (!d.titles.contains(key) || n >= slots.length) continue;
+            String text = a.title();
+            boolean active = key.equals(d.activeTitle);
+            g.set(slots[n++], toggleIcon(Material.KNOWLEDGE_BOOK, Material.KNOWLEDGE_BOOK, text, true, active,
+                    "&7미리보기 : " + text + " &7- &f" + p.getName(), "업적 " + a.name() + " 완성 보상"), e -> {
+                boolean on = !key.equals(d.activeTitle);
+                if (on) {
+                    plugin.module(CoreModule.class).applyTitle(p, "\"" + text + "\"");
+                    d.activeTitle = key;
+                } else {
+                    console("lp user " + p.getName() + " meta clear");
+                    d.activeTitle = null;
+                }
+                plugin.store().save(d);
+                Msg.send(p, "&e[!] &7칭호 " + text + (on ? " &a적용&7되었습니다." : " &c해제&7되었습니다."));
+                Msg.sound(p, on ? "entity.player.levelup" : "block.note_block.bass", 0.6f, on ? 1.8f : 1f);
+                later(1, () -> titles(p));
+            });
+        }
+        if (n == 0) g.set(22, none("칭호", "랭크 달성 · 컬렉션 완성 · 출석 · 업적 · 시즌 순위 TOP 10 등으로 얻을 수 있습니다."));
         g.nav(p, () -> profile(p)).border().open(p);
     }
 

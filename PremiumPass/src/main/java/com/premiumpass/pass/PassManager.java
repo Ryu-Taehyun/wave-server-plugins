@@ -171,6 +171,17 @@ public class PassManager {
         d.premiumSeason = 0;
     }
 
+    /** 외부(WaveCore 핫타임)에서 정하는 퀘스트 XP 배율 (1 = 없음) */
+    private double xpBoost = 1;
+
+    public double xpBoost() {
+        return xpBoost;
+    }
+
+    public void setXpBoost(double b) {
+        xpBoost = Math.max(1, Math.min(10, b));
+    }
+
     public int questXpBonus() {
         return questXpBonus;
     }

@@ -214,6 +214,8 @@ public class DuelModule extends Module {
         modes.remove(loser.getUniqueId());
         Player winner = Bukkit.getPlayer(oid);
         if (winner == null) return;
+        AltModule alt = plugin.module(AltModule.class);
+        if (alt == null || !alt.sameNetwork(winner.getUniqueId(), loser.getUniqueId())) AchievementModule.add(plugin, winner, "duel", 1);   // 같은 IP 끼리는 업적에 안 셈
         Msg.send(winner, " ");
         Msg.send(winner, " ");
         Msg.send(winner, "                         <i><b><gradient:#FF3636:#FF5353><i><b>1V1 DUEL</b></i></gradient></b></i>");

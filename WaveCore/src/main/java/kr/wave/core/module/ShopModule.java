@@ -413,9 +413,10 @@ public class ShopModule extends Module {
                 int n = all ? have : 1;
                 p.getInventory().removeItem(new ItemStack(m, n));
                 PlayerData d = data(p);
-                d.money += price * n;
+                long got = HotTimeModule.boost(plugin, "sell", price * n);
+                d.money += got;
                 plugin.store().save(d);
-                Msg.send(p, "§e[💰] &7" + name + " " + n + "개를 " + Msg.num(price * n) + " 캐시에 판매했습니다.");
+                Msg.send(p, "§e[💰] &7" + name + " " + n + "개를 " + Msg.num(got) + " 캐시에 판매했습니다." + HotTimeModule.mark(plugin, "sell"));
                 Msg.sound(p, "entity.experience_orb.pickup", 0.5f, 1);
                 refreshHead(p);
             });
@@ -435,9 +436,10 @@ public class ShopModule extends Module {
             }
             if (total > 0) {
                 PlayerData d = data(p);
+                total = HotTimeModule.boost(plugin, "sell", total);
                 d.money += total;
                 plugin.store().save(d);
-                Msg.send(p, "§a[💰] &7광물을 전부 판매해 &e" + Msg.num(total) + " &7캐시를 받았습니다.");
+                Msg.send(p, "§a[💰] &7광물을 전부 판매해 &e" + Msg.num(total) + " &7캐시를 받았습니다." + HotTimeModule.mark(plugin, "sell"));
                 refreshHead(p);
             } else {
                 Msg.send(p, "§c[❌] 판매할 광물이 없습니다.");

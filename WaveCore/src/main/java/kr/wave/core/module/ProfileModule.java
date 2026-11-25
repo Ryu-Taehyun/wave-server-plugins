@@ -65,6 +65,7 @@ public class ProfileModule extends Module {
         }
         if (d.activeTitle == null) return "&8없음";
         String rank = RankingModule.titleText(d.activeTitle);
+        if (rank == null) rank = AchievementModule.titleText(d.activeTitle);
         return rank != null ? rank : "&f" + d.activeTitle;
     }
 

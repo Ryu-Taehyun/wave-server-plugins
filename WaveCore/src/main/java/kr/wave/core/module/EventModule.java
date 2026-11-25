@@ -294,6 +294,7 @@ public class EventModule extends Module {
         if (dropOpened) return;
         dropOpened = true;
         Msg.broadcast(DROP_TAG + "&e" + p.getName() + "&f님이 보급 상자를 열었습니다!");
+        AchievementModule.add(plugin, p, "supply", 1);
         Msg.soundAt(drop.getLocation(), "block.chest.open", 1, 0.8f);
         Fx.burst(drop.getLocation().add(0.5, 1, 0.5), Particle.TOTEM_OF_UNDYING, 40, 0.4);
         // 연 뒤에는 2분 안에 회수 (남은 시간이 더 짧으면 그대로)
@@ -401,8 +402,9 @@ public class EventModule extends Module {
         quiz = null;
         var cfg = plugin.getConfig();
         long min = cfg.getLong("chat-quiz.reward-min", 1000), max = Math.max(min, cfg.getLong("chat-quiz.reward-max", 5000));
-        long reward = min == max ? min : ThreadLocalRandom.current().nextLong(min, max + 1);
+        long reward = HotTimeModule.boost(plugin, "quiz", min == max ? min : ThreadLocalRandom.current().nextLong(min, max + 1));
         PlayerData d = data(p);
+        AchievementModule.add(plugin, p, "quiz", 1);
         d.money += reward;
         d.moneyTotal += reward;
         plugin.store().save(d);

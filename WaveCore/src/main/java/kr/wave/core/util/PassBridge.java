@@ -58,6 +58,11 @@ public final class PassBridge {
         return o instanceof ItemStack it ? it : null;
     }
 
+    /** 핫타임: 패스 퀘스트 XP 배율 */
+    public static void setXpBoost(double boost) {
+        call("setXpBoost", new Class[]{double.class}, boost);
+    }
+
     public static boolean isPremium(Player p) {
         Object o = call("isPremium", new Class[]{Player.class}, p);
         return o instanceof Boolean b && b;

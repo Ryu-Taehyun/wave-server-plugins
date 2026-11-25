@@ -353,6 +353,31 @@ attendance:
   enabled: true
   rewards: [1000, 2000, 3000, 4000, 5000, 6000, 10000]
 
+# 업적 (/업적): 기록을 쌓아 단계마다 캐시 보상, 마지막 단계는 업적 칭호. 기록은 시즌 초기화와 상관없이 유지
+# reward-multiplier: 업적 캐시 보상 배율 (0.5 = 절반), broadcast: 마지막 단계 달성 시 전체 공지
+achievements:
+  enabled: true
+  reward-multiplier: 1.0
+  broadcast: true
+
+# 핫타임: 정해진 시간 동안 보상 배율. 시작 전 알림 · 보스바로 남은 시간 표시
+# schedule: "시작 길이(분)" 매일, 앞에 요일을 붙이면 그 요일만 ("토,일 14:00 120", "평일 21:00 30", "주말 ...")
+# boost: 배율을 적용할 항목 (false 면 그 항목은 그대로)
+# /핫타임 : 상태 · 일정, 관리자 /핫타임 시작 <분> [배율] · /핫타임 종료
+hot-time:
+  enabled: true
+  timezone: "Asia/Seoul"
+  multiplier: 2.0
+  schedule:
+    - "20:00 60"
+    - "주말 14:00 60"
+  notice-minutes: [10, 5, 1]
+  boost:
+    level-exp: true
+    pass-xp: true
+    sell: true
+    quiz: true
+
 # 스폰 경험치 구역 (20초 머물면 경험치 10~50)
 xp-zone:
   enabled: true

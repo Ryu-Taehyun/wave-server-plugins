@@ -248,6 +248,7 @@ public class RankingModule extends Module {
         PlayerData d = data(killer);
         d.kills++;
         plugin.store().saveAuto(d);
+        AchievementModule.pvpKill(plugin, killer);
     }
 
     /* ======================= TOP 10 입장 메시지 ======================= */
