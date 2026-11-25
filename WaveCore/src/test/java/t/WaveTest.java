@@ -4371,6 +4371,54 @@ public class WaveTest {
         assertEquals(java.time.LocalDate.of(2026, 11, 28).atTime(14, 0), hot.next(fri));
     }
 
+    @Test
+    void spawnAndProtectTeleport() throws Exception {
+        World spawnW = server.getWorld("spawn-world"), wild = server.getWorld("world");
+        PlayerMock admin = server.addPlayer("WarpOp");
+        admin.setOp(true);
+        PlayerMock p = server.addPlayer("Walker");
+        server.getScheduler().performTicks(5);
+        // 스폰 위치 지정
+        admin.teleport(new org.bukkit.Location(spawnW, 10.5, 70, -3.5, 180, 0));
+        assertTrue(admin.performCommand("wave setwarp spawn"));
+        admin.teleport(new org.bukkit.Location(wild, -50.5, 80, 20.5));
+        assertTrue(admin.performCommand("wave setwarp protect"));
+        // /spawn: 3초 뒤 지정한 위치로
+        p.teleport(new org.bukkit.Location(wild, 100, 64, 100));
+        drain(p);
+        assertTrue(p.performCommand("spawn"));
+        server.getScheduler().performTicks(61);
+        assertEquals(spawnW, p.getWorld());
+        assertEquals(10.5, p.getLocation().getX(), 0.01);
+        assertTrue(drain(p).contains("스폰으로 이동되었습니다"));
+        // /보호구역
+        assertTrue(p.performCommand("보호구역"));
+        server.getScheduler().performTicks(61);
+        assertEquals(wild, p.getWorld());
+        assertEquals(-50.5, p.getLocation().getX(), 0.01);
+        // 고개를 돌리거나 같은 블록 안에서 살짝 움직여도 취소되지 않음
+        assertTrue(p.performCommand("spawn"));
+        org.bukkit.Location from = p.getLocation(), to = from.clone().add(0.2, 0, 0.2);
+        to.setYaw(90);
+        server.getPluginManager().callEvent(new org.bukkit.event.player.PlayerMoveEvent(p, from, to));
+        server.getScheduler().performTicks(61);
+        assertEquals(spawnW, p.getWorld(), "살짝 움직여도 이동");
+        // 저장 후 다시 읽어도 (월드 이름으로) 그대로
+        var y = new org.bukkit.configuration.file.YamlConfiguration();
+        y.loadFromString(plugin.store().global().toYaml());
+        assertEquals("spawn-world", y.getString("warps.spawn.world"));
+        GlobalData g2 = new GlobalData();
+        g2.load(y);
+        assertEquals(spawnW, g2.warp("spawn").getWorld());
+        assertEquals(-3.5, g2.warp("spawn").getZ(), 0.01);
+        assertEquals(180f, g2.warp("spawn").getYaw(), 0.01);
+        // 지정한 위치가 없으면 월드 스폰 · 처음 접속 · 리스폰도 같은 스폰 위치
+        PlayerMock fresh = server.addPlayer("FreshWalker");
+        server.getScheduler().performTicks(5);
+        assertEquals(spawnW, fresh.getWorld());
+        assertEquals(10.5, fresh.getLocation().getX(), 0.01, "처음 접속하면 지정한 스폰 위치로");
+    }
+
     /** 이 IP 로 접속한 플레이어 */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);

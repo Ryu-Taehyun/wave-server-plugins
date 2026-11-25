@@ -140,13 +140,13 @@ public class WaveCore extends JavaPlugin {
                     Msg.send(s, "&c/wave setwarp <spawn|protect> &7(게임 안에서, 서 있는 위치로 설정)");
                     return;
                 }
-                store.global().warps.put(a[1].toLowerCase(), p.getLocation());
+                store.global().setWarp(a[1].toLowerCase(), p.getLocation());
                 store.saveGlobal();
                 Msg.send(s, "&a워프 '" + a[1] + "' 위치를 설정했습니다.");
             }
             case "delwarp" -> {
                 if (a.length < 2) return;
-                store.global().warps.remove(a[1].toLowerCase());
+                store.global().removeWarp(a[1].toLowerCase());
                 store.saveGlobal();
                 Msg.send(s, "&a워프 '" + a[1] + "' 를 삭제했습니다. (월드 스폰으로 이동합니다)");
             }

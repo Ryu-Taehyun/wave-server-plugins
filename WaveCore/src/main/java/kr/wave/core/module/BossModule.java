@@ -498,8 +498,7 @@ public class BossModule extends Module {
     /** 제단에 들어오기 전 위치로 (없으면 스폰) */
     private void sendBack(Player p) {
         Location to = lastPos.remove(p.getUniqueId());
-        if (to == null || to.getWorld() == null) to = global().warps.get("spawn");
-        if (to == null) to = spawnOf("spawn");
+        if (to == null || to.getWorld() == null) to = spawnPoint();
         if (to == null) return;
         if (p.getOpenInventory().getTopInventory() != null && loot != null
                 && p.getOpenInventory().getTopInventory().getHolder() == loot.gui) p.closeInventory();
@@ -617,8 +616,7 @@ public class BossModule extends Module {
         Player p = e.getPlayer();
         if (!respawnHandled.contains(p.getUniqueId())) return;
         Location to = lastPos.remove(p.getUniqueId());
-        if (to == null || to.getWorld() == null || inArena(to)) to = global().warps.get("spawn");
-        if (to == null) to = spawnOf("spawn");
+        if (to == null || to.getWorld() == null || inArena(to)) to = spawnPoint();
         if (to != null) e.setRespawnLocation(to);
         UUID id = p.getUniqueId();
         boolean banned = diedThisDescent.contains(id);

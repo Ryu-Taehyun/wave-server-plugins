@@ -51,7 +51,37 @@ public class GlobalData {
     public boolean maintenance;
     /** /저장상자1~4 : box, box1, final, final1 */
     public final Map<String, ItemStack> saved = new HashMap<>();
+    /** 워프 위치. 월드는 이름으로 따로 기억 (월드를 다시 불러와도 · 늦게 불러와도 찾을 수 있게). 꺼낼 때는 warp() */
     public final Map<String, Location> warps = new HashMap<>();
+    private final Map<String, String> warpWorlds = new HashMap<>();
+
+    public void setWarp(String key, Location l) {
+        warps.put(key, l.clone());
+        warpWorlds.put(key, l.getWorld().getName());
+    }
+
+    public void removeWarp(String key) {
+        warps.remove(key);
+        warpWorlds.remove(key);
+    }
+
+    /** 지금 쓸 수 있는 워프 위치 (월드가 없으면 null) */
+    public Location warp(String key) {
+        Location l = warps.get(key);
+        if (l == null) return null;
+        String wn = warpWorlds.get(key);
+        org.bukkit.World w = wn == null ? null : org.bukkit.Bukkit.getWorld(wn);
+        if (w == null) {
+            try {
+                w = l.getWorld();
+            } catch (IllegalArgumentException e) {   // 월드가 내려갔다 다시 올라온 경우 예전 월드 참조
+                w = null;
+            }
+        }
+        if (w == null) return null;
+        Location c = new Location(w, l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch());
+        return c;
+    }
     public final Map<String, Team> teams = new LinkedHashMap<>();
     public final List<Listing> market = new ArrayList<>();
     public int nextListingId = 1;
@@ -70,8 +100,20 @@ public class GlobalData {
         if (s != null) for (String k : s.getKeys(false)) saved.put(k, s.getItemStack(k));
         s = y.getConfigurationSection("warps");
         if (s != null) for (String k : s.getKeys(false)) {
-            Location l = s.getLocation(k);
-            if (l != null) warps.put(k, l);
+            ConfigurationSection ws = s.getConfigurationSection(k);
+            if (ws != null && ws.contains("x")) {   // 새 형식: world · x · y · z · yaw · pitch
+                warps.put(k, new Location(null, ws.getDouble("x"), ws.getDouble("y"), ws.getDouble("z"), (float) ws.getDouble("yaw"), (float) ws.getDouble("pitch")));
+                warpWorlds.put(k, ws.getString("world", ""));
+                continue;
+            }
+            Location l = s.getLocation(k);   // 예전 형식 (Location)
+            if (l != null) {
+                warps.put(k, l);
+                try {
+                    if (l.getWorld() != null) warpWorlds.put(k, l.getWorld().getName());
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
         }
         s = y.getConfigurationSection("teams");
         if (s != null) for (String id : s.getKeys(false)) {
@@ -139,7 +181,16 @@ public class GlobalData {
         YamlConfiguration y = new YamlConfiguration();
         y.set("maintenance", maintenance);
         saved.forEach((k, v) -> y.set("saved." + k, v));
-        warps.forEach((k, v) -> y.set("warps." + k, v));
+        warps.forEach((k, v) -> {
+            String wn = warpWorlds.get(k);
+            if (wn == null) return;
+            y.set("warps." + k + ".world", wn);
+            y.set("warps." + k + ".x", v.getX());
+            y.set("warps." + k + ".y", v.getY());
+            y.set("warps." + k + ".z", v.getZ());
+            y.set("warps." + k + ".yaw", (double) v.getYaw());
+            y.set("warps." + k + ".pitch", (double) v.getPitch());
+        });
         for (Team t : teams.values()) {
             String b = "teams." + t.id;
             y.set(b + ".display", t.display);

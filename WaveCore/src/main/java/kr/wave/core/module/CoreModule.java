@@ -809,9 +809,26 @@ public class CoreModule extends Module {
         BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             teleporting.remove(p.getUniqueId());
             if (!p.isOnline()) return;
-            Location dest = global().warps.get(warp);
-            if (dest == null) dest = spawnOf(warp.equals("spawn") ? "spawn" : "wild");
-            if (dest != null && !p.teleport(dest)) return;   // 다른 기능이 이동을 막은 경우
+            Location dest = warp.equals("spawn") ? spawnPoint() : global().warp(warp);
+            if (dest == null) dest = spawnOf("wild");
+            if (dest == null) {
+                Msg.send(p, "&c[🌍] " + label + " 위치를 찾을 수 없습니다. 관리자에게 알려 주세요.");
+                plugin.getLogger().warning("[이동] " + label + " 위치가 없습니다. '/wave setwarp " + warp + "' 로 지정하거나 config worlds."
+                        + (warp.equals("spawn") ? "spawn" : "wild") + " 월드 이름을 확인하세요.");
+                return;
+            }
+            boolean ok;
+            try {
+                ok = p.teleport(dest);
+            } catch (RuntimeException ex) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "[이동] " + label + " 이동 실패", ex);
+                ok = false;
+            }
+            if (!ok) {   // 다른 기능(전투 · 천공의 제단 등)이 막은 경우
+                Msg.send(p, "&c[🌍] 지금은 " + label + "으로 이동할 수 없습니다.");
+                Msg.sound(p, "block.note_block.bass", 1, 1);
+                return;
+            }
             Msg.send(p, "&a[🌍] &a" + label + "으로 이동되었습니다!");
             Msg.sound(p, "entity.enderman.teleport", 0.5f, 1);
         }, 60L);
@@ -821,7 +838,9 @@ public class CoreModule extends Module {
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
         if (!teleporting.containsKey(e.getPlayer().getUniqueId())) return;
-        if (e.getFrom().distanceSquared(e.getTo()) <= 0.01) return;
+        // 같은 블록 안에서 흔들리는 정도(물결 · 고개 돌리기 · 살짝 밀림)는 괜찮음
+        if (e.getFrom().getWorld() == e.getTo().getWorld() && e.getFrom().getBlockX() == e.getTo().getBlockX()
+                && e.getFrom().getBlockY() == e.getTo().getBlockY() && e.getFrom().getBlockZ() == e.getTo().getBlockZ()) return;
         BukkitTask t = teleporting.remove(e.getPlayer().getUniqueId());
         if (t != null) t.cancel();
         Msg.send(e.getPlayer(), "&a[🌍] &c대기 중 이동하여 워프에 실패했습니다.");

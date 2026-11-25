@@ -60,8 +60,21 @@ public abstract class Module implements Listener {
         return p.getWorld().getName().equalsIgnoreCase(world(key));
     }
 
-    /** Multiverse 의 /mv tp 플레이어 월드 와 같은 동작: 해당 월드 스폰으로 이동 */
+    /** 스폰 위치: '/wave setwarp spawn' 위치, 없으면 스폰 월드의 스폰 지점 */
+    protected Location spawnPoint() {
+        Location l = global().warp("spawn");
+        return l != null ? l : spawnOf("spawn");
+    }
+
+    /** Multiverse 의 /mv tp 플레이어 월드 와 같은 동작: 해당 월드 스폰으로 이동 (스폰은 지정한 스폰 위치) */
     protected void tpWorld(Player p, String key) {
+        if (key.equals("spawn")) {
+            Location l = spawnPoint();
+            if (l != null) {
+                p.teleport(l);
+                return;
+            }
+        }
         World w = Bukkit.getWorld(world(key));
         if (w == null) {
             plugin.getLogger().warning("월드 '" + world(key) + "' 를 찾을 수 없습니다. (config.yml 의 worlds." + key + ")");
