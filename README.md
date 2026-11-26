@@ -5,6 +5,7 @@ Wave 마인크래프트 서버(Purpur 1.21.11)용 플러그인 3종입니다. Pa
 | 폴더 | 설명 |
 |---|---|
 | [`WaveCore`](WaveCore) | 서버 핵심 플러그인 (Skript 변환): 메뉴, 상점, 팀, 보스(천공의 심판자), 상자, 컬렉션, 무기, 튜토리얼 등 |
+| [`server-manager`](server-manager) | 서버 관리 웹 대시보드 (Python · SQL · React · TypeScript · Motion): 원격 켜기/끄기 · 접속 확인 · 콘솔 · 예약 작업 |
 | [`PremiumPass`](PremiumPass) | 배틀 패스: 무료/프리미엄 트랙, 퀘스트, 교환 상점 |
 | [`DailyShop`](DailyShop) | 매일 바뀌는 일일 상점 (패스 포인트 / WaveCore 캐시 결제) |
 | [`Common`](Common) | PremiumPass · DailyShop 이 같이 쓰는 도우미 (각 jar 안에 들어가므로 서버에 따로 넣지 않음) |
