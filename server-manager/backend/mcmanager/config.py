@@ -104,7 +104,23 @@ def load(path: str | os.PathLike | None = None) -> Config:
     p = Path(path or os.environ.get("MCM_CONFIG", "manager.toml"))
     cfg.base = p.resolve().parent
     if p.exists():
-        data = tomllib.loads(p.read_text(encoding="utf-8"))
+        try:
+            raw = p.read_bytes()
+            try:
+                text = raw.decode("utf-8-sig")
+            except UnicodeDecodeError:   # 메모장에서 ANSI 로 저장한 경우
+                text = raw.decode("cp949", errors="replace")
+            data = tomllib.loads(text)
+        except tomllib.TOMLDecodeError as e:
+            msg = str(e)
+            hint = ""
+            if "twice" in msg or "already" in msg:
+                hint = "\n  → 같은 [구역] (예: [server]) 이 두 번 있습니다. 하나로 합치세요."
+            elif "Unescaped" in msg:
+                hint = "\n  → 경로의 \\ 를 / 로 바꾸세요 (예: dir = \"C:/Users/이름/Desktop/s\"). 또는 작은따옴표로: dir = 'C:\\Users\\이름\\Desktop\\s'"
+            elif "Invalid" in msg or "Expected" in msg:
+                hint = "\n  → 따옴표 · 경로를 확인하세요. 경로는 C:/mc/server 처럼 / 로, start_command 는 작은따옴표 '...' 로 감싸고 한 줄로."
+            raise SystemExit(f"[설정 오류] {p.resolve()} 를 읽지 못했습니다: {msg}{hint}")
         for section in SECTIONS:
             _apply(getattr(cfg, section), data.get(section, {}))
     # 환경 변수 (비밀번호는 파일 대신 여기에 두어도 됨): MCM_RCON_PASSWORD, MCM_SERVER_DIR ...
