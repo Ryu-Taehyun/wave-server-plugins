@@ -24,6 +24,13 @@ from . import slp
 DONE_RE = re.compile(r"Done \(\d+[.,]\d+s\)!")
 
 
+def split_command(cmd: str) -> list[str]:
+    """실행 명령을 나눔. Windows 는 "C:\\Program Files\\...\\java.exe" 처럼 따옴표로 감싼 경로의 따옴표를 벗김"""
+    if sys.platform != "win32":
+        return shlex.split(cmd)
+    return [a[1:-1] if len(a) >= 2 and a[0] == a[-1] == '"' else a for a in shlex.split(cmd, posix=False)]
+
+
 class ServerProcess:
     def __init__(self, cfg: Config, rcon: RconClient, on_event: Callable[[str, dict], Awaitable[None]] | None = None):
         self.cfg, self.rcon = cfg, rcon
@@ -130,7 +137,7 @@ class ServerProcess:
             kwargs = {}
             if sys.platform != "win32":
                 kwargs["start_new_session"] = True   # 이 도구를 꺼도 Ctrl+C 가 서버로 가지 않게
-            args = shlex.split(self.cfg.server.start_command, posix=sys.platform != "win32")
+            args = split_command(self.cfg.server.start_command)
             self.proc = await asyncio.create_subprocess_exec(
                 *args, cwd=str(cwd), stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, **kwargs)

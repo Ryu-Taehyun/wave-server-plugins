@@ -36,7 +36,10 @@ RCON 포트(25575)는 **외부에 열지 마세요** (이 도구가 같은 컴�
 ./run.sh create-user admin   # 관리자 만들기 (비밀번호 입력)
 ./run.sh                     # 실행 → http://<이 컴퓨터 IP>:8080
 ```
-Windows 는 `run.bat` (같은 사용법).
+Windows 는 `run.bat` (같은 사용법, 명령 프롬프트에서 `run.bat create-user admin`).
+- Python 3.11 이상이 필요합니다 (설치할 때 **Add python.exe to PATH** 체크).
+- 배포용 zip 에는 화면(`frontend/dist`)이 미리 빌드되어 있어 **Node.js · npm 이 필요 없습니다.** (저장소에서 받았을 때만 npm 으로 빌드)
+- Java 경로에 공백이 있으면 따옴표로 감싸세요: `start_command = '"C:\Program Files\Java\jdk-21\bin\java.exe" -Xmx8G -jar purpur.jar nogui'`
 
 `backend/manager.toml` 에서 바꿀 것:
 - `[server] dir` 서버 폴더, `start_command` 실행 명령 (예: `java -Xms4G -Xmx8G -jar purpur.jar nogui`)

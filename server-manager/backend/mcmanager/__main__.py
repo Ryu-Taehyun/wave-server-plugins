@@ -42,7 +42,7 @@ def main() -> None:
         if not toml.exists():
             toml.write_text(f'''[server]
 dir = "server"
-start_command = "{sys.executable} -m mcmanager.simulator --port 25565 --rcon-port 25575 --password demo"
+start_command = '"{sys.executable}" -m mcmanager.simulator --port 25565 --rcon-port 25575 --password demo'
 host = "127.0.0.1"
 port = 25565
 stop_timeout = 15
@@ -104,9 +104,16 @@ sample_seconds = 3
 
 
 def _serve(cfg) -> None:
+    import asyncio
     import uvicorn
     from .app import create_app
-    uvicorn.run(create_app(cfg), host=cfg.web.host, port=cfg.web.port, log_level="warning", proxy_headers=cfg.web.trusted_proxy)
+    loop = "auto"
+    if sys.platform == "win32":
+        # Windows: 서버 프로세스를 켜려면 Proactor 이벤트 루프가 필요 (Selector 루프는 하위 프로세스를 못 만듦)
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        loop = "none"
+    print(f"서버 관리 도구: http://{'localhost' if cfg.web.host in ('0.0.0.0', '::') else cfg.web.host}:{cfg.web.port}  (끄려면 Ctrl+C)")
+    uvicorn.run(create_app(cfg), host=cfg.web.host, port=cfg.web.port, log_level="warning", proxy_headers=cfg.web.trusted_proxy, loop=loop)
 
 
 if __name__ == "__main__":
