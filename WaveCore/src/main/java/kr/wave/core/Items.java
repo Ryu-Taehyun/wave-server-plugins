@@ -165,6 +165,7 @@ public final class Items {
 
     /* 컬렉션 아이템 (이름 정확히 일치) */
     public static final String C_CLAYMORE = Msg.plainOf("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어");
+    /** 서버에서 없앤 아이템 (ItemCleanupModule 이 정리) */
     public static final String C_REAPER_SOUL = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼");
     public static final String C_REAPER_HEART = Msg.plainOf("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장");
 

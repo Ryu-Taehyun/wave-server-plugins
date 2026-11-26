@@ -288,10 +288,6 @@ public class CollectionModule extends Module {
     private static final List<Ann> ANNS = List.of(
             new Ann(0, unbreakable(Material.GOLDEN_SWORD, Items.C_CLAYMORE), "&a", "&6", "&a&l[!] ",
                     "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를", 0xFFF200),
-            new Ann(1, unbreakable(Material.DIAMOND_SWORD, Items.C_REAPER_SOUL), "&8", "&7", "&c&l[!] ",
-                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼", "을", 0x9E9E9E),
-            new Ann(3, unbreakable(Material.NETHERITE_BOOTS, Items.C_REAPER_HEART), "&8", "&7", "&c&l[!] ",
-                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장", "을", 0x9E9E9E),
             new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), "&b", "&f", "&b&l[!] ",
                     Items.FROST_NAME, "를", 0x39C7FF),
             new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)), "&9", "&f", "&d&l[!] ",

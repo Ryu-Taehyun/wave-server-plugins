@@ -101,7 +101,7 @@ public class PlayerData {
     /** 마지막 퇴장 시각 (환영 메시지용) */
     public long lastSeen;
 
-    /** 컬렉션 획득 공지 여부 (0 클레이모어, 1 사신의 영혼, 2 (예전 헬멧), 3 사신의 심장, 4 프로스트 그레이브, 5 초승달의 서약) */
+    /** 컬렉션 획득 공지 여부 (0 클레이모어, 1 · 3 (삭제된 사신의 영혼 · 심장), 2 (예전 헬멧), 4 프로스트 그레이브, 5 초승달의 서약) */
     public final boolean[] collectionAnnounced = new boolean[6];
     /** 예전 데이터(공지 칸 4개)를 읽음: 새로 생긴 공지 칸은 이미 가진 아이템이면 조용히 '공지함' 처리 (한 번) */
     public transient boolean seedNewAnnounce;

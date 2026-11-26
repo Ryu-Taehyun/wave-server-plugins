@@ -4493,6 +4493,63 @@ public class WaveTest {
         assertTrue(drain(other).contains("OldOwner"));
     }
 
+    @Test
+    void removedReaperItemsArePurged() {
+        java.util.function.Supplier<ItemStack> soul = () -> It.of(Material.DIAMOND_SWORD).unbreakable().name("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼").build();
+        java.util.function.Supplier<ItemStack> heart = () -> It.of(Material.NETHERITE_BOOTS).unbreakable().name("&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장").build();
+        PlayerMock p = server.addPlayer("ReaperOwner");
+        server.getScheduler().performTicks(30);
+        PlayerData d = plugin.store().get(p);
+        p.getInventory().addItem(soul.get(), new ItemStack(Material.DIAMOND, 3));
+        p.getEnderChest().addItem(heart.get());
+        d.backpack[0] = soul.get();
+        d.mailbox.add(heart.get());
+        // 셜커 상자 안
+        ItemStack box = new ItemStack(Material.SHULKER_BOX);
+        var bsm = (org.bukkit.inventory.meta.BlockStateMeta) box.getItemMeta();
+        var sb = (org.bukkit.block.ShulkerBox) bsm.getBlockState();
+        sb.getInventory().addItem(soul.get(), new ItemStack(Material.EMERALD, 5));
+        bsm.setBlockState(sb);
+        box.setItemMeta(bsm);
+        p.getInventory().addItem(box);
+        drain(p);
+        plugin.module(kr.wave.core.module.ItemCleanupModule.class).purgePlayer(p);
+        String all = allText(p.getInventory()) + allText(p.getEnderChest());
+        assertFalse(all.contains("사신의"), all);
+        assertTrue(p.getInventory().contains(Material.DIAMOND, 3), "다른 아이템은 그대로");
+        assertNull(d.backpack[0]);
+        assertTrue(d.mailbox.isEmpty());
+        ItemStack boxNow = null;
+        for (ItemStack it : p.getInventory().getContents()) if (it != null && it.getType() == Material.SHULKER_BOX) boxNow = it;
+        var inside = ((org.bukkit.block.ShulkerBox) ((org.bukkit.inventory.meta.BlockStateMeta) boxNow.getItemMeta()).getBlockState()).getInventory();
+        assertFalse(allText(inside).contains("사신의"));
+        assertTrue(inside.contains(Material.EMERALD, 5), "셜커 안 다른 아이템은 그대로");
+        String msg = drain(p);
+        assertTrue(msg.contains("서버에서 없어진 아이템") && msg.contains("사신의 영혼 x3") && msg.contains("사신의 심장 x2"), msg);
+        // 팀 창고 · 장터
+        var g = plugin.store().global();
+        GlobalData.Team t = new GlobalData.Team();
+        t.id = "reaperteam";
+        t.storage[3] = heart.get();
+        g.teams.put(t.id, t);
+        GlobalData.Listing l = new GlobalData.Listing();
+        l.id = 999;
+        l.item = soul.get();
+        g.market.add(l);
+        plugin.module(kr.wave.core.module.ItemCleanupModule.class).purgeGlobal();
+        assertNull(t.storage[3]);
+        assertFalse(g.market.contains(l));
+        // 컬렉션 공지도 없음
+        PlayerMock other = server.addPlayer("ReaperWatcher");
+        server.getScheduler().performTicks(2);
+        drain(other);
+        PlayerMock q = server.addPlayer("ReaperNew");
+        server.getScheduler().performTicks(2);
+        q.getInventory().addItem(soul.get());
+        plugin.module(kr.wave.core.module.CollectionModule.class).secondTick();
+        assertFalse(drain(other).contains("사신의"), "획득 공지 없음");
+    }
+
     /** 이 IP 로 접속한 플레이어 */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);

@@ -1479,11 +1479,6 @@ public class WeaponModule extends Module {
             if (helmet.contains(Items.N_RUSSELL)) Fx.p(p.getLocation().add(0, 2.2, 0), Particle.ENCHANT, 3, 0.3, 0.3);
             if (chest.contains(Items.N_VOID_CHEST)) Fx.p(p.getLocation().add(0, 1, 0), Particle.REVERSE_PORTAL, 3, 0.3, 0.01);
             if (legs.contains(Items.N_RUINER_PANTS)) Fx.dust(p.getLocation().add(0, 0.6, 0), RUIN_D, 0.9f, 3, 0.25);
-            if (inWorld(p, "nether") && boots.equals(Items.C_REAPER_HEART)) {
-                Fx.p(p.getLocation().add(0, 0.1, 0), Particle.SOUL_FIRE_FLAME, 3, 0.2, 0.01);
-                effect(p, PotionEffectType.SPEED, 1.5, 3);
-                effect(p, PotionEffectType.FIRE_RESISTANCE, 1.5, 1);
-            }
 
             if (tool.contains(Items.N_SEALED_SWORD)) effect(p, PotionEffectType.RESISTANCE, 1.5, 1);   // 들고 있으면 저항 I
 

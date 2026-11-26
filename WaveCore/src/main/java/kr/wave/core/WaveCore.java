@@ -80,7 +80,7 @@ public class WaveCore extends JavaPlugin {
         modules.add(new AttendanceModule(this));      // 출석 보상
         modules.add(new AltModule(this));             // 부계정(차단 우회) 감지
         modules.add(new RankingModule(this));         // /순위 · TOP 10 보상
-        modules.add(new OldModelCleanupModule(this)); // 예전 리소스팩 모델 떼어 내기         // /정보 · /조회 · /환불       // 경고 · 임시밴 · 뮤트 · 채팅 필터
+        modules.add(new ItemCleanupModule(this));     // 예전 리소스팩 모델 · 없앤 아이템(사신의 영혼 · 심장) 정리         // /정보 · /조회 · /환불       // 경고 · 임시밴 · 뮤트 · 채팅 필터
         modules.add(new ShareModule(this));          // 채팅 [item] [inv] [ec]
         modules.add(new SeasonModule(this));         // 시즌 초기화
         modules.add(new EventModule(this));          // 보급 상자 낙하, 채팅 퀴즈
