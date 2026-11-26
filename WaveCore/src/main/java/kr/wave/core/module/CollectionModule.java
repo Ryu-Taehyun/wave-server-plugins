@@ -277,8 +277,8 @@ public class CollectionModule extends Module {
         }
     }
 
-    /** 전체 공지할 컬렉션 아이템: 공지 칸 번호, 알아보는 방법, 줄 색, 글자 색, 머리 색, 이름, 조사, 연출 색 */
-    private record Ann(int idx, java.util.function.Predicate<ItemStack> is, String line, String text, String head, String fancy, String josa, int fx) {
+    /** 전체 공지할 컬렉션 아이템: 공지 칸 번호, 알아보는 방법, 채팅에 보일 이름, 그라데이션 색, 제목, 조사 (보스 전리품 공지와 같은 형식) */
+    private record Ann(int idx, java.util.function.Predicate<ItemStack> is, String name, String colors, String title, String josa) {
     }
 
     private static java.util.function.Predicate<ItemStack> unbreakable(Material m, String plainName) {
@@ -286,18 +286,20 @@ public class CollectionModule extends Module {
     }
 
     private static final List<Ann> ANNS = List.of(
-            new Ann(0, unbreakable(Material.GOLDEN_SWORD, Items.C_CLAYMORE), "&a", "&6", "&a&l[!] ",
-                    "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를", 0xFFF200),
-            // 클레이모어와 같은 형식 (초록 줄 · 금색 글자 · [아이콘] [Lv.??] 이름), 아이콘 · 이름 색만 다름
-            new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), "&a", "&6", "&a&l[!] ",
-                    "&6&l[&b&l❆&6&l] &c&l[Lv.&kDD&c&l] &b&l프로스트 그레이브", "를", 0xFFF200),
-            new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)), "&a", "&6", "&a&l[!] ",
-                    "&6&l[&d&l🌙&6&l] &c&l[Lv.&kDD&c&l] &d&l초승달의 서약", "을", 0xFFF200));
+            new Ann(0, unbreakable(Material.GOLDEN_SWORD, Items.C_CLAYMORE), Items.CLAYMORE_SD_NAME,
+                    "#FFF200:#F6E47C:#FFFCD4", "Arbiter of Heaven", "를"),
+            new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), Items.FROST_NAME,
+                    "#39C7FF:#C2FFF5:#F5DAF8", "Glacier Storm", "를"),
+            // 아이템 이름의 남색은 채팅에서 잘 안 보여 밝은 색으로
+            new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)),
+                    "<gradient:#8C93FF:#FAD4D4><italic:false><b>[🌙] [Lv.</b><obf><b>DD</b></obf><b>] 초승달의 서약</b></gradient>",
+                    "#8C93FF:#FAD4D4", "Prologue of Inscribed", "을"));
 
-    private static boolean has(Player p, Ann a) {
+    /** 인벤토리에서 이 공지 대상 아이템 (없으면 null) */
+    private static ItemStack find(Player p, Ann a) {
         for (ItemStack it : p.getInventory().getContents())
-            if (it != null && it.hasItemMeta() && a.is().test(it)) return true;
-        return false;
+            if (it != null && it.hasItemMeta() && a.is().test(it)) return it;
+        return null;
     }
 
     /** 예전 데이터: 새로 생긴 공지 칸은 이미 가진(인벤토리 · 엔더 상자 · 배낭) 아이템이면 공지 없이 '공지함' 처리 */
@@ -315,21 +317,13 @@ public class CollectionModule extends Module {
     }
 
     private void announce(Player p, PlayerData d, Ann a) {
-        if (d.collectionAnnounced[a.idx()] || !has(p, a)) return;
+        if (d.collectionAnnounced[a.idx()]) return;
+        ItemStack got = find(p, a);
+        if (got == null) return;
         d.collectionAnnounced[a.idx()] = true;
         plugin.store().save(d);
-        String line = a.line(), text = a.text(), fancy = a.fancy(), josa = a.josa();
-        String bar = line + "-----------------------------------------------------";
-        String head = a.head();
-        Msg.broadcast(bar + "%nl%" + head + text + "플레이어 &b" + p.getName() + " " + text + "님이 " + fancy + " " + text + josa + " 획득했습니다!%nl%" + bar);
-        Msg.send(p, "&6&l[!] &a&l컬렉션 아이템 " + fancy + " &a&l" + josa + " 획득했습니다! /collection을 입력하여 수집 진도를 확인하세요.");
-        Msg.soundAt(p.getLocation(), "block.beacon.activate", 10, 1);
-        Fx.lightning(p.getLocation());
-        // 컬렉션 획득: 빛기둥 + 큰 충격파 + 토템
-        org.bukkit.Color c = Fx.rgb(a.fx());
-        Fx.pillar(p.getLocation(), 15, c, Particle.END_ROD);
-        Fx.shockwave(p.getLocation().add(0, 0.1, 0), c, 6, 14);
-        Fx.burst(p.getLocation().add(0, 1, 0), Particle.TOTEM_OF_UNDYING, 120, 0.6);
+        kr.wave.core.util.Fanfare.broadcast(p, got, a.name(), a.colors(), a.title(), "&e" + p.getName() + " &f님이", a.josa());
+        Msg.send(p, "&6&l[!] &a&l컬렉션 아이템 " + a.name() + " &a&l" + a.josa() + " 획득했습니다! /collection을 입력하여 수집 진도를 확인하세요.");
     }
 
     /* ======================= 시즌 아이템 소개 GUI ======================= */

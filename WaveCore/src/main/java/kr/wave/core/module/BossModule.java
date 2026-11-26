@@ -1015,25 +1015,7 @@ public class BossModule extends Module {
      * w: 획득한 사람 (오프라인이면 null), how: "OOO 님이 주사위 N (으)로" 같은 앞 문장
      */
     public void claymoreFanfare(Player w, ItemStack claymore, String how) {
-        if (w != null) {
-            Fx.pillar(w.getLocation(), 12, GOLD, Particle.END_ROD);
-            Fx.burst(w.getLocation().add(0, 1, 0), Particle.TOTEM_OF_UNDYING, 120, 0.6);
-            Msg.sound(w, "ui.toast.challenge_complete", 1, 1);
-            Msg.title(w, "<gradient:#FFF200:#F6E47C:#FFFCD4><b>Arbiter of Heaven</b></gradient>", Items.CLAYMORE_SD_NAME, 10, 70, 20);
-        }
-        Component item = Msg.hoverItem(claymore, Items.CLAYMORE_SD_NAME);
-        String line = "<gradient:#FFF200:#F6E47C:#FFFCD4><st>                                                            </st></gradient>";
-        Msg.broadcast(" ");
-        Msg.broadcast(line);
-        Msg.broadcast(" ");
-        Msg.broadcast("            <b><gradient:#FFF200:#F6E47C:#FFFCD4>✦ Arbiter of Heaven ✦</gradient></b>");
-        Msg.broadcast(" ");
-        Msg.broadcastItem("  " + how, item);
-        Msg.broadcastItem("  " + Msg.ITEM + " &f를 획득했습니다!", item);
-        Msg.broadcast(" ");
-        Msg.broadcast(line);
-        Msg.broadcast(" ");
-        for (Player o : Bukkit.getOnlinePlayers()) Msg.sound(o, "ui.toast.challenge_complete", 0.6f, 1.2f);
+        kr.wave.core.util.Fanfare.broadcast(w, claymore, Items.CLAYMORE_SD_NAME, "#FFF200:#F6E47C:#FFFCD4", "Arbiter of Heaven", how, "를");
     }
 
     /* ======================= 전리품 설정 GUI (관리자) ======================= */
