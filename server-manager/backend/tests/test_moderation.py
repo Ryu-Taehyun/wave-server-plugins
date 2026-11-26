@@ -268,3 +268,28 @@ def test_updater_paper_and_errors(cfg):
         up2.jar()
     cfg.server.start_command = 'java -Xmx4G -jar "my server.jar" nogui'
     assert up2.jar().name == "my server.jar"
+
+
+# ---------------- 관리 도구를 서버 폴더 안에 둔 경우 ----------------
+
+def test_manager_inside_server_dir(cfg, monkeypatch):
+    import mcmanager.config as config_mod
+    from mcmanager.backup import BackupManager
+    from mcmanager.files import FileError, Files
+    sd = cfg.path(cfg.server.dir)
+    inst = sd / "server-manager"
+    (inst / "backend").mkdir(parents=True)
+    (inst / "backend" / "manager.toml").write_text('[rcon]\npassword = "secret"\n')
+    monkeypatch.setattr(config_mod, "INSTALL_DIR", inst.resolve())
+    for w in ("world", "sky", "1v1"):
+        (sd / w).mkdir()
+        (sd / w / "level.dat").write_bytes(b"x")
+    (sd / "server.properties").write_text("motd=x\n")
+    cfg.backup.include = ["world", "server.properties", "server-manager"]
+    names = {rel for _, rel in BackupManager(cfg, DB(cfg.path("b.db")), None, None).files()}
+    assert {"world/level.dat", "sky/level.dat", "1v1/level.dat", "server.properties"} <= names
+    assert not any(n.startswith("server-manager") for n in names)
+    f = Files(cfg, DB(cfg.path("f.db")))
+    assert not any(e["path"].startswith("server-manager") for e in f.tree())
+    with pytest.raises(FileError):
+        f.editable("server-manager/backend/manager.toml")

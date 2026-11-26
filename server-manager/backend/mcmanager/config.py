@@ -80,6 +80,14 @@ class Config:
         return q if q.is_absolute() else (self.base / q)
 
 
+INSTALL_DIR = Path(__file__).resolve().parents[2]   # server-manager 폴더 (서버 폴더 안에 넣어도 백업 · 파일 편집에서 빠짐)
+
+
+def is_manager_path(p: Path) -> bool:
+    p = p.resolve()
+    return p == INSTALL_DIR or INSTALL_DIR in p.parents
+
+
 SECTIONS = ("server", "rcon", "web", "app", "backup", "notify", "wave")
 
 

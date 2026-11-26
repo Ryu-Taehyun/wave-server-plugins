@@ -14,7 +14,7 @@ import time
 import zipfile
 from pathlib import Path, PurePosixPath
 
-from .config import Config
+from .config import Config, is_manager_path
 from .db import DB
 from .process import ServerProcess
 from .rcon import RconClient, RconError
@@ -56,14 +56,21 @@ class BackupManager:
         out: list[tuple[Path, str]] = []
         root = self.server_dir
         backup_dir = self.dir.resolve()
-        for item in self.cfg.backup.include:
+        items = list(self.cfg.backup.include)
+        try:   # 월드 폴더(level.dat 가 있는 폴더)는 이름이 달라도 자동으로 (sky, spawn-world, 1v1 …)
+            items += sorted(d.name for d in root.iterdir() if d.is_dir() and (d / "level.dat").exists() and d.name not in items)
+        except OSError:
+            pass
+        for item in items:
             p = root / item
+            if is_manager_path(p):
+                continue
             if p.is_file():
                 out.append((p, item))
             elif p.is_dir():
                 for dirpath, dirnames, filenames in os.walk(p):
                     dp = Path(dirpath)
-                    if dp.resolve() == backup_dir or backup_dir in dp.resolve().parents:
+                    if dp.resolve() == backup_dir or backup_dir in dp.resolve().parents or is_manager_path(dp):
                         dirnames[:] = []
                         continue
                     rel_dir = dp.relative_to(root).as_posix()
@@ -207,6 +214,8 @@ class BackupManager:
                             if p.is_absolute() or ".." in p.parts:
                                 raise BackupError(f"잘못된 경로가 들어 있습니다: {n}")
                         tops = {PurePosixPath(n).parts[0] for n in names}
+                        if any(is_manager_path(root / t) for t in tops):
+                            raise BackupError("백업에 관리 도구 폴더가 들어 있어 복원하지 않습니다")
                         for t in tops:   # 백업에 들어 있는 항목만 지우고 다시 풀기 (다른 파일은 건드리지 않음)
                             target = root / t
                             if target.is_dir():

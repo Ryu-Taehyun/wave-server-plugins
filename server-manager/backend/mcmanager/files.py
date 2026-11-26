@@ -17,7 +17,7 @@ from pathlib import Path, PurePosixPath
 
 import yaml
 
-from .config import Config
+from .config import Config, is_manager_path
 from .db import DB
 
 TEXT_EXT = {".yml", ".yaml", ".properties", ".json", ".txt", ".toml", ".conf", ".cfg", ".sk"}
@@ -100,6 +100,8 @@ class Files:
         full = (self.root / Path(*p.parts)).resolve()
         if full != self.root and self.root not in full.parents:
             raise FileError("서버 폴더 밖입니다")
+        if is_manager_path(full):
+            raise FileError("관리 도구 폴더는 여기서 열 수 없습니다")
         return full
 
     def editable(self, rel: str) -> Path:
@@ -119,7 +121,7 @@ class Files:
         for dirpath, dirnames, filenames in os.walk(root):
             dp = Path(dirpath)
             depth = len(dp.relative_to(root).parts)
-            dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".") and depth < 4
+            dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".") and depth < 4 and not is_manager_path(dp / d)
                                  and not (dp.name == "plugins" and depth == 1 and d.endswith(".disabled")))
             for f in sorted(filenames):
                 p = dp / f

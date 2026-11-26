@@ -1,7 +1,7 @@
 # manager.example.toml 을 manager.toml 로 복사해서 고치세요 (manager.toml 은 저장소에 올리지 않음)
 
 [server]
-dir = "/home/mc/server"                                # 서버 폴더 (server.jar 가 있는 곳)
+dir = "/home/mc/server"                                # 서버 폴더 (server.jar 가 있는 곳). 관리 도구를 서버 폴더 안에 넣었다면 dir = "../.."
 start_command = "java -Xms4G -Xmx8G -jar purpur.jar nogui"
 host = "127.0.0.1"                                     # 접속 확인할 주소 · 포트
 port = 25565
