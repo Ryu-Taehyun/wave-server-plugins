@@ -13,7 +13,9 @@ import json
 import random
 import struct
 import sys
+import re
 import time
+from pathlib import Path
 
 from .rcon import encode, read_packet
 from .slp import mc_string, packet, read_varint, varint
@@ -161,10 +163,111 @@ class Sim:
                 self.log("Saved the game")
                 return "Saving the game (this may take a moment!)Saved the game"
             return f"Executed: {cmd}"
+        if c in ("경고", "경고삭제", "임시밴", "serverban", "unserverban", "뮤트", "뮤트해제"):
+            return self.sanction(c, args)
+        if c == "tellraw" and len(args) >= 2:
+            try:
+                text = "".join(p.get("text", "") for p in json.loads(cmd.split(" ", 2)[2]))
+            except (ValueError, AttributeError):
+                return "Invalid JSON"
+            self.log(text) if args[0] == "@a" else None
+            return ""
         if c == "stop":
             self.stopping.set()
             return "Stopping the server"
         return f"Unknown or incomplete command, see below for error\n{cmd}<--[HERE]"
+
+    # ---------------- WaveCore 제재 흉내 (서버 폴더의 plugins/WaveCore 파일을 바꿈) ----------------
+    WC = Path("plugins/WaveCore")
+
+    def _pfile(self, name: str) -> Path | None:
+        for f in (self.WC / "playerdata").glob("*.yml"):
+            if re.search(rf"^name: {re.escape(name)}$", f.read_text(encoding="utf-8"), re.M | re.I):
+                return f
+        return None
+
+    def _set(self, f: Path, key: str, value) -> None:
+        t = f.read_text(encoding="utf-8")
+        t = re.sub(rf"^{key}:.*$", f"{key}: {value}", t, flags=re.M) if re.search(rf"^{key}:", t, re.M) else t + f"{key}: {value}\n"
+        f.write_text(t, encoding="utf-8")
+
+    def _get(self, f: Path, key: str) -> str:
+        m = re.search(rf"^{key}: ?(.*)$", f.read_text(encoding="utf-8"), re.M)
+        return m.group(1).strip() if m else ""
+
+    def _record(self, kind: str, name: str, f: Path, detail: str) -> None:
+        (self.WC / "logs").mkdir(parents=True, exist_ok=True)
+        with open(self.WC / "logs" / "sanctions.log", "a", encoding="utf-8") as out:
+            out.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} | {kind} | {name}({f.stem}) | {detail} | Console\n")
+
+    @staticmethod
+    def _dur(s: str) -> int:
+        m = re.fullmatch(r"(\d+)([mhdw])", s or "")
+        return int(m.group(1)) * {"m": 60, "h": 3600, "d": 86400, "w": 604800}[m.group(2)] * 1000 if m else 0
+
+    def _bans(self, update=None) -> None:
+        g = self.WC / "global.yml"
+        t = g.read_text(encoding="utf-8") if g.exists() else "maintenance: false\n"
+        head, _, rest = t.partition("bans:\n")
+        blocks = re.findall(r"(  [0-9a-f-]{36}:\n(?:    .*\n)*)", rest)
+        blocks = update(blocks) if update else blocks
+        g.write_text(head.rstrip("\n") + "\n" + ("bans:\n" + "".join(blocks) if blocks else ""), encoding="utf-8")
+
+    def sanction(self, c: str, args: list[str]) -> str:
+        if not args:
+            return "§c사용법을 확인하세요"
+        f = self._pfile(args[0])
+        if not f:
+            return f"§c{args[0]} 플레이어를 찾을 수 없습니다."
+        name, rest = self._get(f, "name"), args[1:]
+        now = int(time.time() * 1000)
+        if c == "경고":
+            n = int(self._get(f, "warnings") or 0) + 1
+            self._set(f, "warnings", n)
+            self._record("경고", name, f, f"{' '.join(rest)} ({n}회)")
+            if name in self.players:
+                self.log(f"[⚠] {name} 님이 경고를 받았습니다: {' '.join(rest)}")
+            return f"§e{name} §f님에게 경고를 줬습니다. (누적 {n}회)"
+        if c == "경고삭제":
+            cur = int(self._get(f, "warnings") or 0)
+            n = 0 if not rest or rest[0] == "전체" else max(0, cur - int(rest[0]))
+            self._set(f, "warnings", n)
+            self._record("경고삭제", name, f, f"{cur}회 → {n}회")
+            return f"§a{name} 님의 경고를 {cur - n}회 지웠습니다. (남은 {n}회)"
+        if c in ("임시밴", "serverban"):
+            until = 0
+            if c == "임시밴":
+                until = now + self._dur(rest[0] if rest else "")
+                if until == now:
+                    return "§c기간은 30m 2h 7d 1w 처럼 적어 주세요"
+                rest = rest[1:]
+            reason = " ".join(rest)
+            block = f"  {f.stem}:\n    reason: {reason}\n    code: {random.randrange(16**6):06X}\n    until: {until}\n    by: Console\n    at: {now}\n"
+            self._bans(lambda bl: [b for b in bl if not b.startswith(f"  {f.stem}:")] + [block])
+            self._record("임시밴" if until else "영구밴", name, f, (f"{args[1]} · " if until else "") + reason)
+            if name in self.players:
+                self.players.remove(name)
+                self.log(f"{name} lost connection: 서버에서 차단되었습니다")
+            self.banned.add(name)
+            return f"§c{name} 님을 차단했습니다." + (f" ({args[1]})" if until else " (영구)")
+        if c == "unserverban":
+            self._bans(lambda bl: [b for b in bl if not b.startswith(f"  {f.stem}:")])
+            self.banned.discard(name)
+            self._record("차단해제", name, f, "-")
+            return f"§a{name} 님의 차단을 풀었습니다."
+        if c == "뮤트":
+            d = self._dur(rest[0] if rest else "")
+            if not d:
+                return "§c기간은 30m 2h 7d 1w 처럼 적어 주세요"
+            self._set(f, "mute-until", now + d)
+            self._set(f, "mute-reason", " ".join(rest[1:]))
+            self._record("뮤트", name, f, f"{rest[0]} · {' '.join(rest[1:])}")
+            return f"§e{name} 님을 {rest[0]} 동안 채팅 금지했습니다."
+        if c == "뮤트해제":
+            self._set(f, "mute-until", 0)
+            self._record("뮤트해제", name, f, "-")
+            return f"§a{name} 님의 채팅 금지를 풀었습니다."
+        return ""
 
     async def handle_rcon(self, reader, writer):
         authed = False
@@ -204,9 +307,27 @@ class Sim:
                 p = random.choice(self.players)
                 self.players.remove(p)
                 self.log(f"{p} left the game")
-            elif r < 0.8 and self.players:
+            elif r < 0.97 and self.players:
+                self.chat(random.choice(self.players))
+            elif self.players:
                 p = random.choice(self.players)
-                self.log(f"<{p}> " + random.choice(["안녕하세요!", "보스 언제 나와요?", "ㅋㅋㅋㅋ", "핫타임 시작!", "상점 어디에요?", "gg"]))
+                t = random.choice([n for n in NAMES if n != p])
+                self.log(f"{p} issued server command: /report {t} " + random.choice(["욕설했어요", "핵 쓰는 것 같아요", "사기 거래", "도배"]))
+
+    def chat(self, p: str) -> None:
+        """WaveCore 채팅 형식: [Local] 팀 | [칭호] - 닉네임 : 메시지"""
+        r = random.random()
+        if r < 0.12:
+            t = random.choice([n for n in self.players if n != p] or [p])
+            self.log(f"{p} issued server command: /귓 {t} " + random.choice(["거래 ㄱ?", "파티 할래요?", "ㅇㅋ"]))
+            return
+        msg = random.choice(["안녕하세요!", "보스 언제 나와요?", "ㅋㅋㅋㅋ", "핫타임 시작!", "상점 어디에요?", "gg", "다이아 삽니다",
+                             "레벨 30 찍었다", "천공의 심판자 떴다!!", "같이 던전 가실 분", "ㄹㅇ 개꿀", "스폰 어디임"]
+                            + (["싸게 팝니다 cheapmc.xyz 접속", "바 보 멍 청 이"] if random.random() < 0.1 else []))
+        ch = random.choice(["", "", "", "[Local] ", "[TEAM] "])
+        team = random.choice(["", "", "블루 | ", "레드 | "]) if ch != "[Local] " else ""
+        title = random.choice(["", "[🥇 S1 부의 제왕 1위] ", "[⚔ 학살자] ", "[🌱 새싹] "])
+        self.log(f"{ch}{team}{title}- {p} : {msg}")
 
 
 async def main():
@@ -230,6 +351,11 @@ async def main():
     sim.log(f"RCON running on {a.host}:{a.rcon_port}")
     sim.log(f'Done ({a.boot:.3f}s)! For help, type "help"')
     life = asyncio.create_task(sim.life())
+    # 데모 화면용: 켜자마자 채팅 몇 줄 (광고 · 신고 포함)
+    for line in ("- {0} : 안녕하세요~", "[Local] [🌱 새싹] - {1} : 스폰 어디임", "블루 | [⚔ 학살자] - {2} : 천공의 심판자 떴다!!",
+                 "- {1} : 싸게 팝니다 cheapmc.xyz 접속", "{0} issued server command: /report {1} 광고해요"):
+        await asyncio.sleep(0.4)
+        sim.log(line.format(*(sim.players * 3)))
 
     async def stdin_loop():
         loop = asyncio.get_running_loop()

@@ -65,6 +65,27 @@ export interface Diagnostics {
   errors: ErrorGroup[]; crashes: { file: string; mtime: number; description: string }[];
 }
 
+export interface BanRow { uuid: string; name: string; reason: string; code: string; until: number; by: string; at: number }
+export interface SanctionLog { time: string; kind: string; name: string; detail: string; by: string }
+export interface SanctionOverview {
+  bans: BanRow[]; mutes: { name: string; until: number; reason: string }[]; warnings: { name: string; warnings: number; last: string }[];
+  history: SanctionLog[]; reports_open: number;
+}
+export type SanctionAction = "warn" | "warn_clear" | "tempban" | "ban" | "unban" | "mute" | "unmute" | "kick";
+export interface Report { id: number; ts: number; reporter: string; target: string | null; reason: string | null; status: "open" | "done" | "dismissed"; handled_by: string | null; handled_at: number | null; note: string | null }
+export type ChatChannel = "global" | "local" | "team" | "whisper" | "admin";
+export interface ChatRow { id: number; ts: number; name: string; channel: ChatChannel; to_name: string | null; message: string; flagged: string | null }
+export interface ChatSettings { words: string[]; block_ads: boolean; allow_domains: string[] }
+export interface BuildInfo { project: string; version: string; build: number; time: number; changes: string[]; hash: string | null; algo: string; file: string; channel?: string }
+export interface UpdateStatus {
+  settings: { project: "purpur" | "paper"; version: string; auto_check: boolean; backup_first: boolean };
+  current: { project: string | null; mc: string | null; build: number | null; raw: string | null; jar: string | null; jar_exists?: boolean; jar_size?: number; jar_mtime?: number; jar_error?: string };
+  last_check: { ts: number; latest: BuildInfo; available: boolean | null } | null;
+  busy: string | null;
+  backups: { file: string; size: number; ts: number; project?: string; mc?: string; build?: number; raw?: string; by?: string }[];
+  history: AuditRow[];
+}
+
 export interface MetricPoint {
   t: number; uptime_pct: number; players: number; players_peak: number;
   tps: number | null; latency_ms: number | null; cpu: number | null; mem_mb: number | null;
@@ -176,6 +197,26 @@ export const api = {
   maintenance: (on: boolean) => req<{ output: string }>("POST", "/api/wave/maintenance", { on }),
   whitelist: (action: "on" | "off" | "add" | "remove", name = "") => req<{ output: string }>("POST", "/api/whitelist", { action, name }),
   diagnostics: () => req<Diagnostics>("GET", "/api/diagnostics"),
+
+  sanctions: () => req<SanctionOverview>("GET", "/api/sanctions"),
+  sanction: (action: SanctionAction, name: string, opts: { duration?: string; reason?: string; count?: string } = {}) =>
+    req<{ output: string }>("POST", "/api/sanctions", { action, name, ...opts }),
+  reports: (status: "open" | "done" | "dismissed" | "all" = "open") => req<Report[]>("GET", `/api/reports?status=${status}`),
+  setReport: (id: number, status: Report["status"], note = "") => req("PUT", `/api/reports/${id}`, { status, note }),
+
+  chat: (p: { q?: string; name?: string; flagged?: boolean; before?: number; limit?: number } = {}) => {
+    const qs = new URLSearchParams(Object.entries(p).filter(([, v]) => v !== undefined && v !== "" && v !== false).map(([k, v]) => [k, String(v)]));
+    return req<ChatRow[]>("GET", `/api/chat?${qs}`);
+  },
+  say: (message: string, to = "") => req<ChatRow>("POST", "/api/chat", { message, to }),
+  chatSettings: () => req<ChatSettings>("GET", "/api/chat/settings"),
+  saveChatSettings: (s: Partial<ChatSettings>) => req<ChatSettings>("PUT", "/api/chat/settings", s),
+
+  update: () => req<UpdateStatus>("GET", "/api/update"),
+  checkUpdate: () => req<NonNullable<UpdateStatus["last_check"]>>("POST", "/api/update/check"),
+  saveUpdateSettings: (s: Partial<UpdateStatus["settings"]>) => req("PUT", "/api/update/settings", s),
+  installUpdate: () => req("POST", "/api/update/install"),
+  rollback: (file?: string) => req("POST", "/api/update/rollback", { file: file ?? null }),
 
   users: () => req<UserRow[]>("GET", "/api/users"),
   addUser: (username: string, password: string, role: Role) => req("POST", "/api/users", { username, password, role }),

@@ -34,5 +34,9 @@ export const I = {
   xmark: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M6 6l12 12M18 6 6 18" /></svg>,
   cube: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M12 2.8 20 7.2v9.6L12 21.2 4 16.8V7.2L12 2.8Z" /><path d="M4 7.2 12 11.6l8-4.4M12 11.6v9.6" /></svg>,
   megaphone: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M4 10v4a1 1 0 0 0 1 1h2l6 4V5L7 9H5a1 1 0 0 0-1 1Z" /><path d="M17 9a4 4 0 0 1 0 6" /></svg>,
+  chat: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M20.5 11.5c0 4.1-3.8 7.5-8.5 7.5-1.2 0-2.3-.2-3.3-.6L4 19.5l1.2-3.6c-1.1-1.3-1.7-2.8-1.7-4.4 0-4.1 3.8-7.5 8.5-7.5s8.5 3.4 8.5 7.5Z" /></svg>,
+  flag: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M5.5 21V4M5.5 4.5c4-2 7 2 11.5 0v9c-4.5 2-7.5-2-11.5 0" /></svg>,
+  download: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14" /></svg>,
+  undo: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M9 14.5 4.5 10 9 5.5" /><path d="M4.5 10H14a5.5 5.5 0 0 1 0 11h-3" /></svg>,
   list: ({ size, ...p }: P) => <svg {...base(size)} {...p}><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.5" cy="6.5" r="1" fill="currentColor" /><circle cx="4.5" cy="12" r="1" fill="currentColor" /><circle cx="4.5" cy="17.5" r="1" fill="currentColor" /></svg>,
 };

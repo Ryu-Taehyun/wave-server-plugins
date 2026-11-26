@@ -13,6 +13,9 @@ from pydantic import BaseModel, Field
 
 from . import __version__, auth, diagnostics, monitor as mon
 from .backup import BackupError, BackupManager
+from .chat import Chat
+from .moderation import Moderation
+from .updater import UpdateError, Updater
 from .files import FileError, Files
 from .notify import Notifier, Watchdog
 from .wave import Wave
@@ -141,6 +144,41 @@ class WhitelistIn(BaseModel):
     name: str = Field(default="", max_length=16)
 
 
+class SanctionIn(BaseModel):
+    action: str
+    name: str = Field(max_length=16)
+    duration: str = Field(default="", max_length=8)
+    reason: str = Field(default="", max_length=200)
+    count: str = Field(default="", max_length=4)
+
+
+class ReportIn(BaseModel):
+    status: str
+    note: str = Field(default="", max_length=300)
+
+
+class ChatSayIn(BaseModel):
+    message: str = Field(min_length=1, max_length=256)
+    to: str = Field(default="", max_length=16)
+
+
+class ChatCfgIn(BaseModel):
+    words: list[str] | None = None
+    block_ads: bool | None = None
+    allow_domains: list[str] | None = None
+
+
+class UpdCfgIn(BaseModel):
+    project: str | None = None
+    version: str | None = None
+    auto_check: bool | None = None
+    backup_first: bool | None = None
+
+
+class RollbackIn(BaseModel):
+    file: str | None = Field(default=None, max_length=200)
+
+
 class Hub:
     """접속한 화면들에 실시간으로 보냄"""
 
@@ -179,6 +217,10 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     files = Files(cfg, db)
     wave = Wave(cfg, rcon)
     monitor.watchdog = Watchdog(notifier)
+    moderation = Moderation(db, wave)
+    chat = Chat(db, on_event=lambda k, d: hub.send(k, d), on_alert=notifier.alert, own_domains=[cfg.server.host] if not cfg.server.host[:1].isdigit() else [])
+    server.line_hooks.append(chat.feed)
+    updater = Updater(cfg, db, server, backups, on_event=lambda k, d: hub.send(k, d), on_alert=notifier.alert)
     monitor.server_dir = cfg.path(cfg.server.dir)
 
     async def on_status(snap: dict) -> None:
@@ -188,7 +230,8 @@ def create_app(cfg: Config | None = None) -> FastAPI:
 
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):
-        tasks = [asyncio.create_task(monitor.run()), asyncio.create_task(scheduler.run())]
+        tasks = [asyncio.create_task(monitor.run()), asyncio.create_task(scheduler.run()), asyncio.create_task(updater.run())]
+        await asyncio.to_thread(chat.cleanup)
         server.note(f"관리 도구 {__version__} 시작 (웹 {cfg.web.host}:{cfg.web.port})")
         try:
             yield
@@ -200,6 +243,7 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     app = FastAPI(title="MC Server Manager", version=__version__, lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.cfg, app.state.db, app.state.server, app.state.monitor, app.state.scheduler, app.state.rcon = cfg, db, server, monitor, scheduler, rcon
     app.state.backups, app.state.files, app.state.wave, app.state.notifier = backups, files, wave, notifier
+    app.state.moderation, app.state.chat, app.state.updater = moderation, chat, updater
 
     # ---------------- 공통 ----------------
 
@@ -802,6 +846,121 @@ def create_app(cfg: Config | None = None) -> FastAPI:
             return {"system": diagnostics.system(cfg.path(cfg.server.dir)), "heatmap": diagnostics.heatmap(db),
                     "errors": diagnostics.errors(lines, plugins), "crashes": diagnostics.crash_reports(cfg.path(cfg.server.dir))}
         return await asyncio.to_thread(build)
+
+    # ---------------- 제재 (WaveCore) ----------------
+
+    @app.get("/api/sanctions")
+    async def sanctions(u: dict = Depends(viewer)):
+        return await asyncio.to_thread(moderation.overview)
+
+    @app.post("/api/sanctions")
+    async def sanction(body: SanctionIn, u: dict = Depends(operator)):
+        try:
+            cmd = Moderation.command(body.action, body.name.strip(), body.duration.strip(), body.reason, body.count.strip())
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        res = await wave_cmd(u, f"sanction.{body.action}", cmd)
+        wave._scan_at = 0      # 뮤트 · 경고가 바로 보이게
+        return res
+
+    @app.get("/api/reports")
+    async def reports(status: str = "open", u: dict = Depends(viewer)):
+        return moderation.reports(status)
+
+    @app.put("/api/reports/{rid}")
+    async def report_set(rid: int, body: ReportIn, u: dict = Depends(operator)):
+        try:
+            moderation.set_report(rid, body.status, u["username"], body.note)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        audit(u, "report." + body.status, f"#{rid} {body.note}".strip())
+        await hub.send("report", {"id": rid, "status": body.status})
+        return {"ok": True}
+
+    # ---------------- 채팅 ----------------
+
+    @app.get("/api/chat")
+    async def chat_list(q: str = "", name: str = "", flagged: bool = False, before: int | None = None, limit: int = 200, u: dict = Depends(viewer)):
+        return chat.search(q.strip(), name.strip(), flagged, before, limit)
+
+    @app.post("/api/chat")
+    async def chat_say(body: ChatSayIn, u: dict = Depends(operator)):
+        msg = " ".join(body.message.split())
+        to = body.to.strip()
+        if to and not to.replace("_", "").isalnum():
+            raise HTTPException(400, "잘못된 닉네임")
+        parts = [{"text": "[관리자] ", "color": "red", "bold": True}, {"text": u["username"], "color": "gold", "bold": False},
+                 {"text": (" → 나 : " if to else " : "), "color": "gray", "bold": False}, {"text": msg, "color": "white", "bold": False}]
+        try:
+            await rcon.command(f"tellraw {to or '@a'} " + json.dumps(parts, ensure_ascii=False))
+        except RconError as e:
+            raise HTTPException(503, str(e))
+        row = chat.add_admin(u["username"], msg)
+        row["to_name"] = to or None
+        if to:
+            db.x("UPDATE chat SET to_name = ?, channel = 'whisper' WHERE id = ?", (to, row["id"]))
+            row["channel"] = "whisper"
+        audit(u, "chat.say", (f"→{to} " if to else "") + msg)
+        await hub.send("chat", row)
+        return row
+
+    @app.get("/api/chat/settings")
+    async def chat_cfg(u: dict = Depends(viewer)):
+        return chat.settings()
+
+    @app.put("/api/chat/settings")
+    async def chat_cfg_set(body: ChatCfgIn, u: dict = Depends(admin)):
+        out = chat.save_settings(body.model_dump(exclude_none=True))
+        audit(u, "chat.settings", f"금지어 {len(out['words'])}개")
+        return out
+
+    # ---------------- 서버 업데이트 ----------------
+
+    @app.get("/api/update")
+    async def upd_status(u: dict = Depends(viewer)):
+        return await asyncio.to_thread(updater.status)
+
+    @app.post("/api/update/check")
+    async def upd_check(u: dict = Depends(operator)):
+        try:
+            return await updater.check()
+        except UpdateError as e:
+            raise HTTPException(400, str(e))
+
+    @app.put("/api/update/settings")
+    async def upd_cfg(body: UpdCfgIn, u: dict = Depends(admin)):
+        try:
+            out = updater.save_settings(body.model_dump(exclude_none=True))
+        except UpdateError as e:
+            raise HTTPException(400, str(e))
+        audit(u, "update.settings", f"{out['project']} {out['version']}")
+        return out
+
+    def _bg_update(u: dict, action: str, coro_fn):
+        if updater.busy or backups.lock.locked():
+            raise HTTPException(409, f"이미 {updater.busy or '백업'} 중입니다")
+        audit(u, action)
+
+        async def run():
+            try:
+                label = await coro_fn()
+                await hub.send("toast", {"ok": True, "text": f"{label} 완료"})
+                await notifier.alert("update_done", f"서버 {'업데이트' if action == 'update.install' else '되돌리기'} 완료: {label}", f"{u['username']} 님이 실행")
+            except Exception as e:
+                await hub.send("toast", {"ok": False, "text": str(e)})
+                await notifier.alert("update_done", f"서버 {'업데이트' if action == 'update.install' else '되돌리기'} 실패", str(e), force=True)
+            await hub.send("status", await monitor.sample())
+
+        asyncio.create_task(run())
+        return {"ok": True}
+
+    @app.post("/api/update/install")
+    async def upd_install(u: dict = Depends(admin)):
+        return _bg_update(u, "update.install", lambda: updater.update(u["username"]))
+
+    @app.post("/api/update/rollback")
+    async def upd_rollback(body: RollbackIn, u: dict = Depends(admin)):
+        return _bg_update(u, "update.rollback", lambda: updater.rollback(body.file, u["username"]))
 
     # ---------------- 화면 (빌드된 frontend) ----------------
 

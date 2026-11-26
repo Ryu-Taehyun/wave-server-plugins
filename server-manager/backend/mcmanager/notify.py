@@ -25,6 +25,10 @@ KINDS = {
     "new_device": ("새 기기에서 로그인", True, 0x0A84FF),
     "login_blocked": ("로그인 실패가 계속됨", True, 0xFF453A),
     "power": ("누군가 서버를 켜고 끔", False, 0x8E8E93),
+    "chat_flag": ("채팅 금지어 · 광고 감지", True, 0xFF9F0A),
+    "report": ("새 신고 접수", True, 0xFF9F0A),
+    "update_available": ("새 서버 빌드 나옴", True, 0x0A84FF),
+    "update_done": ("서버 업데이트 · 되돌리기 결과", True, 0x30D158),
 }
 DEFAULTS = {"tps_below": 15.0, "tps_minutes": 2, "disk_below_gb": 5.0, "down_minutes": 2}
 COOLDOWN = 600

@@ -5,6 +5,7 @@ import { ago, duration } from "../lib/format";
 import { Glass, fadeUp } from "../components/Glass";
 import { Avatar, Button, Segmented, Sheet } from "../components/Controls";
 import { I } from "../components/Icons";
+import { SanctionForm } from "./Sanctions";
 
 type Act = "kick" | "ban" | "pardon" | "op" | "deop";
 const ACTS: { a: Act; label: string; c: string; reason?: boolean }[] = [
@@ -99,13 +100,15 @@ export function Players({ me, status, toast }: { me: Me; status: Status | null; 
                 <div className="muted">{online.some((n) => n.toLowerCase() === sel.toLowerCase()) ? "지금 접속 중" : "접속 중이 아님"}</div>
               </div>
             </div>
-            <label className="lbl">사유 (강퇴 · 차단 때 보임)</label>
+            <label className="lbl">사유 (바닐라 강퇴 · 차단 때 보임)</label>
             <input className="field" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 비매너 행위" maxLength={200} />
             <div className="grid cols-2" style={{ marginTop: 16, gap: 10 }}>
               {ACTS.map((x) => (
                 <Button key={x.a} disabled={busy} onClick={() => act(x.a)} style={{ color: x.c, height: 50 }}>{x.label}</Button>
               ))}
             </div>
+            <div className="card-t" style={{ margin: "22px 0 10px", fontSize: 16 }}>WaveCore 제재</div>
+            <SanctionForm name={sel} toast={toast} onDone={() => setSel(null)} />
           </div>
         )}
       </Sheet>

@@ -46,6 +46,7 @@ start_command = '"{sys.executable}" -m mcmanager.simulator --port 25565 --rcon-p
 host = "127.0.0.1"
 port = 25565
 stop_timeout = 15
+jar = "purpur.jar"
 
 [rcon]
 host = "127.0.0.1"
@@ -107,6 +108,7 @@ sample_seconds = 3
 def _seed_demo(sd: Path) -> None:
     """데모용 서버 폴더: 설정 파일 · 플러그인 jar · WaveCore 플레이어 데이터 · 월드 (처음 한 번)"""
     import io
+    import json
     import random
     import time
     import zipfile
@@ -147,15 +149,37 @@ season-reset:
   money: true
   number: 1
 """, encoding="utf-8")
-    (wc / "global.yml").write_text("maintenance: false\n", encoding="utf-8")
     now = int(time.time() * 1000)
+    uid = lambda i: f"{i:08d}-0000-4000-8000-{i:012d}"
+    (wc / "global.yml").write_text(f"""maintenance: false
+bans:
+  {uid(17)}:
+    reason: 핵 사용 (킬아우라)
+    code: A1B2C3
+    until: 0
+    by: demo
+    at: {now - 3 * 86400000}
+  {uid(18)}:
+    reason: 도배
+    code: D4E5F6
+    until: {now + 2 * 86400000}
+    by: demo
+    at: {now - 86400000}
+""", encoding="utf-8")
+    (wc / "logs").mkdir(exist_ok=True)
+    ts = lambda ms: time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ms / 1000))
+    (wc / "logs" / "sanctions.log").write_text("".join(f"{ts(now - d * 3600000)} | {k} | {NAMES[i]}({uid(i)}) | {det} | demo\n" for d, k, i, det in (
+        (80, "경고", 4, "욕설 (1회)"), (72, "영구밴", 17, "핵 사용 (킬아우라)"), (30, "임시밴", 18, "7d · 도배"),
+        (20, "경고", 9, "광고 (1회)"), (8, "뮤트", 5, "1h · 도배"), (2, "경고", 4, "욕설 (2회)"))), encoding="utf-8")
+    (sd / "version_history.json").write_text(json.dumps({"currentVersion": "git-Purpur-2485 (MC: 1.21.11)"}), encoding="utf-8")
+    (sd / "purpur.jar").write_bytes(rnd.randbytes(2_000_000))
     for i, n in enumerate(NAMES):
         lv = rnd.randint(1, 50)
         (wc / "playerdata" / f"{i:08d}-0000-4000-8000-{i:012d}.yml").write_text(
             f"name: {n}\nmoney: {rnd.randint(1000, 400000)}\nmoney-total: {rnd.randint(400000, 2000000)}\nexmoney: {rnd.choice([0, 0, 5000, 25000])}\n"
             f"level: {lv}\nkills: {rnd.randint(0, 300)}\nattend-streak: {rnd.randint(0, 14)}\nattend-total: {rnd.randint(1, 90)}\n"
             f"warnings: {rnd.choice([0, 0, 0, 1, 2])}\nlast-seen: {now - rnd.randint(0, 14) * 86400000}\ntitles:\n- ace\nactive-title: ace\n"
-            f"sanctions: []\nstats:\n  playtime: {rnd.randint(30, 6000)}\nach-claimed:\n- level:0\n", encoding="utf-8")
+            f"sanctions: []\nmute-until: {now + 3600000 if i == 5 else 0}\nmute-reason: {'도배' if i == 5 else ''}\nstats:\n  playtime: {rnd.randint(30, 6000)}\nach-claimed:\n- level:0\n", encoding="utf-8")
 
 
 def _serve(cfg) -> None:

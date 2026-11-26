@@ -45,6 +45,7 @@ class ServerProcess:
         self._on_event = on_event
         self._op_lock = asyncio.Lock()
         self._tail_task: asyncio.Task | None = None
+        self.line_hooks: list[Callable[[str], Awaitable[None]]] = []   # 서버 로그 한 줄마다 (채팅 · 신고 읽기)
 
     # ---------------- 로그 ----------------
 
@@ -54,6 +55,13 @@ class ServerProcess:
         for q in list(self.subscribers):
             if q.qsize() < 2000:
                 q.put_nowait(line)
+        if self.line_hooks and "[Manager]" not in line:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                return
+            for hook in self.line_hooks:
+                loop.create_task(hook(line))
 
     def note(self, text: str) -> None:
         """이 도구가 남기는 로그 줄"""

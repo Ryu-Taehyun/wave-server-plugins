@@ -56,6 +56,9 @@ export const ACTION_LABEL: Record<string, string> = {
   "backup.create": "백업 만들기", "backup.restore": "백업 복원", "backup.delete": "백업 삭제", "backup.download": "백업 내려받기",
   "file.save": "파일 저장", "plugin.upload": "플러그인 올리기", "plugin.apply": "플러그인 적용", "notify.settings": "알림 설정",
   "wave.hottime": "핫타임", "wave.season": "시즌 번호", "wave.maintenance": "점검 모드", whitelist: "화이트리스트", broadcast: "전체 공지", "task.backup": "예약 백업",
+  "sanction.warn": "경고", "sanction.warn_clear": "경고 삭제", "sanction.tempban": "임시 차단", "sanction.ban": "영구 차단", "sanction.unban": "차단 해제",
+  "sanction.mute": "채팅 금지", "sanction.unmute": "채팅 금지 해제", "sanction.kick": "강퇴", "report.done": "신고 처리", "report.dismissed": "신고 기각", "report.open": "신고 다시 열기",
+  "chat.say": "관리자 채팅", "chat.settings": "금지어 설정", "update.install": "서버 업데이트", "update.rollback": "서버 되돌리기", "update.settings": "업데이트 설정",
   "user.add": "사용자 추가", "user.role": "권한 변경", "user.delete": "사용자 삭제", "password.change": "비밀번호 변경", "session.revoke": "기기 로그아웃",
 };
 

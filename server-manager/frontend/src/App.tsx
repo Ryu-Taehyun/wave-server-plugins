@@ -16,16 +16,22 @@ import { Activity, Settings } from "./pages/Settings";
 import { Backups } from "./pages/Backups";
 import { Files } from "./pages/Files";
 import { Operations } from "./pages/Operations";
+import { Chat } from "./pages/Chat";
+import { Sanctions } from "./pages/Sanctions";
+import { Update } from "./pages/Update";
 
-type Page = "overview" | "ops" | "console" | "players" | "backups" | "tasks" | "files" | "activity" | "settings" | "more";
+type Page = "overview" | "ops" | "console" | "players" | "chat" | "sanctions" | "update" | "backups" | "tasks" | "files" | "activity" | "settings" | "more";
 const NAV: { id: Page; label: string; icon: (p: { size?: number }) => React.ReactNode; mobile: boolean; desc?: string }[] = [
   { id: "overview", label: "개요", icon: I.home, mobile: true },
   { id: "ops", label: "운영", icon: I.bolt, mobile: true },
   { id: "console", label: "콘솔", icon: I.terminal, mobile: true },
   { id: "players", label: "플레이어", icon: I.people, mobile: true },
+  { id: "chat", label: "채팅", icon: I.chat, mobile: false, desc: "게임 채팅만 따로 · 관리자 답장 · 금지어 감지" },
+  { id: "sanctions", label: "제재", icon: I.flag, mobile: false, desc: "신고 처리 · 경고 · 채팅 금지 · 차단" },
   { id: "backups", label: "백업", icon: I.cube, mobile: false, desc: "월드 · 플러그인 백업과 복원" },
   { id: "tasks", label: "예약", icon: I.clock, mobile: false, desc: "정해진 시간에 재시작 · 공지 · 백업" },
   { id: "files", label: "파일", icon: I.list, mobile: false, desc: "설정 파일 편집 · 플러그인 교체" },
+  { id: "update", label: "업데이트", icon: I.download, mobile: false, desc: "Purpur · Paper 새 빌드 설치와 되돌리기" },
   { id: "activity", label: "활동", icon: I.shield, mobile: false, desc: "누가 언제 무엇을 했는지" },
   { id: "settings", label: "설정", icon: I.gear, mobile: false, desc: "알림 · 내 기기 · 비밀번호 · 사용자" },
 ];
@@ -70,6 +76,9 @@ export default function App() {
       case "overview": return <Overview me={me} status={live.status} setStatus={live.setStatus} toast={live.pushToast} />;
       case "console": return <Console me={me} logs={live.logs} toast={live.pushToast} />;
       case "players": return <Players me={me} status={live.status} toast={live.pushToast} />;
+      case "chat": return <Chat me={me} live={live.chat} online={!!live.status?.online} toast={live.pushToast} />;
+      case "sanctions": return <Sanctions me={me} toast={live.pushToast} reportTick={live.reportTick} />;
+      case "update": return <Update me={me} progress={live.update} toast={live.pushToast} />;
       case "tasks": return <Tasks me={me} toast={live.pushToast} />;
       case "ops": return <Operations me={me} status={live.status} toast={live.pushToast} />;
       case "backups": return <Backups me={me} progress={live.backup} tick={live.auditTick} toast={live.pushToast} />;

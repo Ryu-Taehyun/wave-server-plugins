@@ -147,3 +147,30 @@ CREATE TABLE IF NOT EXISTS file_history (
     snapshot  TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_file_history_path ON file_history(path, ts);
+
+-- 채팅 기록 (channel: global · local · team · whisper · admin, flagged: 금지어 · 광고 감지)
+CREATE TABLE IF NOT EXISTS chat (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts       INTEGER NOT NULL,
+    name     TEXT    NOT NULL COLLATE NOCASE,
+    channel  TEXT    NOT NULL DEFAULT 'global',
+    to_name  TEXT,
+    message  TEXT    NOT NULL,
+    flagged  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_chat_ts ON chat(ts);
+CREATE INDEX IF NOT EXISTS idx_chat_name ON chat(name, ts);
+
+-- 신고 (/report 를 로그에서 읽음)
+CREATE TABLE IF NOT EXISTS reports (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts         INTEGER NOT NULL,
+    reporter   TEXT    NOT NULL,
+    target     TEXT,
+    reason     TEXT,
+    status     TEXT    NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'done', 'dismissed')),
+    handled_by TEXT,
+    handled_at INTEGER,
+    note       TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status, ts);

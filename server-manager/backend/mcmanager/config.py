@@ -16,6 +16,7 @@ class ServerCfg:
     stop_timeout: int = 90          # stop 후 이 시간(초) 안에 안 꺼지면 강제 종료
     auto_restart: bool = True       # 비정상 종료(크래시) 시 자동 재시작 (10분에 3번까지)
     log_file: str = "logs/latest.log"   # 이 도구가 켠 서버가 아닐 때 읽을 로그
+    jar: str = ""                   # 서버 jar (자동 업데이트용, 비우면 start_command 의 -jar 뒤 파일)
 
 
 @dataclass

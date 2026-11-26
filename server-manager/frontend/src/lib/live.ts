@@ -1,6 +1,6 @@
 // 실시간 연결 (WebSocket): 상태 · 로그 · 알림. 끊기면 점점 늦게 다시 연결
 import { useEffect, useRef, useState } from "react";
-import type { Status } from "./api";
+import type { ChatRow, Status } from "./api";
 
 export interface Toast { id: number; ok: boolean; text: string }
 type Msg =
@@ -12,7 +12,12 @@ type Msg =
   | { type: "audit"; data: unknown }
   | { type: "task"; data: { name: string; ok: boolean; output: string } }
   | { type: "backup"; data: { phase: string; pct: number | null } }
-  | { type: "alert"; data: { kind: string; title: string; body: string } };
+  | { type: "alert"; data: { kind: string; title: string; body: string } }
+  | { type: "chat"; data: ChatRow }
+  | { type: "report"; data: { id: number } }
+  | { type: "update"; data: UpdateProgress };
+
+export interface UpdateProgress { phase: string; pct: number | null; done: boolean; ok: boolean }
 
 export interface BackupProgress { phase: string; pct: number | null }
 
@@ -25,6 +30,9 @@ export function useLive(enabled: boolean) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [auditTick, setAuditTick] = useState(0);
   const [backup, setBackup] = useState<BackupProgress | null>(null);
+  const [chat, setChat] = useState<ChatRow[]>([]);
+  const [reportTick, setReportTick] = useState(0);
+  const [update, setUpdate] = useState<UpdateProgress | null>(null);
   const retry = useRef(0);
 
   const pushToast = (ok: boolean, text: string) => {
@@ -80,8 +88,18 @@ export function useLive(enabled: boolean) {
             setBackup(m.data.phase === "끝" || m.data.phase === "완료" ? null : m.data);
             if (m.data.phase === "끝" || m.data.phase === "완료") setAuditTick((x) => x + 1);
             break;
+          case "chat":
+            setChat((c) => (c.length > 400 ? c.slice(-300) : c).concat(m.data));
+            break;
+          case "report":
+            setReportTick((x) => x + 1);
+            break;
+          case "update":
+            setUpdate(m.data);
+            if (m.data.done) setTimeout(() => setUpdate(null), 6000);
+            break;
           case "alert":
-            pushToast(!["crash", "down", "backup_failed", "login_blocked", "disk", "tps"].includes(m.data.kind), m.data.title);
+            pushToast(!["crash", "down", "backup_failed", "login_blocked", "disk", "tps", "chat_flag", "report"].includes(m.data.kind), m.data.title);
             break;
         }
       };
@@ -102,5 +120,5 @@ export function useLive(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { status, setStatus, logs, connected, toasts, pushToast, auditTick, backup };
+  return { status, setStatus, logs, connected, toasts, pushToast, auditTick, backup, chat, reportTick, update };
 }

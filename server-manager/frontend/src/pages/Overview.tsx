@@ -57,7 +57,7 @@ function Heatmap({ cells }: { cells: Diagnostics["heatmap"] }) {
   const best = cells.length ? cells.reduce((a, b) => (b.avg > a.avg ? b : a)) : null;
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "22px repeat(24, 1fr)", gap: 3, fontSize: 10.5 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "18px repeat(24, minmax(0, 1fr))", gap: 2, fontSize: 10 }}>
         <span />
         {Array.from({ length: 24 }, (_, h) => <span key={h} className="faint tnum" style={{ textAlign: "center" }}>{h % 3 === 0 ? h : ""}</span>)}
         {[1, 2, 3, 4, 5, 6, 0].map((d) => (
@@ -129,7 +129,7 @@ export function Overview({ me, status, setStatus, toast }: { me: Me; status: Sta
       <Glass strong className="card" {...fadeUp} style={{ padding: 22, marginBottom: 16 }}>
         <div className="row wrap" style={{ gap: 18 }}>
           <Orb state={st} />
-          <div className="grow" style={{ minWidth: 200 }}>
+          <div className="grow" style={{ minWidth: 180 }}>
             <div className="row" style={{ gap: 8 }}>
               <AnimatePresence mode="popLayout">
                 <motion.span key={st} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
@@ -144,7 +144,7 @@ export function Overview({ me, status, setStatus, toast }: { me: Me; status: Sta
             </div>
           </div>
           {ops && (
-            <div className="row" style={{ gap: 10, flex: "1 1 340px", maxWidth: 520 }}>
+            <div className="row" style={{ gap: 10, flex: "1 1 240px", minWidth: 0, maxWidth: 520 }}>
               {st === "stopped" || st === "crashed" ? (
                 <Button tint="var(--green)" onClick={() => power("start")} style={{ flex: 1, height: 54, fontSize: 16 }}><I.play size={18} />서버 켜기</Button>
               ) : (

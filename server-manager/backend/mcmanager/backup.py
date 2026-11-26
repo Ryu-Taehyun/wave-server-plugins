@@ -153,7 +153,7 @@ class BackupManager:
 
     def prune(self) -> None:
         """자동 백업은 keep 개만, 복원 전 백업(safety)은 3개만"""
-        for kind, keep in (("auto", max(1, self.cfg.backup.keep)), ("safety", 3)):
+        for kind, keep in (("auto", max(1, self.cfg.backup.keep)), ("safety", 3), ("update", 3)):
             old = self.db.q("SELECT id, file FROM backups WHERE kind = ? AND ok = 1 ORDER BY ts DESC LIMIT -1 OFFSET ?", (kind, keep))
             for r in old:
                 self.delete(r["id"])
