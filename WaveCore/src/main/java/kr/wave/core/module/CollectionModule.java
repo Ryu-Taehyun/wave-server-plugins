@@ -288,10 +288,11 @@ public class CollectionModule extends Module {
     private static final List<Ann> ANNS = List.of(
             new Ann(0, unbreakable(Material.GOLDEN_SWORD, Items.C_CLAYMORE), "&a", "&6", "&a&l[!] ",
                     "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를", 0xFFF200),
-            new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), "&b", "&f", "&b&l[!] ",
-                    Items.FROST_NAME, "를", 0x39C7FF),
-            new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)), "&9", "&f", "&d&l[!] ",
-                    Items.NEW_CHAR_NAME, "을", 0x8C93FF));
+            // 클레이모어와 같은 형식 (초록 줄 · 금색 글자 · [아이콘] [Lv.??] 이름), 아이콘 · 이름 색만 다름
+            new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), "&a", "&6", "&a&l[!] ",
+                    "&6&l[&b&l❆&6&l] &c&l[Lv.&kDD&c&l] &b&l프로스트 그레이브", "를", 0xFFF200),
+            new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)), "&a", "&6", "&a&l[!] ",
+                    "&6&l[&d&l🌙&6&l] &c&l[Lv.&kDD&c&l] &d&l초승달의 서약", "을", 0xFFF200));
 
     private static boolean has(Player p, Ann a) {
         for (ItemStack it : p.getInventory().getContents())

@@ -4485,6 +4485,17 @@ public class WaveTest {
         server.getScheduler().performTicks(5);
         var col = plugin.module(kr.wave.core.module.CollectionModule.class);
         drain(other);
+        // 비교용: 천공의 심판자 클레이모어 획득 공지
+        drain(p);
+        p.getInventory().addItem(It.of(Material.GOLDEN_SWORD).unbreakable().name("&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어").build());
+        col.secondTick();
+        drain(p);
+        assertTrue(dumpChat(other, "chat_claymore.jsonl").contains("천공의 심판자 클레이모어"));
+        p.getInventory().clear();
+        // 비교용: 보스 전리품 클레이모어 공지
+        plugin.module(kr.wave.core.module.BossModule.class).claymoreFanfare(p, Items.claymoreSd(), "&eLucky &f님이 주사위 &e87 &f(으)로");
+        drain(p);
+        dumpChat(other, "chat_claymore_boss.jsonl");
         drain(p);
         p.getInventory().addItem(Items.frostGrave());
         col.secondTick();
