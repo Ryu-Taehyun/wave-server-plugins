@@ -14,7 +14,7 @@ function Orb({ state }: { state: Status["state"] }) {
     <div style={{ position: "relative", width: 64, height: 64, flex: "none" }}>
       <motion.div animate={{ scale: state === "running" ? [1, 1.25, 1] : busy ? [1, 1.4, 1] : 1, opacity: state === "stopped" ? 0.15 : [0.5, 0.15, 0.5] }}
         transition={{ duration: busy ? 1.1 : 2.6, repeat: Infinity, ease: "easeInOut" }}
-        style={{ position: "absolute", inset: 0, borderRadius: "50%", background: c, filter: "blur(14px)" }} />
+        style={{ position: "absolute", inset: 8, borderRadius: "50%", background: c, filter: "blur(12px)", opacity: 0.5 }} />
       <div style={{ position: "absolute", inset: 10, borderRadius: "50%", background: `radial-gradient(circle at 35% 30%, #fff9, ${c} 45%, color-mix(in srgb, ${c} 55%, #000))`,
         boxShadow: `inset 0 -4px 10px rgba(0,0,0,.35), 0 0 22px ${c}` }} />
       {busy && <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}

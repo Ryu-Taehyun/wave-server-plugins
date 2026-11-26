@@ -54,8 +54,6 @@ export default function App() {
     setMe(null);
   }, []);
 
-  const tint = live.status?.state === "crashed" ? "#ff453a" : live.status?.state === "running" ? "#00c2a8" : "#6b7280";
-
   if (me === undefined) return <Wallpaper />;
   if (!me) return (<><Wallpaper /><Login onLogin={setMe} /></>);
 
@@ -73,13 +71,13 @@ export default function App() {
 
   return (
     <>
-      <Wallpaper tint={tint} />
+      <Wallpaper />
       <Island toasts={live.toasts} connected={live.connected} />
       <div className="shell">
         <aside className="side">
           <Glass className="side-inner" strong>
             <div className="row" style={{ padding: "4px 8px 18px", gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, display: "grid", placeItems: "center", color: "#fff", background: "linear-gradient(145deg, #3d8bff, #7b4dff 55%, #00c2a8)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.5)" }}><I.cube size={22} /></div>
+              <div style={{ width: 40, height: 40, borderRadius: 12, display: "grid", placeItems: "center", color: "#fff", background: "var(--blue)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.35)" }}><I.cube size={22} /></div>
               <div>
                 <div style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>서버 관리</div>
                 <div className="row" style={{ gap: 6, fontSize: 12.5 }}><span className="dot" style={{ ["--c" as string]: STATE_LABEL[st].c }} /><span className="muted">{STATE_LABEL[st].text}</span></div>

@@ -33,7 +33,7 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
           style={{ padding: "34px 28px 28px", ["--blur" as string]: "40px" }}>
           <motion.div initial={{ scale: 0.6, rotate: -12, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.1 }}
             style={{ width: 76, height: 76, borderRadius: 22, margin: "0 auto 18px", display: "grid", placeItems: "center", color: "#fff",
-              background: "linear-gradient(145deg, #3d8bff, #7b4dff 55%, #00c2a8)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.5), 0 14px 30px -8px rgba(80,110,255,.7)" }}>
+              background: "var(--blue)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.35), 0 10px 24px -10px var(--blue)" }}>
             <I.cube size={38} />
           </motion.div>
           <h1 style={{ textAlign: "center", fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 4px" }}>서버 관리</h1>

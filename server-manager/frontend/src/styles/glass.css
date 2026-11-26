@@ -9,18 +9,19 @@
     "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   --mono: "SF Mono", ui-monospace, Menlo, "JetBrains Mono", Consolas, monospace;
 
-  --bg: #070b16;
-  --text: rgba(255, 255, 255, 0.96);
-  --text-2: rgba(235, 240, 255, 0.66);
-  --text-3: rgba(235, 240, 255, 0.42);
+  --bg: #0b0b0d;
+  --wall: radial-gradient(120% 80% at 50% -10%, #1c1c20 0%, #0b0b0d 55%);
+  --text: rgba(255, 255, 255, 0.95);
+  --text-2: rgba(235, 235, 245, 0.62);
+  --text-3: rgba(235, 235, 245, 0.38);
 
-  --glass: rgba(255, 255, 255, 0.075);
-  --glass-strong: rgba(255, 255, 255, 0.13);
-  --glass-hover: rgba(255, 255, 255, 0.11);
-  --stroke: rgba(255, 255, 255, 0.16);
-  --stroke-hi: rgba(255, 255, 255, 0.5);
-  --shine: rgba(255, 255, 255, 0.28);
-  --shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --glass: rgba(255, 255, 255, 0.055);
+  --glass-strong: rgba(255, 255, 255, 0.085);
+  --glass-hover: rgba(255, 255, 255, 0.08);
+  --stroke: rgba(255, 255, 255, 0.09);
+  --stroke-hi: rgba(255, 255, 255, 0.22);
+  --shine: rgba(255, 255, 255, 0.12);
+  --shadow: 0 14px 40px -14px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.35);
   --blur: 28px;
   --sat: 185%;
 
@@ -43,17 +44,18 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #dfe7f5;
-    --text: rgba(10, 14, 28, 0.94);
-    --text-2: rgba(30, 38, 60, 0.66);
-    --text-3: rgba(30, 38, 60, 0.45);
-    --glass: rgba(255, 255, 255, 0.46);
-    --glass-strong: rgba(255, 255, 255, 0.66);
-    --glass-hover: rgba(255, 255, 255, 0.58);
-    --stroke: rgba(255, 255, 255, 0.7);
-    --stroke-hi: rgba(255, 255, 255, 0.95);
-    --shine: rgba(255, 255, 255, 0.75);
-    --shadow: 0 18px 50px -14px rgba(40, 60, 110, 0.35), 0 2px 8px rgba(40, 60, 110, 0.12);
+    --bg: #f2f2f7;
+    --wall: radial-gradient(120% 80% at 50% -10%, #ffffff 0%, #f2f2f7 55%);
+    --text: rgba(0, 0, 0, 0.9);
+    --text-2: rgba(60, 60, 67, 0.68);
+    --text-3: rgba(60, 60, 67, 0.42);
+    --glass: rgba(255, 255, 255, 0.7);
+    --glass-strong: rgba(255, 255, 255, 0.86);
+    --glass-hover: rgba(255, 255, 255, 0.92);
+    --stroke: rgba(0, 0, 0, 0.07);
+    --stroke-hi: rgba(255, 255, 255, 1);
+    --shine: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.06);
     --blue: #007aff;
     --green: #28b44a;
     --orange: #f08a00;
@@ -63,11 +65,22 @@
 :root[data-theme="dark"] { color-scheme: dark; }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #dfe7f5; --text: rgba(10,14,28,.94); --text-2: rgba(30,38,60,.66); --text-3: rgba(30,38,60,.45);
-  --glass: rgba(255,255,255,.46); --glass-strong: rgba(255,255,255,.66); --glass-hover: rgba(255,255,255,.58);
-  --stroke: rgba(255,255,255,.7); --stroke-hi: rgba(255,255,255,.95); --shine: rgba(255,255,255,.75);
-  --shadow: 0 18px 50px -14px rgba(40,60,110,.35), 0 2px 8px rgba(40,60,110,.12);
-  --blue: #007aff; --green: #28b44a; --orange: #f08a00; --red: #ff3b30;
+  --bg: #f2f2f7;
+  --wall: radial-gradient(120% 80% at 50% -10%, #ffffff 0%, #f2f2f7 55%);
+  --text: rgba(0, 0, 0, 0.9);
+  --text-2: rgba(60, 60, 67, 0.68);
+  --text-3: rgba(60, 60, 67, 0.42);
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-strong: rgba(255, 255, 255, 0.86);
+  --glass-hover: rgba(255, 255, 255, 0.92);
+  --stroke: rgba(0, 0, 0, 0.07);
+  --stroke-hi: rgba(255, 255, 255, 1);
+  --shine: rgba(255, 255, 255, 0.9);
+  --shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --blue: #007aff;
+  --green: #28b44a;
+  --orange: #f08a00;
+  --red: #ff3b30;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -91,15 +104,8 @@ button { cursor: pointer; }
 .mono { font-family: var(--mono); }
 ::selection { background: color-mix(in srgb, var(--blue) 45%, transparent); }
 
-/* ---------------- 배경 (움직이는 색 덩어리: 유리가 비쳐 보이게) ---------------- */
-.wallpaper { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: var(--bg); }
-.wallpaper .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.75; will-change: transform; }
-:root[data-theme="light"] .wallpaper .blob { opacity: 0.55; }
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .wallpaper .blob { opacity: 0.55; } }
-.wallpaper .grain {
-  position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay; pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
+/* ---------------- 배경 (단색 + 위쪽만 살짝 밝게) ---------------- */
+.wallpaper { position: fixed; inset: 0; z-index: -1; background: var(--wall, var(--bg)); }
 
 /* ---------------- 유리 재질 ---------------- */
 .glass {
@@ -123,8 +129,8 @@ button { cursor: pointer; }
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(420px circle at var(--mx, 20%) var(--my, -10%), rgba(255, 255, 255, 0.16), transparent 45%),
-    linear-gradient(150deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 32%, transparent 60%, rgba(255, 255, 255, 0.05) 100%);
+    radial-gradient(420px circle at var(--mx, 20%) var(--my, -10%), rgba(255, 255, 255, 0.06), transparent 45%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.07) 0%, transparent 35%);
 }
 /* 가장자리 굴절: 테두리만 밝은 그라데이션 (렌즈 가장자리처럼) */
 .glass::after {
@@ -133,7 +139,7 @@ button { cursor: pointer; }
   border-radius: inherit;
   padding: 1px;
   pointer-events: none;
-  background: linear-gradient(160deg, var(--stroke-hi), rgba(255, 255, 255, 0.05) 35%, rgba(255, 255, 255, 0.02) 65%, rgba(255, 255, 255, 0.28));
+  background: linear-gradient(160deg, var(--stroke-hi), transparent 40%, transparent 70%, color-mix(in srgb, var(--stroke-hi) 50%, transparent));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -233,7 +239,7 @@ label.lbl { display: block; font-size: 13px; color: var(--text-2); margin: 0 0 6
   .cols-3, .cols-2 { grid-template-columns: 1fr; }
   .tabbar {
     display: flex; position: fixed; z-index: 40;
-    background: color-mix(in srgb, var(--bg) 45%, var(--glass-strong)) !important;
+    background: color-mix(in srgb, var(--bg) 82%, transparent) !important;
     --blur: 36px;
     left: 12px; right: 12px; bottom: calc(10px + var(--safe-b));
     height: 66px; padding: 6px; gap: 2px;

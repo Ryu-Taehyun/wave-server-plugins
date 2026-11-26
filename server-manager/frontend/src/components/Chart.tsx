@@ -48,7 +48,7 @@ export function AreaChart({ data, color, height = 150, max, format = (v) => Stri
         <motion.path d={area} fill={`url(#g${id})`} initial={false} animate={{ d: area }} transition={{ duration: 0.6 }} />
         <motion.path d={path} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinecap="round"
           initial={{ pathLength: 0 }} animate={{ pathLength: 1, d: path }} transition={{ duration: 0.9, ease: "easeOut" }}
-          style={{ filter: `drop-shadow(0 4px 10px ${color})` }} />
+          />
         {hover != null && <line x1={xs[hover]} x2={xs[hover]} y1="0" y2={height} stroke="currentColor" strokeOpacity=".25" vectorEffect="non-scaling-stroke" />}
       </svg>
       {hp && (
