@@ -3144,7 +3144,10 @@ public class WaveTest {
         var d = plugin.store().get(p);
         d.money = 5_000_000;
         d.exMoney = 5_000_000;
+        // 기본은 한도 없음
+        assertEquals(0, plugin.getConfig().getLong("gamble.daily-bet-limit"));
         // 하루 한도 100만: 90만 쓴 상태에서 20만 베팅은 거부
+        plugin.getConfig().set("gamble.daily-bet-limit", 1_000_000);
         d.betDay = java.time.LocalDate.now().toString();
         d.betToday = 900_000;
         assertTrue(p.performCommand("바카라 200000"));
