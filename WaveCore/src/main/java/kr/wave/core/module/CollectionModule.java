@@ -22,6 +22,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -271,35 +272,64 @@ public class CollectionModule extends Module {
         for (Player p : Bukkit.getOnlinePlayers()) {
             PlayerData d = data(p);
             record(p, d);
-            announce(p, d, 0, Material.GOLDEN_SWORD, Items.C_CLAYMORE, "&a", "&6",
-                    "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를");
-            announce(p, d, 1, Material.DIAMOND_SWORD, Items.C_REAPER_SOUL, "&8", "&7",
-                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼", "을");
-            announce(p, d, 3, Material.NETHERITE_BOOTS, Items.C_REAPER_HEART, "&8", "&7",
-                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장", "을");
+            if (d.seedNewAnnounce) seedAnnounce(p, d);
+            for (Ann a : ANNS) announce(p, d, a);
         }
     }
 
-    private void announce(Player p, PlayerData d, int idx, Material m, String plainName, String line, String text, String fancy, String josa) {
-        if (d.collectionAnnounced[idx]) return;
-        boolean has = false;
-        for (ItemStack it : p.getInventory().getContents()) {
-            if (it != null && it.getType() == m && it.hasItemMeta() && it.getItemMeta().isUnbreakable() && Msg.nameIs(it, plainName)) {
-                has = true;
-                break;
-            }
+    /** 전체 공지할 컬렉션 아이템: 공지 칸 번호, 알아보는 방법, 줄 색, 글자 색, 머리 색, 이름, 조사, 연출 색 */
+    private record Ann(int idx, java.util.function.Predicate<ItemStack> is, String line, String text, String head, String fancy, String josa, int fx) {
+    }
+
+    private static java.util.function.Predicate<ItemStack> unbreakable(Material m, String plainName) {
+        return it -> it.getType() == m && it.getItemMeta().isUnbreakable() && Msg.nameIs(it, plainName);
+    }
+
+    private static final List<Ann> ANNS = List.of(
+            new Ann(0, unbreakable(Material.GOLDEN_SWORD, Items.C_CLAYMORE), "&a", "&6", "&a&l[!] ",
+                    "&6&l[&a&l⚡&6&l] &c&l[Lv.&kjs&c&l] &4&l천공의 심판자 클레이모어", "를", 0xFFF200),
+            new Ann(1, unbreakable(Material.DIAMOND_SWORD, Items.C_REAPER_SOUL), "&8", "&7", "&c&l[!] ",
+                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &5&l사신의 영혼", "을", 0x9E9E9E),
+            new Ann(3, unbreakable(Material.NETHERITE_BOOTS, Items.C_REAPER_HEART), "&8", "&7", "&c&l[!] ",
+                    "&8&l[&7&l✦&8&l] &7&l[Lv.&kjs&7&l] &c&l사신의 심장", "을", 0x9E9E9E),
+            new Ann(4, it -> it.getType() == Material.DIAMOND_SWORD && Msg.nameHas(it, Items.N_FROST), "&b", "&f", "&b&l[!] ",
+                    Items.FROST_NAME, "를", 0x39C7FF),
+            new Ann(5, it -> it.getType() == Material.MUSIC_DISC_5 && Items.isNewChar(Msg.name(it)), "&9", "&f", "&d&l[!] ",
+                    Items.NEW_CHAR_NAME, "을", 0x8C93FF));
+
+    private static boolean has(Player p, Ann a) {
+        for (ItemStack it : p.getInventory().getContents())
+            if (it != null && it.hasItemMeta() && a.is().test(it)) return true;
+        return false;
+    }
+
+    /** 예전 데이터: 새로 생긴 공지 칸은 이미 가진(인벤토리 · 엔더 상자 · 배낭) 아이템이면 공지 없이 '공지함' 처리 */
+    private void seedAnnounce(Player p, PlayerData d) {
+        d.seedNewAnnounce = false;
+        java.util.List<ItemStack> all = new java.util.ArrayList<>();
+        java.util.Collections.addAll(all, p.getInventory().getContents());
+        java.util.Collections.addAll(all, p.getEnderChest().getContents());
+        java.util.Collections.addAll(all, d.backpack);
+        for (Ann a : ANNS) {
+            if (a.idx() < 4 || d.collectionAnnounced[a.idx()]) continue;
+            for (ItemStack it : all) if (it != null && it.hasItemMeta() && a.is().test(it)) d.collectionAnnounced[a.idx()] = true;
         }
-        if (!has) return;
-        d.collectionAnnounced[idx] = true;
+        plugin.store().saveAuto(d);
+    }
+
+    private void announce(Player p, PlayerData d, Ann a) {
+        if (d.collectionAnnounced[a.idx()] || !has(p, a)) return;
+        d.collectionAnnounced[a.idx()] = true;
         plugin.store().save(d);
+        String line = a.line(), text = a.text(), fancy = a.fancy(), josa = a.josa();
         String bar = line + "-----------------------------------------------------";
-        String head = line.equals("&a") ? "&a&l[!] " : "&c&l[!] ";
+        String head = a.head();
         Msg.broadcast(bar + "%nl%" + head + text + "플레이어 &b" + p.getName() + " " + text + "님이 " + fancy + " " + text + josa + " 획득했습니다!%nl%" + bar);
         Msg.send(p, "&6&l[!] &a&l컬렉션 아이템 " + fancy + " &a&l를 획득했습니다! /collection을 입력하여 수집 진도를 확인하세요.");
         Msg.soundAt(p.getLocation(), "block.beacon.activate", 10, 1);
         Fx.lightning(p.getLocation());
         // 컬렉션 획득: 빛기둥 + 큰 충격파 + 토템
-        org.bukkit.Color c = line.equals("&a") ? Fx.rgb(0xFFF200) : Fx.rgb(0x9E9E9E);
+        org.bukkit.Color c = Fx.rgb(a.fx());
         Fx.pillar(p.getLocation(), 15, c, Particle.END_ROD);
         Fx.shockwave(p.getLocation().add(0, 0.1, 0), c, 6, 14);
         Fx.burst(p.getLocation().add(0, 1, 0), Particle.TOTEM_OF_UNDYING, 120, 0.6);

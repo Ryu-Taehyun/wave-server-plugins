@@ -4457,6 +4457,42 @@ public class WaveTest {
         assertEquals(server.getWorld("spawn-world"), p.getWorld(), "기본값 spawn-world 로 이동");
     }
 
+    @Test
+    void frostAndCrescentAnnounced() {
+        PlayerMock p = server.addPlayer("Lucky");
+        PlayerMock other = server.addPlayer("Watcher");
+        server.getScheduler().performTicks(5);
+        var col = plugin.module(kr.wave.core.module.CollectionModule.class);
+        drain(other);
+        p.getInventory().addItem(Items.frostGrave());
+        col.secondTick();
+        String got = drain(other);
+        assertTrue(got.contains("Lucky") && got.contains("프로스트 그레이브") && got.contains("획득했습니다"), got);
+        col.secondTick();
+        assertFalse(drain(other).contains("프로스트 그레이브"), "한 번만");
+        p.getInventory().addItem(Items.newCharacteristic());
+        col.secondTick();
+        got = drain(other);
+        assertTrue(got.contains("초승달의 서약") && got.contains("을 획득했습니다"), got);
+        // 예전 데이터(공지 칸 4개)로 이미 가지고 있던 사람은 공지하지 않음
+        PlayerMock old = server.addPlayer("OldOwner");
+        server.getScheduler().performTicks(2);
+        PlayerData od = plugin.store().get(old);
+        var y = new org.bukkit.configuration.file.YamlConfiguration();
+        y.set("collection-announced", java.util.List.of(true, false, false, false));
+        od.load(y);
+        assertTrue(od.seedNewAnnounce);
+        old.getInventory().addItem(Items.frostGrave());
+        drain(other);
+        col.secondTick();
+        assertFalse(drain(other).contains("OldOwner"), "이미 가지고 있던 것은 공지 없음");
+        assertTrue(od.collectionAnnounced[4]);
+        // 새로 얻은 초승달의 서약은 공지
+        old.getInventory().addItem(Items.newCharacteristic());
+        col.secondTick();
+        assertTrue(drain(other).contains("OldOwner"));
+    }
+
     /** 이 IP 로 접속한 플레이어 */
     private PlayerMock joinFrom(String name, String ip) {
         PlayerMock pm = new PlayerMock(server, name);

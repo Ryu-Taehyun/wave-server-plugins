@@ -101,8 +101,10 @@ public class PlayerData {
     /** 마지막 퇴장 시각 (환영 메시지용) */
     public long lastSeen;
 
-    /** 컬렉션 획득 공지 여부 (클레이모어, 사신의 영혼, 헬멧, 사신의 심장) */
-    public final boolean[] collectionAnnounced = new boolean[4];
+    /** 컬렉션 획득 공지 여부 (0 클레이모어, 1 사신의 영혼, 2 (예전 헬멧), 3 사신의 심장, 4 프로스트 그레이브, 5 초승달의 서약) */
+    public final boolean[] collectionAnnounced = new boolean[6];
+    /** 예전 데이터(공지 칸 4개)를 읽음: 새로 생긴 공지 칸은 이미 가진 아이템이면 조용히 '공지함' 처리 (한 번) */
+    public transient boolean seedNewAnnounce;
 
     /** 업적용 누적 기록 (시즌 초기화와 상관없이 유지): pvp, streak, duel, boss, mob, ore, playtime(분), quiz, supply */
     public final java.util.Map<String, Long> stats = new java.util.HashMap<>();
@@ -186,6 +188,7 @@ public class PlayerData {
         lastSeen = y.getLong("last-seen");
         List<Boolean> ann = y.getBooleanList("collection-announced");
         for (int i = 0; i < Math.min(ann.size(), collectionAnnounced.length); i++) collectionAnnounced[i] = ann.get(i);
+        seedNewAnnounce = !ann.isEmpty() && ann.size() < collectionAnnounced.length;
         channel = y.getString("channel", "global");
         ConfigurationSection st = y.getConfigurationSection("stats");
         if (st != null) for (String k : st.getKeys(false)) stats.put(k, st.getLong(k));
