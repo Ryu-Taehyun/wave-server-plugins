@@ -525,6 +525,27 @@ public class WaveTest {
         return sb.toString();
     }
 
+    /** 받은 채팅을 JSON 으로 저장 (-Dsnapshot.dir 이 있을 때만, 렌더링용). 저장하든 안 하든 메시지는 비움 */
+    private static String dumpChat(PlayerMock p, String file) {
+        StringBuilder sb = new StringBuilder();
+        StringBuilder json = new StringBuilder();
+        net.kyori.adventure.text.Component c;
+        while ((c = p.nextComponentMessage()) != null) {
+            sb.append(Msg.plain(c)).append('\n');
+            json.append(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(c)).append('\n');
+        }
+        String dir = System.getProperty("snapshot.dir");
+        if (dir != null) {
+            try {
+                java.nio.file.Files.createDirectories(java.nio.file.Path.of(dir));
+                java.nio.file.Files.writeString(java.nio.file.Path.of(dir, file), json.toString());
+            } catch (java.io.IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return sb.toString();
+    }
+
     private static boolean hasHover(net.kyori.adventure.text.Component c) {
         if (c.hoverEvent() != null) return true;
         for (var ch : c.children()) if (hasHover(ch)) return true;
@@ -4464,15 +4485,18 @@ public class WaveTest {
         server.getScheduler().performTicks(5);
         var col = plugin.module(kr.wave.core.module.CollectionModule.class);
         drain(other);
+        drain(p);
         p.getInventory().addItem(Items.frostGrave());
         col.secondTick();
-        String got = drain(other);
+        dumpChat(p, "chat_frost_self.jsonl");
+        String got = dumpChat(other, "chat_frost.jsonl");
         assertTrue(got.contains("Lucky") && got.contains("프로스트 그레이브") && got.contains("획득했습니다"), got);
         col.secondTick();
         assertFalse(drain(other).contains("프로스트 그레이브"), "한 번만");
         p.getInventory().addItem(Items.newCharacteristic());
         col.secondTick();
-        got = drain(other);
+        dumpChat(p, "chat_crescent_self.jsonl");
+        got = dumpChat(other, "chat_crescent.jsonl");
         assertTrue(got.contains("초승달의 서약") && got.contains("을 획득했습니다"), got);
         // 예전 데이터(공지 칸 4개)로 이미 가지고 있던 사람은 공지하지 않음
         PlayerMock old = server.addPlayer("OldOwner");
@@ -4524,7 +4548,7 @@ public class WaveTest {
         var inside = ((org.bukkit.block.ShulkerBox) ((org.bukkit.inventory.meta.BlockStateMeta) boxNow.getItemMeta()).getBlockState()).getInventory();
         assertFalse(allText(inside).contains("사신의"));
         assertTrue(inside.contains(Material.EMERALD, 5), "셜커 안 다른 아이템은 그대로");
-        String msg = drain(p);
+        String msg = dumpChat(p, "chat_cleanup.jsonl");
         assertTrue(msg.contains("서버에서 없어진 아이템") && msg.contains("사신의 영혼 x3") && msg.contains("사신의 심장 x2"), msg);
         // 팀 창고 · 장터
         var g = plugin.store().global();

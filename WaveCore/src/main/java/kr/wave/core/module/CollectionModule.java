@@ -321,7 +321,7 @@ public class CollectionModule extends Module {
         String bar = line + "-----------------------------------------------------";
         String head = a.head();
         Msg.broadcast(bar + "%nl%" + head + text + "플레이어 &b" + p.getName() + " " + text + "님이 " + fancy + " " + text + josa + " 획득했습니다!%nl%" + bar);
-        Msg.send(p, "&6&l[!] &a&l컬렉션 아이템 " + fancy + " &a&l를 획득했습니다! /collection을 입력하여 수집 진도를 확인하세요.");
+        Msg.send(p, "&6&l[!] &a&l컬렉션 아이템 " + fancy + " &a&l" + josa + " 획득했습니다! /collection을 입력하여 수집 진도를 확인하세요.");
         Msg.soundAt(p.getLocation(), "block.beacon.activate", 10, 1);
         Fx.lightning(p.getLocation());
         // 컬렉션 획득: 빛기둥 + 큰 충격파 + 토템
