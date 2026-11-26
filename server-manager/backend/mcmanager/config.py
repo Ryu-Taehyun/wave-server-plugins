@@ -42,11 +42,36 @@ class AppCfg:
 
 
 @dataclass
+class BackupCfg:
+    dir: str = "data/backups"           # 백업 zip 저장 폴더
+    keep: int = 7                       # 자동 백업 보관 개수 (직접 만든 백업은 지우지 않음)
+    include: list = field(default_factory=lambda: ["world", "world_nether", "world_the_end", "plugins", "config",
+                                                   "server.properties", "bukkit.yml", "spigot.yml", "purpur.yml",
+                                                   "ops.json", "whitelist.json", "banned-players.json", "banned-ips.json"])
+    exclude: list = field(default_factory=lambda: ["plugins/*/logs", "plugins/*/backups", "plugins/dynmap/web/tiles", "plugins/BlueMap/web/maps", "*.lock"])
+    copy_to: str = ""                   # 다른 곳(외장 디스크 · 동기화 폴더)에도 사본 저장 (비우면 안 함)
+
+
+@dataclass
+class NotifyCfg:
+    discord_webhook: str = ""           # 화면(설정 → 알림)에서도 바꿀 수 있음
+    push_contact: str = "mailto:admin@example.com"   # 웹 푸시 연락처 (푸시 서비스에 보내는 값, 아무 메일 형식)
+
+
+@dataclass
+class WaveCfg:
+    plugin_dir: str = "plugins/WaveCore"   # 서버 폴더 기준 WaveCore 데이터 폴더
+
+
+@dataclass
 class Config:
     server: ServerCfg = field(default_factory=ServerCfg)
     rcon: RconCfg = field(default_factory=RconCfg)
     web: WebCfg = field(default_factory=WebCfg)
     app: AppCfg = field(default_factory=AppCfg)
+    backup: BackupCfg = field(default_factory=BackupCfg)
+    notify: NotifyCfg = field(default_factory=NotifyCfg)
+    wave: WaveCfg = field(default_factory=WaveCfg)
     base: Path = Path(".")
 
     def path(self, p: str) -> Path:
@@ -54,12 +79,15 @@ class Config:
         return q if q.is_absolute() else (self.base / q)
 
 
+SECTIONS = ("server", "rcon", "web", "app", "backup", "notify", "wave")
+
+
 def _apply(obj, data: dict) -> None:
     for k, v in data.items():
         k = k.replace("-", "_")
         if hasattr(obj, k):
             cur = getattr(obj, k)
-            setattr(obj, k, type(cur)(v) if not isinstance(cur, bool) else bool(v))
+            setattr(obj, k, v if isinstance(cur, list) else type(cur)(v) if not isinstance(cur, bool) else bool(v))
 
 
 def load(path: str | os.PathLike | None = None) -> Config:
@@ -68,14 +96,14 @@ def load(path: str | os.PathLike | None = None) -> Config:
     cfg.base = p.resolve().parent
     if p.exists():
         data = tomllib.loads(p.read_text(encoding="utf-8"))
-        for section in ("server", "rcon", "web", "app"):
+        for section in SECTIONS:
             _apply(getattr(cfg, section), data.get(section, {}))
     # 환경 변수 (비밀번호는 파일 대신 여기에 두어도 됨): MCM_RCON_PASSWORD, MCM_SERVER_DIR ...
-    for section in ("server", "rcon", "web", "app"):
+    for section in SECTIONS:
         obj = getattr(cfg, section)
         for k in list(vars(obj)):
             env = os.environ.get(f"MCM_{section}_{k}".upper())
-            if env is not None:
+            if env is not None and not isinstance(getattr(obj, k), list):
                 cur = getattr(obj, k)
                 setattr(obj, k, env.lower() in ("1", "true", "yes") if isinstance(cur, bool) else type(cur)(env))
     return cfg

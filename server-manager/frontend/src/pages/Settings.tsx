@@ -5,6 +5,7 @@ import { ACTION_LABEL, ago, clock, device, ROLE_LABEL } from "../lib/format";
 import { Glass, fadeUp } from "../components/Glass";
 import { Button, Segmented, Sheet } from "../components/Controls";
 import { I } from "../components/Icons";
+import { NotifyCard } from "./Notify";
 
 export function Activity({ tick }: { tick: number }) {
   const [rows, setRows] = useState<AuditRow[]>([]);
@@ -101,6 +102,8 @@ export function Settings({ me, onLogout, toast, theme, setTheme }: {
             <div className="list-item"><I.logout size={20} /><span className="grow">로그아웃</span><Button className="sm" style={{ color: "var(--red)" }} onClick={onLogout}>로그아웃</Button></div>
           </div>
         </Glass>
+
+        <NotifyCard me={me} toast={toast} />
 
         {admin && (
           <Glass className="card" {...fadeUp} style={{ gridColumn: "1 / -1" }}>

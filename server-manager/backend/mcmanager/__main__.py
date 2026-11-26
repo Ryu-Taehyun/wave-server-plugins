@@ -61,6 +61,7 @@ db = "manager.db"
 sample_seconds = 3
 ''', encoding="utf-8")
         cfg = config.load(toml)
+        _seed_demo(base / "server")
         db = _db(cfg)
         if not db.one("SELECT 1 FROM users"):
             auth.create_user(db, "demo", "demo1234", "admin")
@@ -101,6 +102,60 @@ sample_seconds = 3
     elif a.cmd == "users":
         for u in _db(cfg).q("SELECT username, role, last_login FROM users ORDER BY id"):
             print(f"{u['username']:<20} {u['role']:<9} 마지막 로그인 {u['last_login'] or '-'}")
+
+
+def _seed_demo(sd: Path) -> None:
+    """데모용 서버 폴더: 설정 파일 · 플러그인 jar · WaveCore 플레이어 데이터 · 월드 (처음 한 번)"""
+    import io
+    import random
+    import time
+    import zipfile
+    from .simulator import NAMES
+    if (sd / "server.properties").exists():
+        return
+    rnd = random.Random(7)
+    (sd / "world" / "region").mkdir(parents=True, exist_ok=True)
+    (sd / "world" / "level.dat").write_bytes(b"demo-level")
+    for i in range(4):
+        (sd / "world" / "region" / f"r.{i}.0.mca").write_bytes(rnd.randbytes(200_000))
+    (sd / "server.properties").write_text("motd=Wave Online\nmax-players=100\nwhite-list=false\nenable-rcon=true\nrcon.port=25575\nview-distance=10\n", encoding="utf-8")
+    (sd / "config").mkdir(exist_ok=True)
+    (sd / "config" / "paper-global.yml").write_text("proxies:\n  proxy-protocol: false\nchunk-loading-basic:\n  player-max-chunk-load-rate: 100.0\n", encoding="utf-8")
+    pl = sd / "plugins"
+    for name, ver, main in (("WaveCore", "1.0.0", "kr.wave.core.WaveCore"), ("PremiumPass", "1.0.0", "com.premiumpass.PremiumPass"),
+                            ("DailyShop", "1.0.0", "com.dailyshop.DailyShop"), ("LuckPerms", "5.4.150", "me.lucko.luckperms.bukkit.loader.BukkitLoaderPlugin")):
+        b = io.BytesIO()
+        with zipfile.ZipFile(b, "w") as z:
+            z.writestr("plugin.yml", f"name: {name}\nversion: {ver}\nmain: {main}\n")
+        (pl / name).mkdir(parents=True, exist_ok=True)
+        (pl / f"{name}-{ver}.jar").write_bytes(b.getvalue())
+    wc = pl / "WaveCore"
+    (wc / "playerdata").mkdir(parents=True, exist_ok=True)
+    (wc / "config.yml").write_text("""# WaveCore 설정 (데모)
+worlds:
+  spawn: spawn-world
+  wild: world
+
+hot-time:
+  enabled: true
+  multiplier: 2.0
+  schedule:
+    - "20:00 60"
+    - "주말 14:00 60"
+
+season-reset:
+  money: true
+  number: 1
+""", encoding="utf-8")
+    (wc / "global.yml").write_text("maintenance: false\n", encoding="utf-8")
+    now = int(time.time() * 1000)
+    for i, n in enumerate(NAMES):
+        lv = rnd.randint(1, 50)
+        (wc / "playerdata" / f"{i:08d}-0000-4000-8000-{i:012d}.yml").write_text(
+            f"name: {n}\nmoney: {rnd.randint(1000, 400000)}\nmoney-total: {rnd.randint(400000, 2000000)}\nexmoney: {rnd.choice([0, 0, 5000, 25000])}\n"
+            f"level: {lv}\nkills: {rnd.randint(0, 300)}\nattend-streak: {rnd.randint(0, 14)}\nattend-total: {rnd.randint(1, 90)}\n"
+            f"warnings: {rnd.choice([0, 0, 0, 1, 2])}\nlast-seen: {now - rnd.randint(0, 14) * 86400000}\ntitles:\n- ace\nactive-title: ace\n"
+            f"sanctions: []\nstats:\n  playtime: {rnd.randint(30, 6000)}\nach-claimed:\n- level:0\n", encoding="utf-8")
 
 
 def _serve(cfg) -> None:

@@ -9,7 +9,7 @@ import re
 import time
 from dataclasses import asdict
 
-from . import slp
+from . import diagnostics, slp
 from .db import DB
 from .process import ServerProcess
 from .rcon import RconClient, RconError, strip_colors
@@ -44,6 +44,8 @@ class Monitor:
         self._last_names: set[str] | None = None
         self._last_cleanup = 0.0
         self.on_change = None   # async (snapshot) -> None
+        self.watchdog = None    # notify.Watchdog
+        self.server_dir = None  # 디스크 공간을 볼 폴더
 
     def _proc_usage(self) -> tuple[float | None, float | None]:
         pid = self.server.pid
@@ -79,15 +81,18 @@ class Monitor:
             except RconError:
                 pass
         cpu, mem = self._proc_usage()
+        sysinfo = diagnostics.system(self.server_dir) if self.server_dir else {}
         now = int(time.time())
         snap = {
             "checked_at": now, "online": st.online, "latency_ms": st.latency_ms, "version": st.version, "motd": st.motd,
             "players_online": count, "players_max": mx, "players": sorted(names, key=str.lower) if st.online else [],
             "tps": tps, "cpu": cpu, "mem_mb": mem, "rcon": rcon_ok, "error": st.error,
-            "state": self.server.state, "managed": self.server.managed, "uptime": self.server.uptime(),
+            "state": self.server.state, "managed": self.server.managed, "uptime": self.server.uptime(), **sysinfo,
         }
-        self.db.x("INSERT INTO metrics (ts, online, players, max_players, tps, latency_ms, cpu, mem_mb) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                  (now, int(st.online), count if st.online else 0, mx, tps, st.latency_ms, cpu, mem))
+        self.db.x("""INSERT INTO metrics (ts, online, players, max_players, tps, latency_ms, cpu, mem_mb, sys_cpu, sys_mem, disk_free_gb)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                  (now, int(st.online), count if st.online else 0, mx, tps, st.latency_ms, cpu, mem,
+                   sysinfo.get("sys_cpu"), sysinfo.get("sys_mem"), sysinfo.get("disk_free_gb")))
         self._track_players(set(names) if st.online else set(), now)
         if time.time() - self._last_cleanup > 3600:
             self._last_cleanup = time.time()
@@ -116,6 +121,10 @@ class Monitor:
                 snap = await self.sample()
                 if self.on_change:
                     await self.on_change(snap)
+                if self.watchdog:
+                    st = self.server.state
+                    expected = st in ("starting", "stopping") or (st == "stopped" and self.server.stopped_on_purpose)
+                    await self.watchdog.check(snap, expected)
             except Exception as e:   # 모니터는 멈추면 안 됨
                 self.server.note(f"상태 확인 오류: {e}")
             await asyncio.sleep(self.every)
@@ -137,7 +146,9 @@ def series(db: DB, rng: str) -> list[dict]:
                ROUND(AVG(tps), 2)        AS tps,
                ROUND(AVG(latency_ms), 1) AS latency_ms,
                ROUND(AVG(cpu), 1)        AS cpu,
-               ROUND(AVG(mem_mb))        AS mem_mb
+               ROUND(AVG(mem_mb))        AS mem_mb,
+               ROUND(AVG(sys_cpu), 1)    AS sys_cpu,
+               ROUND(AVG(sys_mem), 1)    AS sys_mem
         FROM metrics WHERE ts >= :since
         GROUP BY t ORDER BY t""", {"b": bucket, "since": since})
 

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
-import { api, canOperate, type Me, type MetricPoint, type Status } from "../lib/api";
+import { Fragment, useEffect, useState } from "react";
+import { api, canOperate, type Diagnostics, type Me, type MetricPoint, type Status } from "../lib/api";
 import { duration, STATE_LABEL } from "../lib/format";
 import { Glass, fadeUp } from "../components/Glass";
 import { Avatar, Button, HoldButton, Num, Segmented } from "../components/Controls";
@@ -36,12 +36,54 @@ function Stat({ icon, label, children, sub, c }: { icon: React.ReactNode; label:
   );
 }
 
+function Meter({ label, value, text, warn }: { label: string; value: number | null | undefined; text: string; warn?: boolean }) {
+  const v = Math.max(0, Math.min(100, value ?? 0));
+  const c = warn ? "var(--orange)" : v > 90 ? "var(--red)" : v > 75 ? "var(--orange)" : "var(--green)";
+  return (
+    <div>
+      <div className="row" style={{ justifyContent: "space-between", fontSize: 13.5, marginBottom: 6 }}><span className="muted" style={{ fontWeight: 600 }}>{label}</span><b className="tnum">{text}</b></div>
+      <div style={{ height: 8, borderRadius: 9, background: "color-mix(in srgb, var(--text-3) 22%, transparent)", overflow: "hidden" }}>
+        <motion.div initial={false} animate={{ width: `${v}%` }} transition={{ type: "spring", stiffness: 120, damping: 22 }} style={{ height: "100%", borderRadius: 9, background: c }} />
+      </div>
+    </div>
+  );
+}
+
+const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+
+function Heatmap({ cells }: { cells: Diagnostics["heatmap"] }) {
+  const max = Math.max(1, ...cells.map((c) => c.avg));
+  const at = (d: number, h: number) => cells.find((c) => c.dow === d && c.hour === h);
+  const best = cells.length ? cells.reduce((a, b) => (b.avg > a.avg ? b : a)) : null;
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "22px repeat(24, 1fr)", gap: 3, fontSize: 10.5 }}>
+        <span />
+        {Array.from({ length: 24 }, (_, h) => <span key={h} className="faint tnum" style={{ textAlign: "center" }}>{h % 3 === 0 ? h : ""}</span>)}
+        {[1, 2, 3, 4, 5, 6, 0].map((d) => (
+          <Fragment key={d}>
+            <span className="faint" style={{ alignSelf: "center" }}>{DOW[d]}</span>
+            {Array.from({ length: 24 }, (_, h) => {
+              const c = at(d, h);
+              const f = c ? c.avg / max : 0;
+              return <div key={`${d}-${h}`} title={c ? `${DOW[d]} ${h}시 · 평균 ${c.avg}명 · 최고 ${c.peak}명` : `${DOW[d]} ${h}시 · 기록 없음`}
+                style={{ aspectRatio: "1", borderRadius: 4, background: c ? `color-mix(in srgb, var(--blue) ${Math.round(12 + f * 88)}%, transparent)` : "color-mix(in srgb, var(--text-3) 12%, transparent)" }} />;
+            })}
+          </Fragment>
+        ))}
+      </div>
+      <div className="faint" style={{ fontSize: 12.5, marginTop: 8 }}>{best ? `가장 붐비는 때: ${DOW[best.dow]}요일 ${best.hour}시 (평균 ${best.avg}명) · 최근 4주` : "기록이 쌓이면 표시됩니다"}</div>
+    </div>
+  );
+}
+
 const RANGES = [{ value: "1h", label: "1시간" }, { value: "24h", label: "24시간" }, { value: "7d", label: "7일" }] as const;
 
 export function Overview({ me, status, setStatus, toast }: { me: Me; status: Status | null; setStatus: (s: Status) => void; toast: (ok: boolean, t: string) => void }) {
   const [range, setRange] = useState<"1h" | "24h" | "7d">("1h");
   const [series, setSeries] = useState<MetricPoint[]>([]);
   const [full, setFull] = useState<Status | null>(null);
+  const [heat, setHeat] = useState<Diagnostics["heatmap"]>([]);
   const ops = canOperate(me);
 
   useEffect(() => {
@@ -51,6 +93,13 @@ export function Overview({ me, status, setStatus, toast }: { me: Me; status: Sta
     const t = setInterval(load, 30000);
     return () => { alive = false; clearInterval(t); };
   }, [range]);
+
+  useEffect(() => {
+    const h = () => api.diagnostics().then((d) => setHeat(d.heatmap)).catch(() => {});
+    h();
+    const t = setInterval(h, 300000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     api.status().then((s) => { setFull(s); setStatus(s); }).catch(() => {});
@@ -141,6 +190,23 @@ export function Overview({ me, status, setStatus, toast }: { me: Me; status: Sta
             <span className="faint" style={{ fontSize: 13 }}>20 이 가장 좋음</span>
           </div>
           <AreaChart data={series.map((p) => ({ t: p.t, v: p.tps }))} color="#30d158" max={20.5} format={(v) => v.toFixed(1)} label="TPS" />
+        </Glass>
+      </div>
+
+      {/* 컴퓨터 자원 · 시간대별 접속자 */}
+      <div className="grid cols-2" style={{ marginBottom: 16 }}>
+        <Glass className="card" {...fadeUp}>
+          <div className="card-h"><div className="card-t">이 컴퓨터</div><span className="faint" style={{ fontSize: 13 }}>서버 전체 자원</span></div>
+          <div style={{ display: "grid", gap: 14 }}>
+            <Meter label="CPU" value={s?.sys_cpu} text={s?.sys_cpu != null ? `${s.sys_cpu.toFixed(0)}%` : "—"} />
+            <Meter label="메모리" value={s?.sys_mem} text={s?.mem_used_gb != null ? `${s.mem_used_gb.toFixed(1)} / ${s.mem_total_gb?.toFixed(1)} GB` : "—"} />
+            <Meter label="디스크 (서버 폴더)" value={s?.disk_total_gb ? 100 - ((s.disk_free_gb ?? 0) / s.disk_total_gb) * 100 : null}
+              text={s?.disk_free_gb != null ? `${s.disk_free_gb} GB 남음` : "—"} warn={(s?.disk_free_gb ?? 99) < 10} />
+          </div>
+        </Glass>
+        <Glass className="card" {...fadeUp}>
+          <div className="card-h"><div className="card-t">언제 붐비나요</div><span className="faint" style={{ fontSize: 13 }}>요일 × 시간 평균 접속자</span></div>
+          <Heatmap cells={heat} />
         </Glass>
       </div>
 

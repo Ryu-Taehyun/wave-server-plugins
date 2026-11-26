@@ -70,12 +70,12 @@ CREATE INDEX IF NOT EXISTS idx_player_sessions_name ON player_sessions(name);
 CREATE INDEX IF NOT EXISTS idx_player_sessions_open ON player_sessions(left_at);
 
 -- 예약 작업
--- kind: restart · stop · start · command(콘솔 명령) · broadcast(전체 공지)
+-- kind: restart · stop · start · command(콘솔 명령) · broadcast(전체 공지) · backup(백업)
 -- schedule: daily(매일 at_time, days 요일 비트: 월=1 … 일=64) · interval(every_min 분마다) · once(run_at 한 번)
 CREATE TABLE IF NOT EXISTS tasks (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     name         TEXT    NOT NULL,
-    kind         TEXT    NOT NULL CHECK (kind IN ('restart', 'stop', 'start', 'command', 'broadcast')),
+    kind         TEXT    NOT NULL CHECK (kind IN ('restart', 'stop', 'start', 'command', 'broadcast', 'backup')),
     payload      TEXT    NOT NULL DEFAULT '',
     schedule     TEXT    NOT NULL CHECK (schedule IN ('daily', 'interval', 'once')),
     at_time      TEXT,
@@ -97,3 +97,53 @@ CREATE TABLE IF NOT EXISTS task_runs (
     output  TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_task_runs_task ON task_runs(task_id, ts);
+
+-- 키 · 값 설정 (알림 설정, 웹 푸시 키 등)
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+-- 백업 (kind: auto 예약 · manual 직접 · safety 복원 직전 자동)
+CREATE TABLE IF NOT EXISTS backups (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts       INTEGER NOT NULL,
+    file     TEXT    NOT NULL,
+    size     INTEGER NOT NULL DEFAULT 0,
+    ok       INTEGER NOT NULL DEFAULT 1,
+    kind     TEXT    NOT NULL DEFAULT 'manual',
+    note     TEXT,
+    created_by TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_backups_ts ON backups(ts);
+
+-- 웹 푸시 구독 (기기마다)
+CREATE TABLE IF NOT EXISTS push_subs (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    endpoint   TEXT    NOT NULL UNIQUE,
+    p256dh     TEXT    NOT NULL,
+    auth       TEXT    NOT NULL,
+    user_agent TEXT,
+    created_at INTEGER NOT NULL
+);
+
+-- 보낸 알림
+CREATE TABLE IF NOT EXISTS alerts (
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts    INTEGER NOT NULL,
+    kind  TEXT    NOT NULL,
+    title TEXT    NOT NULL,
+    body  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_alerts_ts ON alerts(ts);
+
+-- 설정 파일 수정 기록 (이전 내용은 data/file-history 에 저장)
+CREATE TABLE IF NOT EXISTS file_history (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts        INTEGER NOT NULL,
+    path      TEXT    NOT NULL,
+    saved_by  TEXT,
+    snapshot  TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_file_history_path ON file_history(path, ts);

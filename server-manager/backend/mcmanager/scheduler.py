@@ -45,6 +45,7 @@ def describe_left(sec: int) -> str:
 class Scheduler:
     def __init__(self, db: DB, server: ServerProcess, rcon: RconClient, on_event=None):
         self.db, self.server, self.rcon, self.on_event = db, server, rcon, on_event
+        self.backups = None   # backup.BackupManager
         self.active: dict[int, asyncio.Task] = {}
 
     def refresh(self, task_id: int | None = None) -> None:
@@ -78,6 +79,11 @@ class Scheduler:
             if kind == "broadcast":
                 await self.say(payload, "white")
                 return True, "공지했습니다"
+            if kind == "backup":
+                if not self.backups:
+                    return False, "백업 기능이 없습니다"
+                b = await self.backups.create(kind="auto", by=by, note=payload.strip())
+                return True, f"백업 완료: {b['file']} ({b['size'] / 1048576:.1f} MB)"
             if kind == "command":
                 outs = []
                 for line in [l.strip() for l in payload.splitlines() if l.strip()]:

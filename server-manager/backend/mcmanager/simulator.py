@@ -31,6 +31,11 @@ class Sim:
         self.tps = 20.0
         self.stopping = asyncio.Event()
         self.ready = False
+        self.whitelist: set[str] = set()
+        self.whitelist_on = False
+        self.maintenance = False
+        self.hot_until = 0.0
+        self.hot_mult = 2.0
 
     def log(self, msg: str, level="INFO") -> None:
         print(time.strftime("[%H:%M:%S ") + f"{level}]: {msg}", flush=True)
@@ -109,7 +114,47 @@ class Sim:
             self.ops.discard(args[0])
             return f"Made {args[0]} no longer a server operator"
         if c == "whitelist":
-            return "Whitelist is now turned on" if args[:1] == ["on"] else "There are 0 whitelisted player(s):"
+            sub = args[0] if args else "list"
+            if sub == "on":
+                self.whitelist_on = True
+                return "Whitelist is now turned on"
+            if sub == "off":
+                self.whitelist_on = False
+                return "Whitelist is now turned off"
+            if sub == "add" and len(args) > 1:
+                self.whitelist.add(args[1])
+                return f"Added {args[1]} to the whitelist"
+            if sub == "remove" and len(args) > 1:
+                self.whitelist.discard(args[1])
+                return f"Removed {args[1]} from the whitelist"
+            return f"There are {len(self.whitelist)} whitelisted player(s): " + ", ".join(sorted(self.whitelist)) if self.whitelist else "There are no whitelisted players"
+        if c in ("save-off", "save-on"):
+            return "Automatic saving is now disabled" if c == "save-off" else "Automatic saving is now enabled"
+        if c == "핫타임":
+            if args[:1] == ["시작"]:
+                mins = int(args[1]) if len(args) > 1 else 60
+                self.hot_mult = float(args[2]) if len(args) > 2 else 2.0
+                self.hot_until = time.time() + mins * 60
+                self.log(f"[핫타임] 지금부터 {mins}분 동안 보상 x{self.hot_mult:g}!")
+                return ""
+            if args[:1] == ["종료"]:
+                self.hot_until = 0
+                return "§7핫타임이 종료되었습니다."
+            if self.hot_until > time.time():
+                left = int(self.hot_until - time.time())
+                return f"§6[ 핫타임 ] §6§l🔥 진행 중! §fx{self.hot_mult:g} §7· 남은 시간 §f{left // 60}:{left % 60:02d}"
+            return "§6[ 핫타임 ] §7다음 핫타임 : §f오늘 20:00"
+        if c == "점검모드":
+            if args[:1] == ["켜기"]:
+                self.maintenance = True
+                self.players.clear()
+                return "§c[🛑] 서버 점검 모드를 활성화했습니다."
+            if args[:1] == ["끄기"]:
+                self.maintenance = False
+                return "§a[🟢] 서버 점검 모드를 비활성화했습니다."
+            return "§7현재 상태 : " + ("§c점검 중" if self.maintenance else "§a정상 운영 중")
+        if c == "wave" and args[:1] == ["reload"]:
+            return "§aconfig.yml, private.yml 을 다시 불러왔습니다."
         if c in ("time", "weather", "difficulty", "gamerule", "save-all", "give", "tp", "effect"):
             if c == "save-all":
                 self.log("Saving the game (this may take a moment!)")
@@ -133,7 +178,7 @@ class Sim:
                     writer.write(encode(-1, 2, ""))
                 elif kind == 2:
                     out = self.run(body)
-                    if body.strip() and body.split()[0].lower() not in ("list", "tps", "mspt"):   # 상태 확인용 명령은 로그에 안 남김
+                    if body.strip() and body.split()[0].lower() not in ("list", "tps", "mspt", "핫타임", "whitelist"):   # 상태 확인용 명령은 로그에 안 남김
                         self.log(f"Rcon issued server command: /{body.strip()}")
                     writer.write(encode(rid, 0, out))
                 else:   # 빈 표시 패킷: 실제 서버처럼 그대로 돌려줌

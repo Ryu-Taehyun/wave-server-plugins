@@ -1,6 +1,8 @@
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, canOperate, type Me } from "../lib/api";
+import { AnimatePresence } from "motion/react";
+import { api, canOperate, type Diagnostics, type Me } from "../lib/api";
+import { ago } from "../lib/format";
 import { Glass, fadeUp } from "../components/Glass";
 import { Button, Toggle } from "../components/Controls";
 import { I } from "../components/Icons";
@@ -14,6 +16,52 @@ function color(line: string): string | undefined {
   if (/joined the game|left the game/.test(line)) return "var(--green)";
   if (/<[^>]+>/.test(line)) return "var(--text)";
   return undefined;
+}
+
+function Errors() {
+  const [d, setD] = useState<Diagnostics | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
+  useEffect(() => {
+    const load = () => api.diagnostics().then(setD).catch(() => {});
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <Glass className="card" {...fadeUp} style={{ marginTop: 16 }}>
+      <div className="card-h"><div className="card-t">오류 분석</div><span className="faint" style={{ fontSize: 13 }}>최근 로그의 오류를 묶고 원인 플러그인을 추정</span></div>
+      {d?.crashes.length ? (
+        <div style={{ marginBottom: 10 }}>
+          {d.crashes.slice(0, 3).map((c) => (
+            <div key={c.file} className="row" style={{ fontSize: 13, color: "var(--red)", padding: "4px 0" }}><I.xmark size={15} /><b>크래시 리포트</b><span className="muted">{c.description || c.file} · {ago(c.mtime)}</span></div>
+          ))}
+        </div>
+      ) : null}
+      <div className="list">
+        {d?.errors.map((e, i) => (
+          <div key={i}>
+            <button className="list-item" onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", border: 0, background: "transparent", textAlign: "left" }}>
+              <span className="pill" style={{ ["--c" as string]: e.level === "WARN" ? "var(--orange)" : "var(--red)", flex: "none" }}>{e.plugin ?? "알 수 없음"}</span>
+              <div className="grow" style={{ minWidth: 0 }}>
+                <b style={{ fontWeight: 650 }}>{e.exception}</b>
+                <div className="faint" style={{ fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.message}</div>
+              </div>
+              <span className="tnum faint" style={{ fontSize: 12.5, whiteSpace: "nowrap" }}>{e.count}회 · {e.last}</span>
+            </button>
+            <AnimatePresence>
+              {open === i && (
+                <motion.pre initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mono"
+                  style={{ margin: "0 0 10px", overflow: "auto", fontSize: 12, lineHeight: 1.6, padding: 12, borderRadius: 12, background: "rgba(0,0,0,.25)", color: "var(--text-2)" }}>
+                  {e.sample.join("\n")}
+                </motion.pre>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+        {d && !d.errors.length && <div className="empty">최근 로그에 오류가 없습니다 👍</div>}
+      </div>
+    </Glass>
+  );
 }
 
 export function Console({ me, logs, toast }: { me: Me; logs: string[]; toast: (ok: boolean, t: string) => void }) {
@@ -91,6 +139,7 @@ export function Console({ me, logs, toast }: { me: Me; logs: string[]; toast: (o
           </div>
         )}
       </Glass>
+      <Errors />
     </div>
   );
 }

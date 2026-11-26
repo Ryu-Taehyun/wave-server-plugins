@@ -24,3 +24,17 @@ trusted_proxy = false                                  # 리버스 프록시 뒤
 db = "data/manager.db"
 sample_seconds = 10
 keep_days = 30
+
+[backup]
+dir = "data/backups"                                   # 백업 zip 저장 폴더
+keep = 7                                               # 자동 백업 보관 개수 (직접 만든 백업 · 복원 전 백업은 따로)
+include = ["world", "world_nether", "world_the_end", "plugins", "config", "server.properties", "bukkit.yml", "spigot.yml", "purpur.yml", "ops.json", "whitelist.json", "banned-players.json", "banned-ips.json"]
+exclude = ["plugins/*/logs", "plugins/*/backups", "plugins/dynmap/web/tiles", "plugins/BlueMap/web/maps", "*.lock"]
+copy_to = ""                                           # 사본을 하나 더 둘 폴더 (외장 디스크 · 클라우드 동기화 폴더)
+
+[notify]
+discord_webhook = ""                                   # 디스코드 채널 웹훅 (화면 설정 → 알림 에서도 바꿀 수 있음)
+push_contact = "mailto:admin@example.com"              # 웹 푸시 연락처 (형식만 맞으면 됨)
+
+[wave]
+plugin_dir = "plugins/WaveCore"                        # WaveCore 데이터 폴더 (서버 폴더 기준)

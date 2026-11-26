@@ -40,6 +40,7 @@ class ServerProcess:
         self.logs: collections.deque[str] = collections.deque(maxlen=3000)
         self.subscribers: set[asyncio.Queue] = set()
         self._stop_requested = False
+        self.stopped_on_purpose = True   # 꺼져 있는 게 정상인지 (사람이 껐거나 처음부터 꺼져 있음) → 알림 판단용
         self._crashes: list[float] = []
         self._on_event = on_event
         self._op_lock = asyncio.Lock()
@@ -87,6 +88,7 @@ class ServerProcess:
             self._start_tail()
         elif not online and self.state == "running":
             self.state = "stopped"
+            self.stopped_on_purpose = False   # 이 도구 밖에서 갑자기 꺼짐
             self.started_at = None
             self._stop_tail()
 
@@ -131,6 +133,7 @@ class ServerProcess:
             if not cwd.is_dir():
                 raise RuntimeError(f"서버 폴더가 없습니다: {cwd}")
             self._stop_requested = False
+            self.stopped_on_purpose = False
             self.state = "starting"
             self.started_at = time.time()
             self.note(f"서버를 켭니다: {self.cfg.server.start_command}")
@@ -191,6 +194,7 @@ class ServerProcess:
             self.state = "stopped"
             return "이미 꺼져 있습니다"
         self._stop_requested = True
+        self.stopped_on_purpose = True
         self.state = "stopping"
         await self._event("state", {"state": self.state})
         self.note("서버를 끕니다")

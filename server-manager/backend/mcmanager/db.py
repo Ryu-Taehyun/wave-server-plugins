@@ -17,6 +17,29 @@ class DB:
         schema = resources.files("mcmanager").joinpath("schema.sql").read_text(encoding="utf-8")
         with self._wlock:
             self.conn.executescript(schema)
+            self._migrate()
+
+    def _migrate(self) -> None:
+        """예전 DB 에 새 열 · 제약 추가"""
+        c = self.conn
+        cols = {r[1] for r in c.execute("PRAGMA table_info(metrics)")}
+        for col in ("sys_cpu", "sys_mem", "disk_free_gb"):
+            if col not in cols:
+                c.execute(f"ALTER TABLE metrics ADD COLUMN {col} REAL")
+        sql = (c.execute("SELECT sql FROM sqlite_master WHERE name = 'tasks'").fetchone() or [""])[0]
+        if sql and "'backup'" not in sql:   # 작업 종류에 backup 추가 (SQLite 는 CHECK 를 바꿀 수 없어 표를 다시 만듦)
+            c.execute("ALTER TABLE tasks RENAME TO tasks_old")
+            c.executescript(resources.files("mcmanager").joinpath("schema.sql").read_text(encoding="utf-8"))
+            c.execute("INSERT INTO tasks SELECT * FROM tasks_old")
+            c.execute("DROP TABLE tasks_old")
+        c.commit()
+
+    def setting(self, key: str, default: str | None = None) -> str | None:
+        r = self.conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+        return r[0] if r else default
+
+    def set_setting(self, key: str, value: str) -> None:
+        self.x("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))
 
     @property
     def conn(self) -> sqlite3.Connection:

@@ -13,16 +13,23 @@ import { Console } from "./pages/Console";
 import { Players } from "./pages/Players";
 import { Tasks } from "./pages/Tasks";
 import { Activity, Settings } from "./pages/Settings";
+import { Backups } from "./pages/Backups";
+import { Files } from "./pages/Files";
+import { Operations } from "./pages/Operations";
 
-type Page = "overview" | "console" | "players" | "tasks" | "activity" | "settings";
-const NAV: { id: Page; label: string; icon: (p: { size?: number }) => React.ReactNode; mobile: boolean }[] = [
+type Page = "overview" | "ops" | "console" | "players" | "backups" | "tasks" | "files" | "activity" | "settings" | "more";
+const NAV: { id: Page; label: string; icon: (p: { size?: number }) => React.ReactNode; mobile: boolean; desc?: string }[] = [
   { id: "overview", label: "개요", icon: I.home, mobile: true },
+  { id: "ops", label: "운영", icon: I.bolt, mobile: true },
   { id: "console", label: "콘솔", icon: I.terminal, mobile: true },
   { id: "players", label: "플레이어", icon: I.people, mobile: true },
-  { id: "tasks", label: "예약", icon: I.clock, mobile: true },
-  { id: "activity", label: "활동", icon: I.shield, mobile: false },
-  { id: "settings", label: "설정", icon: I.gear, mobile: true },
+  { id: "backups", label: "백업", icon: I.cube, mobile: false, desc: "월드 · 플러그인 백업과 복원" },
+  { id: "tasks", label: "예약", icon: I.clock, mobile: false, desc: "정해진 시간에 재시작 · 공지 · 백업" },
+  { id: "files", label: "파일", icon: I.list, mobile: false, desc: "설정 파일 편집 · 플러그인 교체" },
+  { id: "activity", label: "활동", icon: I.shield, mobile: false, desc: "누가 언제 무엇을 했는지" },
+  { id: "settings", label: "설정", icon: I.gear, mobile: false, desc: "알림 · 내 기기 · 비밀번호 · 사용자" },
 ];
+const MORE_TAB = { id: "more" as Page, label: "더보기", icon: I.list };
 
 type Theme = "auto" | "dark" | "light";
 function readTheme(): Theme {
@@ -64,8 +71,29 @@ export default function App() {
       case "console": return <Console me={me} logs={live.logs} toast={live.pushToast} />;
       case "players": return <Players me={me} status={live.status} toast={live.pushToast} />;
       case "tasks": return <Tasks me={me} toast={live.pushToast} />;
+      case "ops": return <Operations me={me} status={live.status} toast={live.pushToast} />;
+      case "backups": return <Backups me={me} progress={live.backup} tick={live.auditTick} toast={live.pushToast} />;
+      case "files": return <Files me={me} toast={live.pushToast} />;
       case "activity": return <Activity tick={live.auditTick} />;
-      case "settings": return (<><Settings me={me} onLogout={logout} toast={live.pushToast} theme={theme} setTheme={setTheme} /><div style={{ height: 16 }} /><div className="mobile-only"><Activity tick={live.auditTick} /></div></>);
+      case "settings": return <Settings me={me} onLogout={logout} toast={live.pushToast} theme={theme} setTheme={setTheme} />;
+      case "more": return (
+        <div>
+          <motion.h1 className="page-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>더보기</motion.h1>
+          <p className="page-sub">{me.username} · {live.connected ? "실시간 연결됨" : "연결 중…"}</p>
+          <Glass className="card" style={{ padding: "6px 16px" }}>
+            <div className="list">
+              {NAV.filter((n) => !n.mobile).map((n) => (
+                <motion.button key={n.id} whileTap={{ scale: 0.98 }} className="list-item" onClick={() => setPage(n.id)}
+                  style={{ border: 0, background: "transparent", width: "100%", textAlign: "left", borderTop: "1px solid color-mix(in srgb, var(--stroke) 55%, transparent)" }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, display: "grid", placeItems: "center", background: "var(--blue)", color: "#fff", flex: "none" }}><n.icon size={18} /></div>
+                  <div className="grow"><div style={{ fontWeight: 600 }}>{n.label}</div><div className="faint" style={{ fontSize: 12.5 }}>{n.desc}</div></div>
+                  <span className="faint">›</span>
+                </motion.button>
+              ))}
+            </div>
+          </Glass>
+        </div>
+      );
     }
   })();
 
@@ -112,15 +140,18 @@ export default function App() {
 
       <nav className="tabbar glass strong" aria-label="메뉴">
         <LayoutGroup id="tab">
-          {NAV.filter((n) => n.mobile).map((n) => (
+          {[...NAV.filter((n) => n.mobile), MORE_TAB].map((n) => {
+            const on = page === n.id || (n.id === "more" && NAV.some((x) => !x.mobile && x.id === page));
+            return (
             <motion.button key={n.id} onClick={() => setPage(n.id)} whileTap={{ scale: 0.9 }}
               style={{ position: "relative", flex: 1, border: 0, background: "transparent", borderRadius: 999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-                color: page === n.id ? "var(--blue)" : "var(--text-2)", fontSize: 10.5, fontWeight: 600 }}>
-              {page === n.id && <motion.span layoutId="tab-active" transition={{ type: "spring", stiffness: 500, damping: 36 }}
+                color: on ? "var(--blue)" : "var(--text-2)", fontSize: 10.5, fontWeight: 600 }}>
+              {on && <motion.span layoutId="tab-active" transition={{ type: "spring", stiffness: 500, damping: 36 }}
                 style={{ position: "absolute", inset: 0, borderRadius: 999, zIndex: -1, background: "color-mix(in srgb, var(--glass-strong) 100%, transparent)", boxShadow: "inset 0 1px 0 var(--shine), inset 0 0 0 1px var(--stroke)" }} />}
               <n.icon size={23} />{n.label}
             </motion.button>
-          ))}
+            );
+          })}
         </LayoutGroup>
       </nav>
     </>

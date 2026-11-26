@@ -11,7 +11,11 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, WebSocke
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-from . import __version__, auth, monitor as mon
+from . import __version__, auth, diagnostics, monitor as mon
+from .backup import BackupError, BackupManager
+from .files import FileError, Files
+from .notify import Notifier, Watchdog
+from .wave import Wave
 from .config import Config, load
 from .db import DB
 from .process import ServerProcess
@@ -54,7 +58,7 @@ class TaskIn(BaseModel):
     enabled: bool = True
 
     def check(self):
-        if self.kind not in ("restart", "stop", "start", "command", "broadcast"):
+        if self.kind not in ("restart", "stop", "start", "command", "broadcast", "backup"):
             raise HTTPException(400, "작업 종류가 올바르지 않습니다")
         if self.schedule not in ("daily", "interval", "once"):
             raise HTTPException(400, "일정 종류가 올바르지 않습니다")
@@ -84,6 +88,59 @@ class RoleIn(BaseModel):
     role: str
 
 
+class NoteIn(BaseModel):
+    note: str = Field(default="", max_length=200)
+
+
+class NotifyIn(BaseModel):
+    discord_webhook: str | None = None
+    events: dict | None = None
+    tps_below: float | None = None
+    tps_minutes: float | None = None
+    disk_below_gb: float | None = None
+    down_minutes: float | None = None
+
+
+class PushSubIn(BaseModel):
+    endpoint: str = Field(max_length=1000)
+    keys: dict
+
+
+class FileSaveIn(BaseModel):
+    path: str = Field(max_length=500)
+    text: str = Field(max_length=1024 * 1024)
+    mtime: int | None = None
+    force: bool = False
+
+
+class StageIn(BaseModel):
+    op: str
+    file: str = Field(max_length=200)
+
+
+class HotTimeIn(BaseModel):
+    action: str
+    minutes: int = 60
+    multiplier: float = 2.0
+
+
+class TextIn(BaseModel):
+    text: str = Field(min_length=1, max_length=300)
+
+
+class SeasonIn(BaseModel):
+    number: int = Field(ge=1, le=9999)
+
+
+class OnIn(BaseModel):
+    on: bool
+
+
+class WhitelistIn(BaseModel):
+    action: str
+    name: str = Field(default="", max_length=16)
+
+
 class Hub:
     """접속한 화면들에 실시간으로 보냄"""
 
@@ -105,12 +162,24 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     rcon = RconClient(cfg.rcon.host, cfg.rcon.port, cfg.rcon.password)
     hub = Hub()
 
+    notifier = Notifier(cfg, db, None)
+
     async def on_event(kind: str, data: dict) -> None:
         await hub.send(kind, data)
+        if kind == "state" and data.get("state") == "crashed":
+            tail = "\n".join(list(server.logs)[-6:])
+            await notifier.alert("crash", "서버가 비정상 종료되었습니다", f"종료 코드 {data.get('code')}\n```\n{tail[-900:]}\n```")
 
+    notifier.on_event = lambda k, d: hub.send(k, d)
     server = ServerProcess(cfg, rcon, on_event)
     monitor = mon.Monitor(db, server, rcon, cfg.server.host, cfg.server.port, cfg.app.sample_seconds, cfg.app.keep_days)
     scheduler = Scheduler(db, server, rcon, on_event)
+    backups = BackupManager(cfg, db, server, rcon, on_event, notifier.alert)
+    scheduler.backups = backups
+    files = Files(cfg, db)
+    wave = Wave(cfg, rcon)
+    monitor.watchdog = Watchdog(notifier)
+    monitor.server_dir = cfg.path(cfg.server.dir)
 
     async def on_status(snap: dict) -> None:
         await hub.send("status", snap)
@@ -130,6 +199,7 @@ def create_app(cfg: Config | None = None) -> FastAPI:
 
     app = FastAPI(title="MC Server Manager", version=__version__, lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.cfg, app.state.db, app.state.server, app.state.monitor, app.state.scheduler, app.state.rcon = cfg, db, server, monitor, scheduler, rcon
+    app.state.backups, app.state.files, app.state.wave, app.state.notifier = backups, files, wave, notifier
 
     # ---------------- 공통 ----------------
 
@@ -177,8 +247,15 @@ def create_app(cfg: Config | None = None) -> FastAPI:
                                       request.headers.get("user-agent", ""), cfg.web.session_days)
         if not res:
             db.audit(body.username[:32], ip, "login.fail")
+            if auth.blocked(db, ip):
+                await notifier.alert("login_blocked", "로그인 실패가 계속되어 잠시 막았습니다", f"IP {ip} · 아이디 '{body.username[:32]}'")
             raise HTTPException(401, "아이디 또는 비밀번호가 틀렸습니다")
         token, u = res
+        ua = request.headers.get("user-agent", "")[:300]
+        known = db.one("SELECT 1 FROM sessions WHERE user_id = ? AND user_agent = ? AND token_hash != ?", (u["id"], ua, auth.token_hash(token)))
+        if not known:
+            from .format_ua import device
+            await notifier.alert("new_device", f"{u['username']} 님이 새 기기에서 로그인했습니다", f"{device(ua)} · IP {ip}")
         response.set_cookie(COOKIE, token, max_age=cfg.web.session_days * 86400, httponly=True,
                             samesite="strict", secure=cfg.web.secure_cookies, path="/")
         db.audit(u["username"], ip, "login", request.headers.get("user-agent", "")[:120])
@@ -237,6 +314,7 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     async def power(action: str, u: dict):
         fn = {"start": server.start, "stop": server.stop, "restart": server.restart}[action]
         audit(u, f"server.{action}")
+        asyncio.create_task(notifier.alert("power", f"{u['username']} 님이 서버를 {dict(start='켰습니다', stop='껐습니다', restart='재시작했습니다')[action]}", f"IP {u.get('ip')}"))
 
         async def run():
             try:
@@ -450,6 +528,280 @@ def create_app(cfg: Config | None = None) -> FastAPI:
         finally:
             hub.clients.discard(socket)
             server.subscribers.discard(q)
+
+    # ---------------- 백업 ----------------
+
+    @app.get("/api/backups")
+    async def backup_list(u: dict = Depends(viewer)):
+        return {"items": backups.list(), "disk": backups.disk(), "busy": backups.busy, "include": cfg.backup.include, "keep": cfg.backup.keep}
+
+    async def run_bg(label: str, coro):
+        try:
+            res = await coro
+            msg = res if isinstance(res, str) else f"{label} 완료"
+            await hub.send("toast", {"ok": True, "text": msg})
+            if label == "백업" and isinstance(res, dict):
+                await notifier.alert("backup_done", "백업 완료", f"{res['file']} · {res['size'] / 1048576:.1f} MB")
+        except Exception as e:
+            server.note(f"{label} 실패: {e}")
+            await hub.send("toast", {"ok": False, "text": f"{label} 실패: {e}"})
+        await hub.send("backup", {"phase": "끝", "pct": None})
+
+    @app.post("/api/backups")
+    async def backup_create(body: NoteIn, u: dict = Depends(operator)):
+        if backups.lock.locked():
+            raise HTTPException(409, f"이미 진행 중입니다: {backups.busy}")
+        audit(u, "backup.create", body.note)
+        asyncio.create_task(run_bg("백업", backups.create("manual", u["username"], body.note)))
+        return {"ok": True}
+
+    @app.post("/api/backups/{bid}/restore")
+    async def backup_restore(bid: int, u: dict = Depends(admin)):
+        try:
+            backups.file_of(bid)
+        except BackupError as e:
+            raise HTTPException(404, str(e))
+        if backups.lock.locked():
+            raise HTTPException(409, f"이미 진행 중입니다: {backups.busy}")
+        audit(u, "backup.restore", f"#{bid}")
+        asyncio.create_task(run_bg("복원", backups.restore(bid, u["username"])))
+        return {"ok": True}
+
+    @app.delete("/api/backups/{bid}")
+    async def backup_delete(bid: int, u: dict = Depends(admin)):
+        try:
+            backups.delete(bid)
+        except BackupError as e:
+            raise HTTPException(404, str(e))
+        audit(u, "backup.delete", f"#{bid}")
+        return {"ok": True}
+
+    @app.get("/api/backups/{bid}/download")
+    async def backup_download(bid: int, u: dict = Depends(admin)):
+        try:
+            p = backups.file_of(bid)
+        except BackupError as e:
+            raise HTTPException(404, str(e))
+        audit(u, "backup.download", f"#{bid}")
+        return FileResponse(p, filename=p.name, media_type="application/zip")
+
+    # ---------------- 알림 ----------------
+
+    @app.get("/api/notify")
+    async def notify_get(u: dict = Depends(viewer)):
+        s = notifier.public_settings()
+        s["my_devices"] = db.q("SELECT id, user_agent, created_at FROM push_subs WHERE user_id = ?", (u["id"],))
+        s["vapid_public"] = notifier.vapid_public()
+        return s
+
+    @app.put("/api/notify")
+    async def notify_put(body: NotifyIn, u: dict = Depends(admin)):
+        try:
+            notifier.save_settings({k: v for k, v in body.model_dump().items() if v is not None})
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        audit(u, "notify.settings")
+        return notifier.public_settings()
+
+    @app.post("/api/notify/test")
+    async def notify_test(u: dict = Depends(viewer)):
+        await notifier.alert("test", "테스트 알림", f"{u['username']} 님이 보낸 테스트입니다", force=True)
+        return {"ok": True}
+
+    @app.post("/api/push/subscribe")
+    async def push_sub(body: PushSubIn, request: Request, u: dict = Depends(viewer)):
+        if not body.endpoint.startswith("https://") or not body.keys.get("p256dh") or not body.keys.get("auth"):
+            raise HTTPException(400, "잘못된 구독 정보")
+        db.x("""INSERT INTO push_subs (user_id, endpoint, p256dh, auth, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth""",
+             (u["id"], body.endpoint, body.keys["p256dh"], body.keys["auth"], request.headers.get("user-agent", "")[:300], int(time.time())))
+        return {"ok": True}
+
+    @app.post("/api/push/unsubscribe")
+    async def push_unsub(body: PushSubIn, u: dict = Depends(viewer)):
+        db.x("DELETE FROM push_subs WHERE endpoint = ? AND user_id = ?", (body.endpoint, u["id"]))
+        return {"ok": True}
+
+    @app.get("/api/alerts")
+    async def alerts(u: dict = Depends(viewer)):
+        return db.q("SELECT * FROM alerts ORDER BY id DESC LIMIT 100")
+
+    # ---------------- 파일 (관리자) ----------------
+
+    @app.get("/api/files")
+    async def file_tree(u: dict = Depends(admin)):
+        return await asyncio.to_thread(files.tree)
+
+    @app.get("/api/files/read")
+    async def file_read(path: str, u: dict = Depends(admin)):
+        try:
+            return files.read(path)
+        except FileError as e:
+            raise HTTPException(400, str(e))
+
+    @app.post("/api/files/validate")
+    async def file_validate(body: FileSaveIn, u: dict = Depends(admin)):
+        from .files import validate
+        return {"problem": validate(body.path, body.text)}
+
+    @app.put("/api/files")
+    async def file_save(body: FileSaveIn, u: dict = Depends(admin)):
+        try:
+            r = files.save(body.path, body.text, u["username"], body.mtime, body.force)
+        except FileError as e:
+            raise HTTPException(400, str(e))
+        audit(u, "file.save", body.path + (" (형식 검사 무시)" if body.force else ""))
+        return r
+
+    @app.get("/api/files/history")
+    async def file_hist(path: str, u: dict = Depends(admin)):
+        return files.history(path)
+
+    @app.get("/api/files/history/{hid}")
+    async def file_hist_one(hid: int, u: dict = Depends(admin)):
+        try:
+            return files.history_text(hid)
+        except FileError as e:
+            raise HTTPException(404, str(e))
+
+    # ---------------- 플러그인 ----------------
+
+    @app.get("/api/plugins")
+    async def plugin_list(u: dict = Depends(viewer)):
+        return await asyncio.to_thread(files.plugins)
+
+    @app.post("/api/plugins/upload")
+    async def plugin_upload(filename: str, request: Request, u: dict = Depends(admin)):
+        data = await request.body()
+        if len(data) > 200 * 1048576:
+            raise HTTPException(413, "200MB 보다 큰 파일은 올릴 수 없습니다")
+        try:
+            item = files.stage_upload(filename, data)
+        except FileError as e:
+            raise HTTPException(400, str(e))
+        audit(u, "plugin.upload", f"{filename} ({len(data) // 1024} KB)")
+        return item
+
+    @app.post("/api/plugins/stage")
+    async def plugin_stage(body: StageIn, u: dict = Depends(admin)):
+        try:
+            files.stage(body.op, body.file)
+        except FileError as e:
+            raise HTTPException(400, str(e))
+        return files.plugins()
+
+    @app.delete("/api/plugins/stage")
+    async def plugin_unstage(file: str, u: dict = Depends(admin)):
+        files.unstage(file)
+        return files.plugins()
+
+    @app.post("/api/plugins/apply")
+    async def plugin_apply(u: dict = Depends(admin)):
+        if not files.plugins()["staged"]:
+            raise HTTPException(400, "적용할 변경이 없습니다")
+        audit(u, "plugin.apply")
+
+        async def run():
+            was = server.state in ("running", "starting") or await server.reachable()
+            if was:
+                server.note("플러그인 변경을 적용하려고 서버를 끕니다")
+                await server.stop()
+            done = await asyncio.to_thread(files.apply_staged)
+            server.note("플러그인 변경: " + (", ".join(done) or "없음"))
+            if was:
+                await server.start()
+            return f"플러그인 변경 {len(done)}건 적용" + (" · 서버를 다시 켜는 중" if was else "")
+
+        asyncio.create_task(run_bg("플러그인 적용", run()))
+        return {"ok": True}
+
+    # ---------------- WaveCore · 점검 · 화이트리스트 ----------------
+
+    @app.get("/api/wave")
+    async def wave_overview(u: dict = Depends(viewer)):
+        ov = await asyncio.to_thread(wave.overview)
+        online = monitor.snapshot.get("online")
+        ov["hot_time"]["status"] = await wave.hot_time_status() if online and rcon.configured else {"active": None}
+        ov["whitelist"] = await wave.whitelist() if online and rcon.configured else {"on": None, "names": []}
+        return ov
+
+    @app.get("/api/wave/player/{name}")
+    async def wave_player(name: str, u: dict = Depends(viewer)):
+        p = await asyncio.to_thread(wave.player, name)
+        if not p:
+            raise HTTPException(404, "WaveCore 데이터에 없는 플레이어입니다")
+        p["sessions"] = db.q("SELECT joined_at, left_at FROM player_sessions WHERE name = ? ORDER BY joined_at DESC LIMIT 10", (name,))
+        return p
+
+    async def wave_cmd(u: dict, action: str, cmd: str) -> dict:
+        try:
+            out = await wave.cmd(cmd)
+        except RuntimeError as e:
+            raise HTTPException(503, str(e))
+        audit(u, action, cmd)
+        return {"output": out}
+
+    @app.post("/api/wave/hottime")
+    async def wave_hot(body: HotTimeIn, u: dict = Depends(operator)):
+        if body.action == "start":
+            if not (1 <= body.minutes <= 1440 and 1 <= body.multiplier <= 10):
+                raise HTTPException(400, "시간은 1~1440분, 배율은 1~10")
+            return await wave_cmd(u, "wave.hottime", f"핫타임 시작 {body.minutes} {body.multiplier:g}")
+        if body.action == "stop":
+            return await wave_cmd(u, "wave.hottime", "핫타임 종료")
+        raise HTTPException(400, "잘못된 요청")
+
+    @app.post("/api/wave/broadcast")
+    async def wave_broadcast(body: TextIn, u: dict = Depends(operator)):
+        await scheduler.say(body.text.replace("\n", " "), "white")
+        audit(u, "broadcast", body.text)
+        return {"ok": True}
+
+    @app.post("/api/wave/season")
+    async def wave_season(body: SeasonIn, u: dict = Depends(admin)):
+        if not (wave.base / "config.yml").exists():
+            raise HTTPException(404, "WaveCore config.yml 이 없습니다")
+        await asyncio.to_thread(wave.set_season, body.number)
+        audit(u, "wave.season", str(body.number))
+        reloaded = False
+        if monitor.snapshot.get("online"):
+            try:
+                await wave.cmd("wave reload")
+                reloaded = True
+            except RuntimeError:
+                pass
+        return {"ok": True, "reloaded": reloaded}
+
+    @app.post("/api/wave/maintenance")
+    async def wave_maint(body: OnIn, u: dict = Depends(operator)):
+        return await wave_cmd(u, "wave.maintenance", "점검모드 " + ("켜기" if body.on else "끄기"))
+
+    @app.post("/api/whitelist")
+    async def whitelist(body: WhitelistIn, u: dict = Depends(operator)):
+        if body.action in ("on", "off"):
+            return await wave_cmd(u, "whitelist", f"whitelist {body.action}")
+        if body.action in ("add", "remove") and body.name.replace("_", "").isalnum():
+            return await wave_cmd(u, "whitelist", f"whitelist {body.action} {body.name}")
+        raise HTTPException(400, "잘못된 요청")
+
+    # ---------------- 진단 ----------------
+
+    @app.get("/api/diagnostics")
+    async def diag(u: dict = Depends(viewer)):
+        def build():
+            lines = list(server.logs)
+            log = cfg.path(cfg.server.dir) / cfg.server.log_file
+            if not server.managed and log.exists():
+                try:
+                    with open(log, "rb") as f:
+                        f.seek(max(0, log.stat().st_size - 400_000))
+                        lines = f.read().decode("utf-8", "replace").splitlines()
+                except OSError:
+                    pass
+            plugins = files.plugins()["active"]
+            return {"system": diagnostics.system(cfg.path(cfg.server.dir)), "heatmap": diagnostics.heatmap(db),
+                    "errors": diagnostics.errors(lines, plugins), "crashes": diagnostics.crash_reports(cfg.path(cfg.server.dir))}
+        return await asyncio.to_thread(build)
 
     # ---------------- 화면 (빌드된 frontend) ----------------
 

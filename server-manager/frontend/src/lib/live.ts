@@ -10,7 +10,11 @@ type Msg =
   | { type: "toast"; data: { ok: boolean; text: string } }
   | { type: "state"; data: { state: Status["state"] } }
   | { type: "audit"; data: unknown }
-  | { type: "task"; data: { name: string; ok: boolean; output: string } };
+  | { type: "task"; data: { name: string; ok: boolean; output: string } }
+  | { type: "backup"; data: { phase: string; pct: number | null } }
+  | { type: "alert"; data: { kind: string; title: string; body: string } };
+
+export interface BackupProgress { phase: string; pct: number | null }
 
 const MAX_LOGS = 2000;
 
@@ -20,6 +24,7 @@ export function useLive(enabled: boolean) {
   const [connected, setConnected] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [auditTick, setAuditTick] = useState(0);
+  const [backup, setBackup] = useState<BackupProgress | null>(null);
   const retry = useRef(0);
 
   const pushToast = (ok: boolean, text: string) => {
@@ -71,6 +76,13 @@ export function useLive(enabled: boolean) {
           case "audit":
             setAuditTick((x) => x + 1);
             break;
+          case "backup":
+            setBackup(m.data.phase === "끝" || m.data.phase === "완료" ? null : m.data);
+            if (m.data.phase === "끝" || m.data.phase === "완료") setAuditTick((x) => x + 1);
+            break;
+          case "alert":
+            pushToast(!["crash", "down", "backup_failed", "login_blocked", "disk", "tps"].includes(m.data.kind), m.data.title);
+            break;
         }
       };
       ws.onclose = (ev) => {
@@ -90,5 +102,5 @@ export function useLive(enabled: boolean) {
     };
   }, [enabled]);
 
-  return { status, setStatus, logs, connected, toasts, pushToast, auditTick };
+  return { status, setStatus, logs, connected, toasts, pushToast, auditTick, backup };
 }

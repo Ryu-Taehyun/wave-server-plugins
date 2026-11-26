@@ -12,6 +12,7 @@ const KINDS: { value: TaskKind; label: string; icon: React.ReactNode; c: string 
   { value: "command", label: "명령어", icon: <I.terminal size={18} />, c: "var(--purple)" },
   { value: "stop", label: "끄기", icon: <I.stop size={16} />, c: "var(--red)" },
   { value: "start", label: "켜기", icon: <I.play size={16} />, c: "var(--green)" },
+  { value: "backup", label: "백업", icon: <I.cube size={17} />, c: "var(--teal)" },
 ];
 const DAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
